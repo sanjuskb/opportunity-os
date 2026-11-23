@@ -1,65 +1,110 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
-import { Menu, X, Globe, Sparkles, ChevronDown } from 'lucide-react';
+import { Menu, X, Globe, ChevronDown, ArrowUpRight } from 'lucide-react';
 
 export function LandingNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState<string>(APP_CONFIG.DEFAULT_LANGUAGE);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const [activeChapter, setActiveChapter] = useState<'01' | '02' | '03' | '04' | '05' | '06' | '07'>('01');
 
   const activeLangObj = APP_CONFIG.SUPPORTED_LANGUAGES.find((l) => l.code === selectedLang);
 
+  const CHAPTER_TITLES: Record<string, string> = {
+    '01': 'The Ecosystem',
+    '02': 'The Fragmentation',
+    '03': 'Unified Platform',
+    '04': 'For Students',
+    '05': 'For Companies',
+    '06': 'For Universities',
+    '07': 'Voice Intelligence',
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = scrollY / (docHeight || 1);
+
+      if (progress < 0.15) setActiveChapter('01');
+      else if (progress < 0.3) setActiveChapter('02');
+      else if (progress < 0.45) setActiveChapter('03');
+      else if (progress < 0.6) setActiveChapter('04');
+      else if (progress < 0.75) setActiveChapter('05');
+      else if (progress < 0.9) setActiveChapter('06');
+      else setActiveChapter('07');
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-[#090D16]/85 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand / Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/20 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.25)] transition group-hover:border-indigo-400">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-            <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-indigo-400/20" />
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b border-white/[0.07] bg-[#080B10]/80 backdrop-blur-xl transition-all duration-300">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Brand Identity */}
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-950/60 border border-indigo-500/30 shadow-[0_0_15px_rgba(139,92,246,0.2)] transition group-hover:border-cyan-400/60">
+              <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
+              <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-white/10" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold tracking-tight text-white group-hover:text-cyan-300 transition">
+                Opportunity <span className="text-cyan-400">OS</span>
+              </span>
+              <span className="text-[10px] font-mono text-slate-500 tracking-wider">Homingo Ed. 01</span>
+            </div>
+          </Link>
+
+          {/* Persistent Chapter Index Tracker (Homingo-inspired Spatial Indicator) */}
+          <div className="hidden lg:flex items-center gap-2.5 pl-6 border-l border-white/[0.08] text-xs font-mono">
+            <span className="text-cyan-400 font-semibold">{activeChapter}</span>
+            <span className="text-slate-600">/</span>
+            <span className="text-slate-500">07</span>
+            <span className="text-slate-400 font-sans tracking-normal font-medium text-xs ml-1">
+              — {CHAPTER_TITLES[activeChapter]}
+            </span>
           </div>
-          <span className="text-lg font-bold tracking-tight text-white group-hover:text-cyan-300 transition">
-            Opportunity <span className="text-cyan-400">OS</span>
-          </span>
-          <span className="hidden sm:inline-flex items-center rounded-full bg-indigo-950/60 px-2 py-0.5 text-[10px] font-medium text-indigo-300 border border-indigo-800/40">
-            v0.1
-          </span>
-        </Link>
+        </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-          <Link href="/opportunities" className="hover:text-white transition">
-            Opportunities
-          </Link>
-          <Link href="/how-it-works" className="hover:text-white transition">
-            How It Works
-          </Link>
-          <Link href="/features" className="hover:text-white transition">
-            Features
-          </Link>
-          <Link href="/voice-ai" className="hover:text-white transition flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-slate-300 tracking-wide">
+          <a href="#ecosystem" className="hover:text-white transition-colors duration-200">
+            Ecosystem
+          </a>
+          <a href="#students" className="hover:text-cyan-300 transition-colors duration-200">
+            Students
+          </a>
+          <a href="#companies" className="hover:text-blue-300 transition-colors duration-200">
+            Companies
+          </a>
+          <a href="#universities" className="hover:text-emerald-300 transition-colors duration-200">
+            Universities
+          </a>
+          <a href="#voice-ai" className="hover:text-violet-300 transition-colors duration-200">
             Voice AI
-          </Link>
-          <Link href="/career-passport" className="hover:text-white transition">
-            Passport
-          </Link>
+          </a>
         </nav>
 
-        {/* Right Section: Language Selector + Sign In + CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          <Link href="/login" className="text-xs font-semibold text-slate-300 hover:text-white px-2 py-1">
+        {/* Right Controls: Language Selector + Sign In + Primary Action */}
+        <div className="hidden md:flex items-center gap-4">
+          <Link
+            href="/login"
+            className="text-xs font-medium text-slate-300 hover:text-white px-2 py-1 transition-colors"
+          >
             Sign In
           </Link>
-          {/* Language Selector Dropdown */}
+
+          {/* Indic Language Dropdown */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-slate-700 hover:text-white transition"
+              className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-[#0F141E] px-2.5 py-1.5 text-xs font-medium text-slate-300 hover:border-white/20 hover:text-white transition"
               aria-label="Select language"
               aria-expanded={langDropdownOpen}
             >
@@ -69,9 +114,9 @@ export function LandingNavbar() {
             </button>
 
             {langDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-lg border border-slate-800 bg-[#0F172A] p-1.5 shadow-xl ring-1 ring-black/40 z-50">
-                <div className="px-2 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Supported Languages
+              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#0F141E] p-1.5 shadow-2xl backdrop-blur-2xl ring-1 ring-black/60 z-50">
+                <div className="px-2.5 py-1.5 text-[10px] font-mono uppercase tracking-wider text-slate-400">
+                  Native Indic Languages
                 </div>
                 {APP_CONFIG.SUPPORTED_LANGUAGES.map((lang) => (
                   <button
@@ -80,35 +125,36 @@ export function LandingNavbar() {
                       setSelectedLang(lang.code);
                       setLangDropdownOpen(false);
                     }}
-                    className={`flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition ${
+                    className={`flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
                       selectedLang === lang.code
-                        ? 'bg-indigo-600/20 text-cyan-300 font-semibold'
-                        : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                        ? 'bg-cyan-500/15 text-cyan-300 font-semibold'
+                        : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
                     }`}
                   >
                     <span>{lang.name}</span>
-                    <span className="text-[11px] text-slate-400">{lang.native}</span>
+                    <span className="text-[11px] text-slate-500 font-mono">{lang.native}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Primary Action Button */}
+          {/* Launch OS Button */}
           <Link
-            href="/opportunities"
-            className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:from-indigo-500 hover:to-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition"
+            href="/overview"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition group"
           >
-            Launch OS
+            <span>Launch OS</span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
           </Link>
         </div>
 
-        {/* Mobile menu trigger */}
+        {/* Mobile menu button */}
         <div className="flex md:hidden items-center gap-2">
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-white focus:outline-none"
+            className="rounded-lg p-2 text-slate-400 hover:bg-white/[0.06] hover:text-white focus:outline-none"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >
@@ -117,44 +163,58 @@ export function LandingNavbar() {
         </div>
       </div>
 
-      {/* Mobile Menu Panel */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-slate-800 bg-[#090D16] px-4 pt-2 pb-4 space-y-2">
-          <Link
-            href="/opportunities"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
-          >
-            Opportunities
-          </Link>
-          <Link
-            href="/career-passport"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
-          >
-            Career Passport
-          </Link>
+        <div className="md:hidden border-b border-white/10 bg-[#080B10] px-4 pt-3 pb-6 space-y-3">
           <a
-            href="#ecosystem-campus"
+            href="#ecosystem"
             onClick={() => setMobileMenuOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+            className="block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06]"
           >
-            Campus Ecosystem
+            01 — The Ecosystem
+          </a>
+          <a
+            href="#students"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06]"
+          >
+            04 — For Students
+          </a>
+          <a
+            href="#companies"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06]"
+          >
+            05 — For Companies
+          </a>
+          <a
+            href="#universities"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06]"
+          >
+            06 — For Universities
           </a>
           <a
             href="#voice-ai"
             onClick={() => setMobileMenuOpen(false)}
-            className="block rounded-md px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-800"
+            className="block rounded-lg px-3 py-2 text-sm text-slate-300 hover:bg-white/[0.06]"
           >
-            Voice Intelligence
+            07 — Voice Intelligence
           </a>
-          <div className="pt-2 border-t border-slate-800/80">
+          <div className="pt-3 border-t border-white/10 flex items-center justify-between">
             <Link
-              href="/opportunities"
+              href="/login"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
+              className="text-xs text-slate-400 hover:text-white font-medium"
             >
-              Launch OS
+              Sign In
+            </Link>
+            <Link
+              href="/overview"
+              onClick={() => setMobileMenuOpen(false)}
+              className="inline-flex items-center gap-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1.5 text-xs font-semibold"
+            >
+              Launch OS <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
         </div>

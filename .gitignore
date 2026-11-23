@@ -1,5 +1,6 @@
 # Node / Web
 node_modules/
+.playwright-mcp/
 .pnp
 .pnp.js
 .next/

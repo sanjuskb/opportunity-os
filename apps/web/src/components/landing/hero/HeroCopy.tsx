@@ -1,49 +1,84 @@
 'use client';
 
 import React from 'react';
-import { APP_CONFIG } from '@opportunity-os/shared-config';
-import { Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import Link from 'next/link';
 
-export function HeroCopy() {
+interface HeroCopyProps {
+  activeRole: string;
+  onSelectRole: (role: any) => void;
+}
+
+export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
+  const ROLES = [
+    { id: 'students', label: 'Students', color: 'hover:text-cyan-400', active: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/10' },
+    { id: 'companies', label: 'Companies', color: 'hover:text-blue-400', active: 'text-blue-300 border-blue-500/50 bg-blue-500/10' },
+    { id: 'universities', label: 'Universities', color: 'hover:text-emerald-400', active: 'text-emerald-300 border-emerald-500/50 bg-emerald-500/10' },
+    { id: 'opportunities', label: 'Opportunities', color: 'hover:text-amber-400', active: 'text-amber-300 border-amber-500/50 bg-amber-500/10' },
+  ];
+
   return (
-    <div className="space-y-5 text-left">
-      {/* Category & Track Tag */}
-      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/25 shadow-sm">
-        <Sparkles className="h-3.5 w-3.5 text-cyan-400 animate-pulse" />
-        <span>Homingo Hackathon Edition 01</span>
-        <span className="text-slate-600">•</span>
-        <span className="text-cyan-400 font-medium">Neural Transit Atlas</span>
+    <div className="space-y-8 text-left">
+      {/* Chapter Marker */}
+      <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
+        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+        <span className="text-slate-400">Chapter 01</span>
+        <span className="text-slate-600">/</span>
+        <span className="text-cyan-300 font-sans font-medium">Neural Transit Atlas</span>
       </div>
 
-      {/* Main H1 Headline */}
-      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-[1.15]">
+      {/* Main Editorial Headline */}
+      <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.08]">
         The Connected{' '}
-        <span className="bg-gradient-to-r from-cyan-400 via-indigo-300 to-violet-400 bg-clip-text text-transparent">
+        <span className="italic font-serif text-slate-200">
           Career Intelligence
         </span>{' '}
-        Operating System
+        Operating System.
       </h1>
 
-      {/* Narrative Subtitle */}
-      <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl">
-        Not a chatbot or static job board. Opportunity OS is an autonomous collegiate ecosystem connecting students, companies, universities, and verified opportunities through AI agent shuttles and real-time voice intelligence.
+      {/* Supporting Paragraph */}
+      <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl">
+        An autonomous collegiate ecosystem interconnecting students, verified companies, universities, and live opportunities through neural agent shuttles and real-time voice intelligence.
       </p>
 
-      {/* 7 Native Languages Strip */}
-      <div className="space-y-1.5 pt-1">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          Supported in 7 Native Indian Languages:
+      {/* Restrained Perspective Selector */}
+      <div className="space-y-2.5 pt-2">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500">
+          Filter Atlas Perspective:
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {APP_CONFIG.SUPPORTED_LANGUAGES.map((lang) => (
-            <span
-              key={lang.code}
-              className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:border-cyan-500/40 hover:text-cyan-300 transition"
+        <div className="flex flex-wrap gap-2">
+          {ROLES.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onSelectRole(r.id)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium border transition-all duration-200 ${
+                activeRole === r.id
+                  ? r.active
+                  : 'border-white/[0.07] bg-white/[0.02] text-slate-400 hover:border-white/20 ' + r.color
+              }`}
             >
-              {lang.name} <span className="text-[10px] text-slate-400 font-normal">({lang.native})</span>
-            </span>
+              {r.label}
+            </button>
           ))}
         </div>
+      </div>
+
+      {/* Primary & Secondary Actions */}
+      <div className="flex flex-wrap items-center gap-4 pt-2">
+        <Link
+          href="/overview"
+          className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-950 font-semibold px-6 py-3 text-sm hover:bg-slate-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-200 group"
+        >
+          <span>Enter Workspace</span>
+          <ArrowRight className="h-4 w-4 text-slate-700 group-hover:translate-x-0.5 transition" />
+        </Link>
+
+        <a
+          href="#the-problem"
+          className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-slate-300 font-medium px-5 py-3 text-sm transition-all duration-200"
+        >
+          Read the Story
+        </a>
       </div>
     </div>
   );

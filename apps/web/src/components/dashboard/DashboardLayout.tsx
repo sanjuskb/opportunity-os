@@ -92,11 +92,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const activeLangObj = APP_CONFIG.SUPPORTED_LANGUAGES.find((l) => l.code === activeLanguage);
 
   return (
-    <div className="min-h-screen bg-[#090D16] text-white flex">
+    <div className="min-h-screen bg-[#080B10] text-slate-100 flex">
       {/* 1. Desktop Left Sidebar (Fixed 260px) */}
-      <aside className="hidden lg:flex flex-col w-64 border-r border-slate-800/80 bg-[#070B14] fixed inset-y-0 left-0 z-30">
+      <aside className="hidden lg:flex flex-col w-64 border-r border-white/[0.06] bg-[#05070A] fixed inset-y-0 left-0 z-30">
         {/* Brand Header */}
-        <div className="h-16 flex items-center px-6 border-b border-slate-800/80 justify-between">
+        <div className="h-16 flex items-center px-6 border-b border-white/[0.06] justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600/20 border border-indigo-500/40">
               <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
@@ -181,13 +181,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
 
         {/* User Mini Profile Card */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950/40">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-900/60 border border-slate-800/80">
-            <div className="h-8 w-8 rounded-full bg-cyan-600/30 border border-cyan-500/50 flex items-center justify-center text-cyan-300 font-bold text-xs">
+        <div className="p-3 border-t border-white/[0.06] bg-[#05070A]">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+            <div className="h-8 w-8 rounded-full bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-xs">
               {studentProfile.fullName.charAt(0)}
             </div>
             <div className="truncate flex-1">
-              <div className="text-xs font-bold text-white truncate">{studentProfile.fullName}</div>
+              <div className="text-xs font-semibold text-white truncate">{studentProfile.fullName}</div>
               <div className="text-[10px] text-slate-400 truncate">{studentProfile.collegeName}</div>
             </div>
             <Link href="/" className="text-slate-500 hover:text-slate-300" title="Exit to Public Site">
@@ -198,9 +198,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* 2. Main Workspace Layout Area (offset 260px on desktop) */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen bg-[#080B10]">
         {/* Top Header Bar (Sticky, 64px) */}
-        <header className="sticky top-0 z-20 h-16 w-full border-b border-slate-800/80 bg-[#090D16]/90 backdrop-blur-md flex items-center justify-between px-4 sm:px-6">
+        <header className="sticky top-0 z-20 h-16 w-full border-b border-white/[0.06] bg-[#080B10]/85 backdrop-blur-xl flex items-center justify-between px-4 sm:px-6">
           {/* Mobile hamburger & brand */}
           <div className="flex items-center gap-3 lg:hidden">
             <button
