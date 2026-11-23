@@ -1,0 +1,38 @@
+# ML Subsystem .gitignore
+
+# Python Bytecode & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+
+# Large Datasets
+datasets/raw/*
+datasets/processed/*
+!datasets/README.md
+
+# Model Checkpoints & Binaries
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+*.onnx.data
+checkpoints/
+models_exported/
+
+# Experiment Logs & Tracking
+mlruns/
+.dvc/cache/
+wandb/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# OS and Secrets
+.env
+.env.local
+*.pem
+*.key

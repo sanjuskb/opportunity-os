@@ -10,14 +10,24 @@
 ## 1. Authentication & Session Lifecycle Contract
 
 ### Proposed Standard
-- **Transport:** Standard HTTP `Authorization: Bearer <JWT>` header on all protected REST endpoints and initial WebSocket upgrade requests.
+- **Transport:** Standard HTTP `Authorization: Bearer <JWT>` header on all protected REST endpoints.
 - **Provider:** Supabase Auth (GoTrue).
 - **Token Refresh:** Frontend manages silent refresh via Supabase JavaScript SDK before expiry.
 - **Session Expiration:** Standard 3600-second access token expiry. 401 Unauthorized responses trigger client-side re-authentication or token refresh.
 
+### WebSocket Authentication Hardening (Ticket-Based Handshake)
+Passing long-lived JWTs in URL query parameters (`?token=...`) exposes them to proxy server logs, reverse proxy caches, and browser history. To guarantee enterprise-grade security:
+1. **Ticket Request:** Prior to initiating a WebSocket connection, the client makes an authenticated HTTP request:
+   `POST /api/v1/voice/tickets` with `Authorization: Bearer <JWT>`.
+2. **Ephemeral Ticket Issuance:** The backend verifies the JWT and generates a single-use, cryptographically secure ticket UUID (stored in Redis or RAM with a strict **30-second TTL**).
+3. **Connection Handshake:** The client connects:
+   `wss://api.opportunityos.in/api/v1/voice/stream?ticket=<TICKET_UUID>`.
+4. **Immediate Invalidation:** The backend validates and immediately destroys the ticket upon successful connection upgrade. If intercepted or logged, it cannot be reused.
+5. **Subprotocol Fallback:** As an alternative, clients supporting WebSocket subprotocols may pass `new WebSocket(url, ['Bearer', token])`, keeping the token inside the HTTP `Sec-WebSocket-Protocol` header.
+
 ### Questions for Joint Sign-Off
 1. *For Ramaraju:* Does FastAPI authenticate tokens directly using `SUPABASE_JWT_SECRET` (HS256) locally, or via Supabase Auth Admin REST API? *(Recommended: Local verification using python-jose or PyJWT for $< 2\text{ms}$ latency).*
-2. *For Sanju:* Does the voice WebSocket connection pass the JWT as a query param (`?token=...`) during the WS handshake, or in a subprotocol header?
+2. *For Ramaraju:* Confirm whether the ephemeral ticket handshake (`POST /api/v1/voice/tickets`) is approved for implementation in Phase 6.
 
 ---
 
@@ -226,16 +236,40 @@ export interface NotificationEventDTO {
 
 ## 9. Shared TypeScript & Python Type Mapping Matrix
 
-| Domain Concept | TypeScript (`@opportunity-os/shared-types`) | Python (`apps/api/app/schemas/`) |
-| :--- | :--- | :--- |
-| **Language Code** | `IndianLanguage = 'en' \| 'hi' \| ...` | `enum LanguageCode(str, Enum)` |
-| **Opportunity** | `interface Opportunity` | `class OpportunityResponse(BaseModel)` |
-| **Eligibility** | `interface EligibilityResult` | `class EligibilityCheckResponse(BaseModel)` |
-| **Approval** | `interface ApprovalRequest` | `class ApprovalRequestDTO(BaseModel)` |
-| **Student** | `interface StudentProfile` | `class StudentProfileDTO(BaseModel)` |
+| Domain Concept | TypeScript (`@opportunity-os/shared-types`) | Python (`apps/api/app/schemas/`) | Serialization Standard |
+| :--- | :--- | :--- | :--- |
+| **Language Code** | `IndianLanguage = 'en' \| 'hi' \| ...` | `enum LanguageCode(str, Enum)` | Exact lowercase string |
+| **Opportunity** | `interface Opportunity` | `class OpportunityResponse(BaseModel)` | `alias_generator = to_camel`, `populate_by_name = True` |
+| **Eligibility** | `interface EligibilityResult` | `class EligibilityCheckResponse(BaseModel)` | `alias_generator = to_camel` |
+| **Approval** | `interface ApprovalRequest` | `class ApprovalRequestDTO(BaseModel)` | `alias_generator = to_camel` |
+| **Student** | `interface StudentProfile` | `class StudentProfileDTO(BaseModel)` | `alias_generator = to_camel` |
+
+### Serialization Convention
+- **Backend Convention:** Python internal code uses idiomatic `snake_case` (e.g. `source_url`, `stipend_or_salary`, `eligible_batches`).
+- **Pydantic Configuration:** All response schemas define `model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)`.
+- **Wire Representation:** JSON over HTTP REST and WebSocket always delivers `camelCase` keys (e.g. `sourceUrl`, `stipendOrSalary`), eliminating manual field renaming in frontend React code.
 
 ---
 
 ## 10. File Upload & Download Contract
 - **Resume Uploads:** Accepted formats: `.pdf`, `.docx`. Maximum file size: `5MB`. Sent as `multipart/form-data` to `/resumes/upload`.
 - **Rendered PDF Downloads:** Generated as stream or pre-signed URL with `Content-Type: application/pdf` and `Content-Disposition: inline; filename="OpportunityOS_Resume.pdf"`.
+
+---
+
+## 11. External Integrations & Model Context Protocol (MCP) Governance
+
+To accelerate development without compromising security, Antigravity and the engineering team utilize standardized MCP servers:
+
+| MCP Server | Integration Purpose | Scope & Access Control | Credential Isolation |
+| :--- | :--- | :--- | :--- |
+| **GitHub MCP** | Repository administration, PR management, issue tracking | Read/Write to `sanjuskb/opportunity-os` | Handled via authenticated GitHub CLI (`gh`) |
+| **Supabase MCP** | Database schema exploration, migration checks, RLS validation | Development database instance | `SUPABASE_ACCESS_TOKEN` stored in local tooling |
+| **Context7 MCP** | Codebase indexation, semantic search, cross-file tracking | Read-only workspace inspection | Local AST indexing |
+| **Playwright MCP** | Browser automation & E2E verification | Local headless execution | Sandbox environment |
+| **Google Developer Knowledge MCP** | Gemini Live WebSocket API docs, Web Audio references | Read-only documentation lookups | Official public documentation |
+| **Sentry / Vercel (Optional)** | Deployment status & telemetry error monitoring | Monitoring read access | CI/CD environment secrets |
+
+### Secret Isolation Rule
+> [!CAUTION]
+> Production API keys for external services (**Olostep**, **Crustdata**, **Gemini Live**, and **Supabase Service Role**) are owned exclusively by Ramaraju and reside strictly inside backend `.env.secrets` on deployment infrastructure. They are never committed to Git or exposed via frontend bundles.

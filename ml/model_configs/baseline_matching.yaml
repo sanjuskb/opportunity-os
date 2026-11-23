@@ -1,0 +1,26 @@
+# Baseline Semantic Matching Configuration
+experiment_name: "baseline_biencoder_matching"
+seed: 42
+
+model:
+  name: "sentence-transformers/all-MiniLM-L6-v2"
+  embedding_dimension: 384
+  max_sequence_length: 256
+  pooling: "mean"
+
+training:
+  batch_size: 32
+  epochs: 3
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.1
+  loss: "MultipleNegativesRankingLoss"
+  evaluation_steps: 100
+
+data:
+  train_split_path: "datasets/processed/train_pairs.json"
+  val_split_path: "datasets/processed/val_pairs.json"
+  test_split_path: "datasets/processed/test_pairs.json"
+
+metrics:
+  target_ndcg_at_10: 0.85
+  target_mrr_at_10: 0.80
