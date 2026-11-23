@@ -118,8 +118,10 @@ cd apps/api && uv run uvicorn app.main:app --reload
 
 | Developer | Core Ownership | Personal Branch |
 | :--- | :--- | :--- |
-| **Sanju** | Frontend Lead, UX Architecture, Three.js/Motion, Voice Client, Career Passport UI | `sanju` |
-| **Ramaraju** | Backend Lead, FastAPI, LangGraph, Olostep/Crustdata, ML Matching, Browser Automation | `ramaraju` |
+| **Sanju** | Frontend Lead, UX Architecture, Three.js/Motion, Voice Client, Career Passport UI, **All ML Model Selection, Training Experiments & Evaluation** | `sanju` |
+| **Ramaraju** | Backend Lead, FastAPI, Database & Migrations, LangGraph State Machines, Olostep/Crustdata Integrations, Browser Automation | `ramaraju` |
+| **Shared** | Cross-Team Contracts, End-to-End Integration, Security & Deployment Coordination | `develop` / `main` |
+| **Antigravity** | Continuous Architecture QA, Test Planning & Repository Health | `antigravity/*` |
 
 See [Team Responsibilities](docs/team/team-responsibilities.md) and [Contributing Guide](CONTRIBUTING.md) for full details.
 

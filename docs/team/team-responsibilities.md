@@ -4,8 +4,10 @@
 
 | Developer | Primary Role | Branch | Core Subsystems Owned |
 | :--- | :--- | :--- | :--- |
-| **Sanju** | Frontend Lead & UX Architect | `sanju` | Next.js 15+, TypeScript architecture, Tailwind & shadcn/ui, Three.js / React Three Fiber Voice Orb, Career Passport UI, Resume Studio, Application Dashboard. |
-| **Ramaraju** | Backend Lead & AI / Data Engineer | `ramaraju` | FastAPI REST & WebSockets, PostgreSQL & pgvector schema, LangGraph agent state machines, Gemini Live integration, Olostep & Crustdata integrations, Playwright automation. |
+| **Sanju** | Frontend Lead, UX Architect & Machine Learning Lead | `sanju` | Next.js 15+ frontend, TypeScript architecture, Tailwind & shadcn/ui, Three.js / React Three Fiber Voice Orb, Career Passport UI, Resume Studio, Application Dashboard. **All Machine Learning (ML)** model selection, embeddings evaluation, training experiments under `experiments/`, ranking and offline evaluation. |
+| **Ramaraju** | Backend Lead & Agent / Automation Engineer | `ramaraju` | Entire FastAPI REST & WebSocket backend gateway, PostgreSQL & pgvector schema architecture and migrations, LangGraph agent state machines, Gemini Live backend proxy, Olostep & Crustdata integrations, Playwright browser automation execution. |
+| **Shared** | Architecture, Contracts & Deployment | `develop` / `main` | System architecture, cross-team contracts, end-to-end integration, security decisions, deployment coordination, PR reviews. |
+| **Antigravity** | Architecture QA & Engineering Readiness | `antigravity/*` | Repository QA, architecture consistency audits, documentation quality, test planning, developer tooling, CI/CD hardening. |
 
 ---
 
@@ -15,6 +17,7 @@
 | :--- | :---: | :---: | :--- |
 | **Frontend Web Architecture (`apps/web`)** | **A / R** | C | Ramaraju reviews API integration |
 | **Design Tokens & UI (`packages/design-tokens`)** | **A / R** | I | Sanju autonomous |
+| **Machine Learning & Models (`experiments/`, `docs/machine-learning`)** | **A / R** | C | Ramaraju reviews inference API contracts |
 | **Backend REST & WS Core (`apps/api`)** | C | **A / R** | Sanju reviews endpoint contracts |
 | **LangGraph Agent Workflows** | C | **A / R** | Both test user flow |
 | **Database Migrations (`supabase/migrations`)** | C | **A / R** | Both must approve before merge |
@@ -34,13 +37,13 @@ To prevent Git merge conflicts and enable seamless concurrent development:
 
 ---
 
-## 4. Proposed Sprint 1 Milestones
+## 4. Proposed Sprint 1 Milestones (Corrected Allocation)
 
 - **Sprint 1A (Days 1–2):** 
-  - Sanju: Setup Next.js App shell, Navigation, 3D Voice Orb Canvas, Mock Opportunity Cards.
-  - Ramaraju: Setup FastAPI database connection, run initial Supabase migration, implement Olostep search adapter.
+  - Sanju: Setup Next.js App shell, Navigation, 3D Voice Orb Canvas, Mock Opportunity Cards, Baseline ML embedding model evaluation notebook under `experiments/model-training/`.
+  - Ramaraju: Wire FastAPI database connection, run initial Supabase migration, implement Olostep search adapter (`POST /v1/searches`).
 - **Sprint 1B (Days 3–4):**
-  - Sanju: Integrate live voice streaming over WebSocket to FastAPI Voice Gateway.
+  - Sanju: Integrate live voice streaming over WebSocket to FastAPI Voice Gateway; evaluate speech recognition WER on Indic sample audio.
   - Ramaraju: Build Gemini Live proxy and LangGraph Opportunity Discovery workflow.
 - **Sprint 1C (Days 5–6):**
   - Joint: End-to-end integration of Opportunity Discovery $\rightarrow$ Eligibility Check $\rightarrow$ Approval Gate $\rightarrow$ Playwright Dry-Run.
