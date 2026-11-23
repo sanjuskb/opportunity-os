@@ -1,51 +1,43 @@
 import React from 'react';
+import { LandingNavbar } from '../components/landing/navigation/LandingNavbar';
+import { HeroSection } from '../components/landing/hero/HeroSection';
+import { AgentWorkforceSection } from '../components/landing/sections/AgentWorkforceSection';
+import { VoiceAISection } from '../components/landing/sections/VoiceAISection';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-3xl space-y-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-          <span>Homingo Hackathon Edition 01</span>
-          <span>•</span>
-          <span>Voice-First AI Platform</span>
+    <div className="min-h-screen bg-[#090D16] text-white flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* 1. Responsive Glass Navigation */}
+      <LandingNavbar />
+
+      {/* 2. Main Hero Section (Left 38% Copy/RoleSwitcher + Right 62% R3F Ecosystem Campus) */}
+      <main className="flex-1">
+        <HeroSection />
+
+        {/* 3. Mid-Page Autonomous AI Agent Workforce Section */}
+        <AgentWorkforceSection />
+
+        {/* 4. Lower-Page Multilingual Voice AI Intelligence Section */}
+        <VoiceAISection />
+      </main>
+
+      {/* 5. Production Landing Footer */}
+      <footer className="border-t border-slate-800/80 bg-[#070A11] py-8 px-4 sm:px-6 lg:px-8 text-xs text-slate-500">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-slate-300">Opportunity OS</span>
+            <span>•</span>
+            <span>Homingo Hackathon Edition 01 (LLM Applications)</span>
+          </div>
+
+          <div className="text-center sm:text-right text-slate-500 text-[11px]">
+            <span>Concept 4 (Neural Transit Atlas) + Concept 1 (Architectural Maquette)</span>
+            <span className="mx-1.5">•</span>
+            <span>Apache-2.0 License</span>
+          </div>
         </div>
-
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-cyan-400 to-sky-300 bg-clip-text text-transparent">
-          {APP_CONFIG.APP_NAME}
-        </h1>
-
-        <p className="text-lg md:text-xl text-slate-400 leading-relaxed">
-          AI-powered career &amp; internship intelligence platform for Indian students.
-          Explore opportunities, verify eligibility, craft ATS resumes, and execute workflows in 7 native languages.
-        </p>
-
-        <div className="flex flex-wrap justify-center gap-2 pt-2">
-          {APP_CONFIG.SUPPORTED_LANGUAGES.map((lang) => (
-            <span
-              key={lang.code}
-              className="px-2.5 py-1 text-xs rounded-md bg-slate-800/80 border border-slate-700 text-slate-300"
-            >
-              {lang.native} ({lang.name})
-            </span>
-          ))}
-        </div>
-
-        <div className="pt-4 flex items-center justify-center gap-4">
-          <a
-            href="/opportunities"
-            className="px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-medium transition"
-          >
-            Explore Opportunities
-          </a>
-          <a
-            href="/career-passport"
-            className="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium border border-slate-700 transition"
-          >
-            Career Passport
-          </a>
-        </div>
-      </div>
-    </main>
+      </footer>
+    </div>
   );
 }
