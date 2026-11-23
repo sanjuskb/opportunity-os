@@ -1,3 +1,5 @@
+name: opportunity-os
+
 services:
   postgres:
     image: pgvector/pgvector:pg16

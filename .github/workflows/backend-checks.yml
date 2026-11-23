@@ -24,9 +24,9 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Sync Backend Dependencies
+      - name: Sync Backend Dependencies (including Dev extra)
         working-directory: apps/api
-        run: uv sync
+        run: uv sync --extra dev
 
       - name: Run Ruff Lint Check
         working-directory: apps/api
