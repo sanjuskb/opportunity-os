@@ -1,0 +1,15 @@
+{
+  "name": "@opportunity-os/shared-config",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"@opportunity-os/shared-config lint ok\"",
+    "test": "echo \"@opportunity-os/shared-config tests ok\""
+  }
+}

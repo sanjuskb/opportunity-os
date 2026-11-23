@@ -1,0 +1,35 @@
+name: "Feature Request"
+description: "Suggest a feature or capability for Opportunity OS"
+title: "[FEAT]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: "Propose new features or improvements for Opportunity OS."
+  - type: textarea
+    id: problem
+    attributes:
+      label: "User Need / Problem Statement"
+      description: "What problem does this feature solve for students?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "Proposed Solution"
+      description: "Detailed architectural or user experience proposal."
+    validations:
+      required: true
+  - type: dropdown
+    id: target_area
+    attributes:
+      label: "Target Component"
+      options:
+        - "Multilingual Voice Engine"
+        - "Opportunity Discovery & Scraping"
+        - "Deterministic Eligibility & Matching"
+        - "Career Passport & Resume Builder"
+        - "Playwright Browser Execution"
+        - "Frontend 3D / Dashboard UX"
+    validations:
+      required: true

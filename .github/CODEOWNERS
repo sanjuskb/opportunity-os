@@ -1,0 +1,18 @@
+# Opportunity OS - Code Owners
+# Defines explicit code review ownership across frontend and backend leads.
+
+* @sanjuskb @ramaraju
+
+# Frontend & UI Architecture
+/apps/web/ @sanjuskb
+/packages/design-tokens/ @sanjuskb
+
+# Backend, Agents & Data Pipeline
+/apps/api/ @ramaraju
+/supabase/ @ramaraju
+
+# Shared Contracts & CI/CD
+/packages/shared-types/ @sanjuskb @ramaraju
+/packages/api-client/ @sanjuskb @ramaraju
+/.github/workflows/ @sanjuskb @ramaraju
+/docs/ @sanjuskb @ramaraju
