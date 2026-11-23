@@ -30,25 +30,30 @@ export function LandingNavbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
           <Link href="/opportunities" className="hover:text-white transition">
             Opportunities
           </Link>
-          <Link href="/career-passport" className="hover:text-white transition">
-            Career Passport
+          <Link href="/how-it-works" className="hover:text-white transition">
+            How It Works
           </Link>
-          <a href="#ecosystem-campus" className="hover:text-white transition flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Campus Ecosystem
-          </a>
-          <a href="#voice-ai" className="hover:text-white transition flex items-center gap-1.5">
+          <Link href="/features" className="hover:text-white transition">
+            Features
+          </Link>
+          <Link href="/voice-ai" className="hover:text-white transition flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-            Voice Intelligence
-          </a>
+            Voice AI
+          </Link>
+          <Link href="/career-passport" className="hover:text-white transition">
+            Passport
+          </Link>
         </nav>
 
-        {/* Right Section: Language Selector + CTA */}
-        <div className="hidden md:flex items-center gap-3.5">
+        {/* Right Section: Language Selector + Sign In + CTA */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link href="/login" className="text-xs font-semibold text-slate-300 hover:text-white px-2 py-1">
+            Sign In
+          </Link>
           {/* Language Selector Dropdown */}
           <div className="relative">
             <button
