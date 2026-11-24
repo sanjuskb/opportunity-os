@@ -1,0 +1,163 @@
+import type { Opportunity, EligibilityResult } from '@opportunity-os/shared-types';
+
+export const MOCK_OPPORTUNITIES: Opportunity[] = [
+  {
+    id: 'opp-ai4bharat-01',
+    title: 'Indic Speech & NLP Research Intern',
+    organization: 'AI4Bharat (IIT Madras)',
+    location: 'Chennai / Hybrid',
+    type: 'internship',
+    description:
+      'Research cutting-edge speech recognition, acoustic modeling, and Indic LLM fine-tuning for regional Indian languages (Hindi, Telugu, Tamil, Bengali). Work with leading AI researchers on open-source multilingual datasets.',
+    stipendOrSalary: '₹45,000 / month',
+    deadline: '2026-12-15',
+    sourceUrl: 'https://ai4bharat.iitm.ac.in/careers',
+    sourceProvider: 'direct_portal',
+    retrievalTimestamp: '2026-11-23T10:00:00Z',
+    requiredSkills: ['Python', 'PyTorch', 'Transformers', 'ASR', 'Hugging Face', 'IndicNLP'],
+    eligibleBatches: [2025, 2026, 2027],
+    eligibleDegrees: ['B.Tech', 'M.Tech', 'Dual Degree', 'Ph.D'],
+    minCgpa: 8.0,
+  },
+  {
+    id: 'opp-google-blr-02',
+    title: 'Software Engineering Intern — AI Systems',
+    organization: 'Google India',
+    location: 'Bangalore, Karnataka',
+    type: 'internship',
+    description:
+      'Develop distributed systems and high-throughput low-latency inference pipelines for Gemini multimodal features. Collaborate with Google Research India on localized AI products.',
+    stipendOrSalary: '₹1,20,000 / month',
+    deadline: '2026-12-30',
+    sourceUrl: 'https://careers.google.com/jobs/results',
+    sourceProvider: 'crustdata',
+    retrievalTimestamp: '2026-11-23T12:00:00Z',
+    requiredSkills: ['C++', 'Python', 'Distributed Systems', 'Algorithms', 'System Design'],
+    eligibleBatches: [2026, 2027],
+    eligibleDegrees: ['B.Tech', 'M.Tech', 'MCA'],
+    minCgpa: 8.5,
+  },
+  {
+    id: 'opp-zerodha-03',
+    title: 'Full Stack & Voice Interface Fellow',
+    organization: 'Zerodha Tech',
+    location: 'Bangalore / Remote',
+    type: 'fellowship',
+    description:
+      'Build ultra-fast, accessible trading web applications and voice-assisted order workflows using Next.js, Go, and WebSockets. Emphasis on minimalist UX and microsecond latency.',
+    stipendOrSalary: '₹60,000 / month',
+    deadline: '2026-12-20',
+    sourceUrl: 'https://zerodha.tech/careers',
+    sourceProvider: 'olostep',
+    retrievalTimestamp: '2026-11-23T14:30:00Z',
+    requiredSkills: ['TypeScript', 'React', 'Go', 'WebSockets', 'Tailwind CSS', 'PostgreSQL'],
+    eligibleBatches: [2025, 2026],
+    eligibleDegrees: ['B.Tech', 'B.Sc Computer Science', 'MCA'],
+    minCgpa: 7.0,
+  },
+  {
+    id: 'opp-iisc-04',
+    title: 'Autonomous Robotics & Vision Fellow',
+    organization: 'Indian Institute of Science (IISc)',
+    location: 'Bangalore, Karnataka',
+    type: 'research_fellowship' as any,
+    description:
+      'Conduct funded research on edge-AI vision models for autonomous aerial drones and agricultural robotics in Indian rural conditions.',
+    stipendOrSalary: '₹35,000 / month + Contingency',
+    deadline: '2027-01-10',
+    sourceUrl: 'https://iisc.ac.in/fellowships',
+    sourceProvider: 'direct_portal',
+    retrievalTimestamp: '2026-11-23T08:00:00Z',
+    requiredSkills: ['Computer Vision', 'PyTorch', 'ROS', 'C++', 'OpenCV', 'Embedded Systems'],
+    eligibleBatches: [2025, 2026],
+    eligibleDegrees: ['B.Tech', 'M.Tech'],
+    minCgpa: 8.0,
+  },
+  {
+    id: 'opp-postman-05',
+    title: 'API Platform Engineering Intern',
+    organization: 'Postman',
+    location: 'Bangalore / Hybrid',
+    type: 'internship',
+    description:
+      'Work on global API lifecycle management tools, microservices architectures, and OpenAPI code generators. Scale cloud infrastructure serving 30M+ developers.',
+    stipendOrSalary: '₹80,000 / month',
+    deadline: '2026-12-25',
+    sourceUrl: 'https://postman.com/careers',
+    sourceProvider: 'crustdata',
+    retrievalTimestamp: '2026-11-23T11:15:00Z',
+    requiredSkills: ['Node.js', 'TypeScript', 'GraphQL', 'Docker', 'Kubernetes', 'AWS'],
+    eligibleBatches: [2026, 2027],
+    eligibleDegrees: ['B.Tech', 'Dual Degree'],
+    minCgpa: 7.5,
+  },
+  {
+    id: 'opp-drdo-06',
+    title: 'Cybersecurity & Defense AI Internship',
+    organization: 'DRDO (Centre for AI & Robotics)',
+    location: 'Hyderabad, Telangana',
+    type: 'government_scheme',
+    description:
+      'National security intelligence internship investigating zero-trust network architectures, binary reverse engineering, and defensive AI models against autonomous cyber threats.',
+    stipendOrSalary: '₹25,000 / month',
+    deadline: '2027-01-15',
+    sourceUrl: 'https://drdo.gov.in/careers',
+    sourceProvider: 'manual',
+    retrievalTimestamp: '2026-11-23T09:00:00Z',
+    requiredSkills: ['Network Security', 'Cryptography', 'Python', 'Linux Internals', 'Wireshark'],
+    eligibleBatches: [2025, 2026],
+    eligibleDegrees: ['B.Tech CSE/IT/ECE'],
+    minCgpa: 7.5,
+  },
+];
+
+export const MOCK_ELIGIBILITY_CACHE: Record<string, EligibilityResult> = {
+  'opp-ai4bharat-01': {
+    opportunityId: 'opp-ai4bharat-01',
+    isEligible: true,
+    score: 94,
+    deterministicChecks: {
+      batchMatched: true,
+      degreeMatched: true,
+      cgpaMatched: true,
+    },
+    skillOverlap: {
+      matchedSkills: ['Python', 'PyTorch', 'Transformers', 'Hugging Face'],
+      missingSkills: ['ASR', 'IndicNLP'],
+    },
+    explanation:
+      'Student profile matches graduation year (2026), CGPA (8.8 >= 8.0), and possesses 4 of 6 required ML skills. Strong match for Indic speech research.',
+  },
+  'opp-google-blr-02': {
+    opportunityId: 'opp-google-blr-02',
+    isEligible: true,
+    score: 91,
+    deterministicChecks: {
+      batchMatched: true,
+      degreeMatched: true,
+      cgpaMatched: true,
+    },
+    skillOverlap: {
+      matchedSkills: ['Python', 'Algorithms', 'System Design'],
+      missingSkills: ['C++', 'Distributed Systems'],
+    },
+    explanation:
+      'Graduation batch 2026 matches Google internship cohort. High competitive score and verified algorithm projects on Career Passport.',
+  },
+  'opp-zerodha-03': {
+    opportunityId: 'opp-zerodha-03',
+    isEligible: true,
+    score: 96,
+    deterministicChecks: {
+      batchMatched: true,
+      degreeMatched: true,
+      cgpaMatched: true,
+    },
+    skillOverlap: {
+      matchedSkills: ['TypeScript', 'React', 'Tailwind CSS', 'WebSockets'],
+      missingSkills: ['Go', 'PostgreSQL'],
+    },
+    explanation:
+      'Exceptional alignment with frontend engineering and real-time WebSocket client architecture.',
+  },
+};
