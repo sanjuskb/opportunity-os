@@ -81,3 +81,27 @@
      - `down1_revealed`: `[true, true]`
      - `top_hidden`: `[false, false]`
      - `down2_replayed`: `[true, true]`
+
+
+---
+
+## 4. Hero Headline & Button Modernization + Retrofuturistic CTA Background (Follow-up)
+
+### 4.1 Root Cause & Implementation
+1. **Hero Intro Headline Recovery:**
+   - **Root Cause:** In `HeroCopy.tsx`, `useScrollReveal` was called without attaching a DOM `ref`, leaving `isRevealed` stuck at `false`. Furthermore, `text-transparent bg-clip-text` on the parent span made inner split character spans completely invisible.
+   - **Fix:** Switched above-the-fold entrance to an immediate 80ms mount trigger (`isRevealed = true`), rendering the full three-line editorial H1:
+     - Line 1: `The Connected`
+     - Line 2: `Career Intelligence` (highlighted in italic `text-cyan-300`)
+     - Line 3: `Operating System.`
+2. **Eliminated "Ash Color" & Jarring High Hover on Primary Buttons:**
+   - **Root Cause:** Stark white buttons (`bg-white text-slate-950`) inverted poorly into muddy ash gray with a white hover ring under dark contrast modes, and `card-hover-lift` executed an aggressive 6px jump (`translateY(-6px)`).
+   - **Fix:** Replaced with a luminous electric cyan gradient (`bg-gradient-to-r from-cyan-400 via-cyan-300 to-sky-400 text-slate-950 font-semibold`) with soft cyan glow (`shadow-[0_0_24px_rgba(6,182,212,0.35)]`) and a subtle 2px micro-lift (`hover:-translate-y-0.5 active:translate-y-0`).
+   - Applied symmetrically to `"Enter Workspace"` (Hero) and `"Launch Operating System"` (Final CTA).
+3. **Retrofuturistic Liquid Glass & Neural Particle Canvas for Final CTA:**
+   - Created [`FinalCTABackground.tsx`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/components/landing/FinalCTABackground.tsx) featuring:
+     - 3D converging perspective horizon cyber grid (SVG).
+     - Concentric quantum horizon ellipses.
+     - Drifting luminous particles with ambient pulsation.
+     - Dual-layer liquid glass aurora glow fields (cyan and violet caustics).
+   - Headline `"Enter the Connected Operating"` with `"System."` in italic cyan now stands out over the horizon.

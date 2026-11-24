@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { SplitTextReveal, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal } from '../../ui/ScrollReveal';
 
 interface HeroCopyProps {
   activeRole: string;
@@ -11,7 +11,15 @@ interface HeroCopyProps {
 }
 
 export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
-  const { isRevealed } = useScrollReveal(0.05, true);
+  // Above-the-fold entrance trigger: triggers on mount with graceful entrance
+  const [isRevealed, setIsRevealed] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsRevealed(true);
+    }, 80);
+    return () => clearTimeout(timer);
+  }, []);
 
   const ROLES = [
     { id: 'students', label: 'Students', color: 'hover:text-cyan-400', active: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/10' },
@@ -27,31 +35,35 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
         <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
         <span className="text-slate-300 font-medium">Opportunity OS</span>
         <span className="text-slate-600">•</span>
-        <span className="text-slate-400">Autonomous Career Intelligence</span>
+        <span className="text-cyan-400 font-medium">Autonomous Career Intelligence</span>
       </div>
 
       {/* Main Editorial Headline with Character Reveal (Protected against mid-word break) */}
       <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.08]">
-        <SplitTextReveal
-          text="The Connected "
-          delayOffsetMs={40}
-          charDelayMs={20}
-          isRevealed={isRevealed}
-        />
-        <span className="italic font-serif text-slate-200">
+        <span className="block">
           <SplitTextReveal
-            text="Career Intelligence "
-            delayOffsetMs={280}
-            charDelayMs={20}
+            text="The Connected"
+            delayOffsetMs={40}
+            charDelayMs={18}
             isRevealed={isRevealed}
           />
         </span>
-        <SplitTextReveal
-          text="Operating System."
-          delayOffsetMs={620}
-          charDelayMs={20}
-          isRevealed={isRevealed}
-        />
+        <span className="block italic font-serif text-cyan-300">
+          <SplitTextReveal
+            text="Career Intelligence"
+            delayOffsetMs={240}
+            charDelayMs={18}
+            isRevealed={isRevealed}
+          />
+        </span>
+        <span className="block">
+          <SplitTextReveal
+            text="Operating System."
+            delayOffsetMs={520}
+            charDelayMs={18}
+            isRevealed={isRevealed}
+          />
+        </span>
       </h1>
 
       {/* Supporting Paragraph */}
@@ -81,19 +93,19 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
         </div>
       </div>
 
-      {/* Primary & Secondary Actions with Micro Hover Lift */}
+      {/* Primary & Secondary Actions with Refined Micro-Glow and Gentle Hover */}
       <div className="flex flex-wrap items-center gap-4 pt-1">
         <Link
           href="/overview"
-          className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-950 font-semibold px-6 py-3 text-sm hover:bg-slate-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-200 card-hover-lift group"
+          className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-cyan-300 to-sky-400 text-slate-950 font-semibold px-6 py-3 text-sm shadow-[0_0_24px_rgba(6,182,212,0.35)] hover:shadow-[0_0_35px_rgba(6,182,212,0.55)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 group"
         >
           <span>Enter Workspace</span>
-          <ArrowRight className="h-4 w-4 text-slate-700 group-hover:translate-x-0.5 transition" />
+          <ArrowRight className="h-4 w-4 text-slate-950 group-hover:translate-x-1 transition-transform" />
         </Link>
 
         <a
           href="#the-problem"
-          className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-slate-300 font-medium px-5 py-3 text-sm transition-all duration-200 card-hover-lift"
+          className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 border border-white/[0.08] text-slate-200 font-medium px-5 py-3 text-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
         >
           Explore Ecosystem
         </a>
