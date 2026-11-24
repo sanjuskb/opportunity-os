@@ -39,7 +39,7 @@ export default function AgentControlCenterPage() {
                 className={`p-1.5 rounded hover:text-white transition ${
                   leftPanelOpen ? 'bg-cyan-500/20 text-cyan-300' : 'text-slate-500'
                 }`}
-                title={leftPanelOpen ? 'Collapse Event Stream' : 'Expand Event Stream'}
+                title={leftPanelOpen ? 'Collapse Monitoring Panel' : 'Expand Monitoring Panel'}
               >
                 {leftPanelOpen ? <PanelLeftClose className="h-3.5 w-3.5" /> : <PanelLeftOpen className="h-3.5 w-3.5" />}
               </button>
@@ -107,7 +107,7 @@ export default function AgentControlCenterPage() {
                 : 'border-transparent text-slate-400'
             }`}
           >
-            Events Stream
+            Monitoring
           </button>
           <button
             type="button"
@@ -129,7 +129,7 @@ export default function AgentControlCenterPage() {
           </div>
         ) : (
           <div className="flex-1 flex overflow-hidden relative min-h-0">
-            {/* Left Column: Event Stream & Telemetry Counters */}
+            {/* Left Column: Tabbed Monitoring Panel (Events, Telemetry, Workflows) */}
             <div
               className={`shrink-0 transition-all duration-300 z-10 h-full overflow-hidden ${
                 leftPanelOpen ? 'w-72 xl:w-80' : 'w-0 hidden'
@@ -147,10 +147,10 @@ export default function AgentControlCenterPage() {
               <AgentNetworkGraph className="flex-1 w-full h-full" />
             </div>
 
-            {/* Right Column: Agent Inspector & Phase 5 Integration Surface */}
+            {/* Right Column: Agent Inspector & Service Integrations */}
             <div
               className={`shrink-0 transition-all duration-300 z-10 h-full overflow-hidden ${
-                rightPanelOpen ? 'w-80 xl:w-88' : 'w-0 hidden'
+                rightPanelOpen ? 'w-72 xl:w-80' : 'w-0 hidden'
               } ${mobileTab === 'inspector' ? 'block w-full' : 'hidden lg:block'}`}
             >
               <AgentInspector />

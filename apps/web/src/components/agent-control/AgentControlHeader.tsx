@@ -32,30 +32,32 @@ export function AgentControlHeader() {
 
   return (
     <div className="border-b border-white/[0.08] bg-[#070A11] px-4 sm:px-6 py-3.5 space-y-3">
-      {/* Top Metadata Row: VORTEX Title, Telemetry Toggles & Operational Pill */}
+      {/* Top Row: Page Title, Operational Status & Telemetry Controls */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        {/* Brand & Mode */}
+        {/* Brand & Purpose */}
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
             <Radio className="h-4 w-4 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-sm font-bold tracking-wider text-white">
-                VORTEX <span className="text-cyan-400">/ COGNITION LAB</span>
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-950 text-cyan-300 border border-cyan-800/80">
-                Phase 5 Central Nervous System
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-base font-bold tracking-tight text-white font-sans">
+                Agent Control Center
+              </h1>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                Live System
               </span>
             </div>
-            <div className="text-[11px] font-mono text-slate-400">
-              Autonomous Agent Workforce Telemetry & Cyclic State Machine Observer
-            </div>
+            <p className="text-xs text-slate-400 mt-0.5 font-sans">
+              Monitor agent activity, communication and workflow execution.
+            </p>
           </div>
         </div>
 
-        {/* Right Telemetry Cadence Controls (HIGH, MED, LOW, OFF) */}
+        {/* Right Telemetry Controls (Cadence & Streaming State) */}
         <div className="flex items-center gap-2">
+          {/* Cadence Speed */}
           <div className="flex items-center p-0.5 rounded-lg border border-white/[0.08] bg-[#0B0F1A] text-xs font-mono">
             {(['high', 'med', 'low', 'paused'] as const).map((speed) => (
               <button
@@ -89,6 +91,16 @@ export function AgentControlHeader() {
               }`}
             />
             <span>{isStreaming ? 'STREAMING ACTIVE' : 'STREAM PAUSED'}</span>
+          </button>
+
+          {/* Reset Camera View */}
+          <button
+            type="button"
+            onClick={resetCamera}
+            className="p-1.5 rounded-lg border border-white/[0.08] bg-[#0B0F1A] hover:bg-white/[0.05] text-slate-400 hover:text-white transition"
+            title="Reset Network Graph Camera"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>

@@ -50,9 +50,9 @@ export function Phase5IntegrationSurface() {
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
         <div>
           <div className="text-xs font-bold text-white uppercase tracking-wider">
-            PHASE 5 INTEGRATION SURFACE
+            SERVICE INTEGRATIONS
           </div>
-          <div className="text-[10px] text-slate-500">REFRESH: {lastRefreshed}</div>
+          <div className="text-[10px] text-slate-500">Active Service Bridges • Updated {lastRefreshed}</div>
         </div>
 
         <button

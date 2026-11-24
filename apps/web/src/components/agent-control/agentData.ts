@@ -575,8 +575,31 @@ export const SAMPLE_WORKFLOW_PIPELINES: WorkflowPipeline[] = [
     trigger: 'Cron Ingestion Shuttle (Every 30 mins)',
     stages: [
       { name: 'Multi-Source Scrape', agentId: 'agent-discovery', agentCode: 'M03', status: 'completed', timestamp: '19:27:20' },
-      { name: 'BGE Vector Embeddings', agentId: 'agent-dedup-vector', agentCode: 'M04', status: 'active', timestamp: '19:27:40' },
+      { name: 'BGE Vector Embeddings', agentId: 'agent-dedup-vector', agentCode: 'M04', status: 'completed', timestamp: '19:27:40' },
+      { name: 'Deduplication & Delta Filter', agentId: 'agent-monitor', agentCode: 'M05', status: 'active', timestamp: '19:28:05' },
       { name: 'Candidate Match Pre-computation', agentId: 'agent-eligibility', agentCode: 'M06', status: 'pending' },
+    ],
+  },
+  {
+    id: 'wf-resume-tailor',
+    name: 'ATS Resume Tailoring & Fact Verification Flow',
+    trigger: 'Student selects specific job posting for resume optimization',
+    stages: [
+      { name: 'Target Role Keyword Extraction', agentId: 'agent-resume', agentCode: 'M08', status: 'completed', timestamp: '19:24:00' },
+      { name: 'Career Passport Fact Alignment', agentId: 'agent-nli-verifier', agentCode: 'M09', status: 'completed', timestamp: '19:24:45' },
+      { name: 'Deterministic Scoring & Synthesis', agentId: 'agent-resume', agentCode: 'M08', status: 'completed', timestamp: '19:25:20' },
+      { name: 'Operator Review Ready', agentId: 'agent-approval-gate', agentCode: 'M11', status: 'active', timestamp: '19:25:50' },
+    ],
+  },
+  {
+    id: 'wf-voice-mock',
+    name: 'Multilingual Mock Interview & Speech Analysis',
+    trigger: 'Student starts conversational interview session',
+    stages: [
+      { name: 'Voice WebSocket Handshake (16kHz PCM)', agentId: 'agent-voice-copilot', agentCode: 'M13', status: 'completed', timestamp: '19:20:10' },
+      { name: 'Adaptive Interview Prompting', agentId: 'agent-mock-interview', agentCode: 'M14', status: 'completed', timestamp: '19:21:00' },
+      { name: 'Real-time Answer Evaluation', agentId: 'agent-mock-interview', agentCode: 'M14', status: 'active', timestamp: '19:22:30' },
+      { name: 'Feedback Synthesis & Scoring', agentId: 'agent-supervisor', agentCode: 'M01', status: 'pending' },
     ],
   },
 ];

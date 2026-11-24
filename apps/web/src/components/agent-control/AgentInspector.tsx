@@ -35,8 +35,8 @@ export function AgentInspector() {
 
   return (
     <div className="flex flex-col h-full border-l border-white/[0.08] bg-[#07090F] overflow-hidden text-xs">
-      {/* 1. Inspector Navigation Tabs (VORTEX Style) */}
-      <div className="flex items-center border-b border-white/[0.08] bg-[#080C14] text-[11px] font-mono">
+      {/* 1. Inspector Navigation Tabs */}
+      <div className="flex items-center border-b border-white/[0.08] bg-[#080C14] text-xs font-mono">
         <button
           type="button"
           onClick={() => setActiveTab('inspector')}
@@ -46,7 +46,7 @@ export function AgentInspector() {
               : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
-          AGENT INSPECTOR
+          Agent Inspector
         </button>
         <button
           type="button"
@@ -57,7 +57,7 @@ export function AgentInspector() {
               : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
-          PHASE 5 SURFACE
+          Integrations
         </button>
       </div>
 

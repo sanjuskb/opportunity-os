@@ -32,6 +32,7 @@ interface AgentControlState {
   metrics: SystemTelemetryMetrics;
 
   // Actions
+  setActiveWorkflowId: (id: string) => void;
   selectAgent: (id: string | null) => void;
   hoverAgent: (id: string | null) => void;
   setCategoryFilter: (cat: AgentCategory | 'all') => void;
@@ -80,6 +81,8 @@ export const useAgentControlStore = create<AgentControlState>((set, get) => ({
     avgLatencyMs: 64,
     activeWorkflows: SAMPLE_WORKFLOW_PIPELINES.length,
   },
+
+  setActiveWorkflowId: (id) => set({ activeWorkflowId: id }),
 
   selectAgent: (id) => set({ selectedAgentId: id }),
 
