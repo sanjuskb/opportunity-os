@@ -3,10 +3,11 @@
 import React from 'react';
 import { Mic, Volume2, CheckCircle2 } from 'lucide-react';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function VoiceAISection() {
-  const { ref, isRevealed } = useScrollReveal(0.1);
+  const { ref, isRevealed } = useScrollReveal(0.1, true);
 
   return (
     <section
@@ -14,8 +15,8 @@ export function VoiceAISection() {
       ref={ref}
       className="py-28 lg:py-36 border-b border-white/[0.06] bg-[#080B10] relative overflow-hidden"
     >
-      {/* Massive Outlined Background Chapter Number */}
-      <BackgroundChapterNo number="07" className="top-12 right-6 lg:right-16" />
+      {/* Architectural Spatial Geometry Background */}
+      <SpatialBackground variant="harmonic" />
 
       {/* Background Violet Glow */}
       <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[600px] h-[350px] bg-violet-600/[0.06] blur-[150px] rounded-full pointer-events-none" />
@@ -23,10 +24,8 @@ export function VoiceAISection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row-reverse items-center justify-between gap-12 lg:gap-16">
           {/* Section Narrative */}
-          <ScrollRevealCard delayMs={50} className="w-full lg:w-1/2 space-y-6">
+          <ScrollRevealCard delayMs={50} replay={true} className="w-full lg:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-              <span className="text-slate-500">Chapter 07</span>
-              <span className="text-slate-600">/</span>
               <span className="text-violet-400 font-medium font-sans">Voice-First Architecture</span>
             </div>
 
@@ -59,7 +58,7 @@ export function VoiceAISection() {
           </ScrollRevealCard>
 
           {/* Visual Showcase Card */}
-          <ScrollRevealCard delayMs={200} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={200} replay={true} className="w-full lg:w-1/2">
             <div className="relative rounded-2xl border border-violet-500/30 bg-[#0C101A] p-8 shadow-[0_0_50px_rgba(139,92,246,0.08)] overflow-hidden space-y-6 card-hover-lift">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <div className="flex items-center gap-2">

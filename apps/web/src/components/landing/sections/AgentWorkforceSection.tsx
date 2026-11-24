@@ -3,10 +3,11 @@
 import React from 'react';
 import { Bot, FileText, ShieldCheck, Sparkles } from 'lucide-react';
 import { GenkubRobot } from '../GenkubRobot';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function AgentWorkforceSection() {
-  const { ref, isRevealed } = useScrollReveal(0.08);
+  const { ref, isRevealed } = useScrollReveal(0.08, true);
 
   return (
     <section
@@ -14,31 +15,39 @@ export function AgentWorkforceSection() {
       ref={ref}
       className="py-28 lg:py-36 border-b border-white/[0.06] bg-[#07090D] relative overflow-hidden"
     >
+      {/* Architectural Spatial Geometry Background */}
+      <SpatialBackground variant="transit" />
+
       {/* Background Subtle Cones */}
       <div className="absolute top-1/3 left-1/4 -translate-y-1/2 w-[600px] h-[350px] bg-violet-600/[0.05] blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 right-1/4 w-[500px] h-[300px] bg-cyan-500/[0.04] blur-[140px] rounded-full pointer-events-none" />
 
-      {/* Outlined Background Text */}
-      <BackgroundChapterNo number="AI" className="top-10 right-8 lg:right-20" />
-
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
           {/* Section Narrative & Telemetry */}
-          <ScrollRevealCard delayMs={50} className="w-full lg:w-1/2 space-y-6">
+          <ScrollRevealCard delayMs={50} replay={true} className="w-full lg:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
               <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-              <span className="text-slate-500">Autonomous Ecosystem</span>
-              <span className="text-slate-600">/</span>
-              <span className="text-violet-400 font-medium font-sans">AI Agent Workforce</span>
+              <span className="text-violet-400 font-medium font-sans">Autonomous Agent Workforce</span>
             </div>
 
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.12]">
-              <SplitTextReveal
-                text="AI agent shuttles continuously working for you."
-                delayOffsetMs={100}
-                charDelayMs={18}
-                isRevealed={isRevealed}
-              />
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.14]">
+              <span className="block">
+                <SplitTextReveal
+                  text="AI agent shuttles"
+                  delayOffsetMs={60}
+                  charDelayMs={18}
+                  isRevealed={isRevealed}
+                />
+              </span>
+              <span className="block text-slate-200">
+                <SplitTextReveal
+                  text="continuously working for you."
+                  delayOffsetMs={180}
+                  charDelayMs={18}
+                  isRevealed={isRevealed}
+                />
+              </span>
             </h2>
 
             <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
@@ -93,7 +102,7 @@ export function AgentWorkforceSection() {
           </ScrollRevealCard>
 
           {/* Interactive Genkub Greeting Robot Feature Showcase */}
-          <ScrollRevealCard delayMs={200} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={200} replay={true} className="w-full lg:w-1/2">
             <GenkubRobot />
           </ScrollRevealCard>
         </div>

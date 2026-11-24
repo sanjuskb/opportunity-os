@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { Users, Building2, GraduationCap, Briefcase } from 'lucide-react';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function UnifiedPlatformSection() {
-  const { ref, isRevealed } = useScrollReveal(0.1);
+  const { ref, isRevealed } = useScrollReveal(0.1, true);
 
   const CONDUITS = [
     {
@@ -51,23 +52,21 @@ export function UnifiedPlatformSection() {
       ref={ref}
       className="relative py-28 lg:py-36 border-b border-white/[0.06] bg-[#080B10] overflow-hidden"
     >
-      {/* Massive Outlined Background Chapter Number */}
-      <BackgroundChapterNo number="03" className="top-12 right-6 lg:right-16" />
+      {/* Architectural Spatial 3D Transit Background */}
+      <SpatialBackground variant="transit" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="max-w-2xl mb-16 sm:mb-20 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-            <span className="text-slate-500">Chapter 03</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-violet-400 font-medium font-sans">The Unified Platform</span>
+          <div className="text-xs font-mono uppercase tracking-wider text-violet-400 font-semibold">
+            Platform Architecture
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.12]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.14]">
             <SplitTextReveal
               text="Four interconnected hubs. One neural intelligence core."
-              delayOffsetMs={100}
-              charDelayMs={18}
+              delayOffsetMs={80}
+              charDelayMs={16}
               isRevealed={isRevealed}
             />
           </h2>
@@ -77,12 +76,12 @@ export function UnifiedPlatformSection() {
           </p>
         </div>
 
-        {/* 4 Conduits Architectural Grid with Staggered Cascading Delays */}
+        {/* 4 Conduits Architectural Grid with Replayable Cascading Delays */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {CONDUITS.map((c, idx) => {
             const Icon = c.icon;
             return (
-              <ScrollRevealCard key={c.title} delayMs={idx * 120}>
+              <ScrollRevealCard key={c.title} delayMs={idx * 100} replay={true}>
                 <div
                   className={`rounded-2xl border ${c.border} ${c.bg} p-6 space-y-4 card-hover-lift h-full`}
                 >

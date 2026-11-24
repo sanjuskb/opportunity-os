@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function StudentSection() {
-  const { ref, isRevealed } = useScrollReveal(0.1);
+  const { ref, isRevealed } = useScrollReveal(0.1, true);
 
   return (
     <section
@@ -14,25 +15,23 @@ export function StudentSection() {
       ref={ref}
       className="relative py-28 lg:py-36 border-b border-white/[0.06] bg-[#07090D] overflow-hidden"
     >
-      {/* Massive Outlined Background Chapter Number */}
-      <BackgroundChapterNo number="04" className="top-12 right-6 lg:right-16" />
+      {/* Architectural Spatial 3D Journey Background */}
+      <SpatialBackground variant="journey" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
           {/* Left Text */}
-          <ScrollRevealCard delayMs={50} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={50} replay={true} className="w-full lg:w-1/2">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-                <span className="text-slate-500">Chapter 04</span>
-                <span className="text-slate-600">/</span>
-                <span className="text-cyan-400 font-medium font-sans">For Students</span>
+              <div className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold">
+                For Students
               </div>
 
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.12]">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.14]">
                 <SplitTextReveal
                   text="Your verified Career Passport & ATS Resume Studio."
-                  delayOffsetMs={100}
-                  charDelayMs={18}
+                  delayOffsetMs={80}
+                  charDelayMs={16}
                   isRevealed={isRevealed}
                 />
               </h2>
@@ -69,7 +68,7 @@ export function StudentSection() {
           </ScrollRevealCard>
 
           {/* Right Tactile Card Demo */}
-          <ScrollRevealCard delayMs={200} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={180} replay={true} className="w-full lg:w-1/2">
             <div className="rounded-2xl border border-cyan-500/30 bg-[#0A101D] p-6 sm:p-8 space-y-6 shadow-[0_0_50px_rgba(6,182,212,0.08)] card-hover-lift">
               {/* Header */}
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">

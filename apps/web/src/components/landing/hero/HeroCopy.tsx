@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { SplitTextReveal, useScrollReveal } from '../../ui/ScrollReveal';
 
@@ -11,7 +11,7 @@ interface HeroCopyProps {
 }
 
 export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
-  const { isRevealed } = useScrollReveal(0.05);
+  const { isRevealed } = useScrollReveal(0.05, true);
 
   const ROLES = [
     { id: 'students', label: 'Students', color: 'hover:text-cyan-400', active: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/10' },
@@ -22,47 +22,47 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
 
   return (
     <div className="space-y-8 text-left relative z-10">
-      {/* Chapter Marker */}
-      <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08] transition-all duration-700">
+      {/* Discreet Platform Category Indicator */}
+      <div className="flex items-center gap-2.5 text-xs font-mono text-slate-400">
         <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span className="text-slate-400">Chapter 01</span>
-        <span className="text-slate-600">/</span>
-        <span className="text-cyan-300 font-sans font-medium">Neural Transit Atlas</span>
+        <span className="text-slate-300 font-medium">Opportunity OS</span>
+        <span className="text-slate-600">•</span>
+        <span className="text-slate-400">Autonomous Career Intelligence</span>
       </div>
 
-      {/* Main Editorial Headline with Character-by-Character Reveal (Homingo standard) */}
+      {/* Main Editorial Headline with Character Reveal (Protected against mid-word break) */}
       <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.08]">
         <SplitTextReveal
           text="The Connected "
-          delayOffsetMs={50}
-          charDelayMs={25}
+          delayOffsetMs={40}
+          charDelayMs={20}
           isRevealed={isRevealed}
         />
         <span className="italic font-serif text-slate-200">
           <SplitTextReveal
             text="Career Intelligence "
-            delayOffsetMs={350}
-            charDelayMs={25}
+            delayOffsetMs={280}
+            charDelayMs={20}
             isRevealed={isRevealed}
           />
         </span>
         <SplitTextReveal
           text="Operating System."
-          delayOffsetMs={750}
-          charDelayMs={25}
+          delayOffsetMs={620}
+          charDelayMs={20}
           isRevealed={isRevealed}
         />
       </h1>
 
       {/* Supporting Paragraph */}
-      <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl transition-opacity duration-1000 delay-500">
+      <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl">
         An autonomous collegiate ecosystem interconnecting students, verified companies, universities, and live opportunities through neural agent shuttles and real-time voice intelligence.
       </p>
 
       {/* Restrained Perspective Selector */}
-      <div className="space-y-2.5 pt-2">
+      <div className="space-y-2.5 pt-1">
         <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500">
-          Filter Atlas Perspective:
+          Ecosystem Perspective:
         </div>
         <div className="flex flex-wrap gap-2">
           {ROLES.map((r) => (
@@ -82,7 +82,7 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
       </div>
 
       {/* Primary & Secondary Actions with Micro Hover Lift */}
-      <div className="flex flex-wrap items-center gap-4 pt-2">
+      <div className="flex flex-wrap items-center gap-4 pt-1">
         <Link
           href="/overview"
           className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-950 font-semibold px-6 py-3 text-sm hover:bg-slate-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-200 card-hover-lift group"
@@ -95,7 +95,7 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
           href="#the-problem"
           className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-slate-300 font-medium px-5 py-3 text-sm transition-all duration-200 card-hover-lift"
         >
-          Read the Story
+          Explore Ecosystem
         </a>
       </div>
     </div>

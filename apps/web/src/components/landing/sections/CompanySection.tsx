@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function CompanySection() {
-  const { ref, isRevealed } = useScrollReveal(0.1);
+  const { ref, isRevealed } = useScrollReveal(0.1, true);
 
   return (
     <section
@@ -14,17 +15,15 @@ export function CompanySection() {
       ref={ref}
       className="relative py-28 lg:py-36 border-b border-white/[0.06] bg-[#080B10] overflow-hidden"
     >
-      {/* Massive Outlined Background Chapter Number */}
-      <BackgroundChapterNo number="05" className="top-12 right-6 lg:right-16" />
+      {/* Architectural Spatial Geometry Background */}
+      <SpatialBackground variant="pipeline" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col lg:flex-row-reverse items-center justify-between gap-12 lg:gap-16">
           {/* Right Text */}
-          <ScrollRevealCard delayMs={50} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={50} replay={true} className="w-full lg:w-1/2">
             <div className="space-y-6">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-                <span className="text-slate-500">Chapter 05</span>
-                <span className="text-slate-600">/</span>
                 <span className="text-blue-400 font-medium font-sans">For Companies</span>
               </div>
 
@@ -48,7 +47,7 @@ export function CompanySection() {
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-300">
                   <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
-                  <span>Pre-screened candidates filtered by verified CGPA $\ge 8.0$ and skill overlap.</span>
+                  <span>Pre-screened candidates filtered by verified CGPA ≥ 8.0 and skill overlap.</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-slate-300">
                   <CheckCircle2 className="h-4 w-4 text-blue-400 shrink-0" />
@@ -69,7 +68,7 @@ export function CompanySection() {
           </ScrollRevealCard>
 
           {/* Left Tactile Recruiter Pipeline Demo */}
-          <ScrollRevealCard delayMs={200} className="w-full lg:w-1/2">
+          <ScrollRevealCard delayMs={200} replay={true} className="w-full lg:w-1/2">
             <div className="rounded-2xl border border-blue-500/30 bg-[#0A101D] p-6 sm:p-8 space-y-5 shadow-[0_0_50px_rgba(59,130,246,0.08)] card-hover-lift">
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
                 <div className="text-xs font-mono uppercase tracking-wider text-blue-400 font-semibold">

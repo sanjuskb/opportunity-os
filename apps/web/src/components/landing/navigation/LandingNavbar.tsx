@@ -60,13 +60,11 @@ export function LandingNavbar() {
             </div>
           </Link>
 
-          {/* Persistent Chapter Index Tracker (Homingo-inspired Spatial Indicator) */}
-          <div className="hidden lg:flex items-center gap-2.5 pl-6 border-l border-white/[0.08] text-xs font-mono">
-            <span className="text-cyan-400 font-semibold">{activeChapter}</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-slate-500">07</span>
-            <span className="text-slate-400 font-sans tracking-normal font-medium text-xs ml-1">
-              — {CHAPTER_TITLES[activeChapter]}
+          {/* Section Tracker */}
+          <div className="hidden lg:flex items-center gap-2 pl-6 border-l border-white/[0.08] text-xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-slate-300 font-sans tracking-normal font-medium text-xs">
+              {CHAPTER_TITLES[activeChapter]}
             </span>
           </div>
         </div>

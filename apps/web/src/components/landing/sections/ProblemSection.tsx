@@ -2,10 +2,11 @@
 
 import React from 'react';
 import { XCircle, CheckCircle2 } from 'lucide-react';
-import { SplitTextReveal, ScrollRevealCard, BackgroundChapterNo, useScrollReveal } from '../../ui/ScrollReveal';
+import { SplitTextReveal, ScrollRevealCard, useScrollReveal } from '../../ui/ScrollReveal';
+import { SpatialBackground } from '../SpatialBackground';
 
 export function ProblemSection() {
-  const { ref, isRevealed } = useScrollReveal(0.1);
+  const { ref, isRevealed } = useScrollReveal(0.1, true);
 
   return (
     <section
@@ -13,27 +14,25 @@ export function ProblemSection() {
       ref={ref}
       className="relative py-28 lg:py-36 border-b border-white/[0.06] bg-[#07090D] overflow-hidden"
     >
-      {/* Massive Outlined Background Chapter Number (Homingo style) */}
-      <BackgroundChapterNo number="02" className="top-12 right-6 lg:right-16" />
+      {/* Architectural Spatial 3D Background */}
+      <SpatialBackground variant="fragmented" />
 
       {/* Subtle Glow */}
       <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-red-500/[0.03] blur-[140px] pointer-events-none" />
       <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-cyan-500/[0.04] blur-[140px] pointer-events-none" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Chapter Header */}
+        {/* Section Header */}
         <div className="max-w-2xl mb-16 sm:mb-20 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
-            <span className="text-slate-500">Chapter 02</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-amber-400 font-medium font-sans">The Fragmentation</span>
+          <div className="text-xs font-mono uppercase tracking-wider text-amber-400 font-semibold">
+            The Fragmentation
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.12]">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white font-normal leading-[1.14]">
             <SplitTextReveal
               text="Why collegiate opportunities are broken across India."
-              delayOffsetMs={100}
-              charDelayMs={20}
+              delayOffsetMs={80}
+              charDelayMs={18}
               isRevealed={isRevealed}
             />
           </h2>
@@ -43,16 +42,16 @@ export function ProblemSection() {
           </p>
         </div>
 
-        {/* Visual Architectural Comparison with Staggered Scroll Cards */}
+        {/* Visual Architectural Comparison with Replaying Scroll Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Fragmented Reality */}
-          <ScrollRevealCard delayMs={100}>
+          <ScrollRevealCard delayMs={80} replay={true}>
             <div className="relative rounded-2xl border border-white/[0.07] bg-[#0A0D14]/70 p-8 sm:p-10 space-y-6 card-hover-lift h-full">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
                 <span className="text-xs font-mono uppercase tracking-wider text-red-400 font-semibold flex items-center gap-2">
                   <XCircle className="h-4 w-4" /> The Disconnected Reality
                 </span>
-                <span className="text-[11px] font-mono text-slate-600">Legacy Systems</span>
+                <span className="text-[11px] font-mono text-slate-500">Legacy Systems</span>
               </div>
 
               <div className="space-y-4 text-sm text-slate-300">
@@ -81,7 +80,7 @@ export function ProblemSection() {
           </ScrollRevealCard>
 
           {/* Opportunity OS Solution */}
-          <ScrollRevealCard delayMs={250}>
+          <ScrollRevealCard delayMs={200} replay={true}>
             <div className="relative rounded-2xl border border-cyan-500/30 bg-[#0C121E]/80 p-8 sm:p-10 space-y-6 shadow-[0_0_50px_rgba(6,182,212,0.06)] card-hover-lift h-full">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-2">
