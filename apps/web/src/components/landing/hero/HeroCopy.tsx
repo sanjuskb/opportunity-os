@@ -3,6 +3,7 @@
 import React from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { SplitTextReveal, useScrollReveal } from '../../ui/ScrollReveal';
 
 interface HeroCopyProps {
   activeRole: string;
@@ -10,6 +11,8 @@ interface HeroCopyProps {
 }
 
 export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
+  const { isRevealed } = useScrollReveal(0.05);
+
   const ROLES = [
     { id: 'students', label: 'Students', color: 'hover:text-cyan-400', active: 'text-cyan-300 border-cyan-500/50 bg-cyan-500/10' },
     { id: 'companies', label: 'Companies', color: 'hover:text-blue-400', active: 'text-blue-300 border-blue-500/50 bg-blue-500/10' },
@@ -18,26 +21,41 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
   ];
 
   return (
-    <div className="space-y-8 text-left">
+    <div className="space-y-8 text-left relative z-10">
       {/* Chapter Marker */}
-      <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08]">
+      <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full text-xs font-mono bg-white/[0.04] text-slate-300 border border-white/[0.08] transition-all duration-700">
         <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
         <span className="text-slate-400">Chapter 01</span>
         <span className="text-slate-600">/</span>
         <span className="text-cyan-300 font-sans font-medium">Neural Transit Atlas</span>
       </div>
 
-      {/* Main Editorial Headline */}
+      {/* Main Editorial Headline with Character-by-Character Reveal (Homingo standard) */}
       <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.08]">
-        The Connected{' '}
+        <SplitTextReveal
+          text="The Connected "
+          delayOffsetMs={50}
+          charDelayMs={25}
+          isRevealed={isRevealed}
+        />
         <span className="italic font-serif text-slate-200">
-          Career Intelligence
-        </span>{' '}
-        Operating System.
+          <SplitTextReveal
+            text="Career Intelligence "
+            delayOffsetMs={350}
+            charDelayMs={25}
+            isRevealed={isRevealed}
+          />
+        </span>
+        <SplitTextReveal
+          text="Operating System."
+          delayOffsetMs={750}
+          charDelayMs={25}
+          isRevealed={isRevealed}
+        />
       </h1>
 
       {/* Supporting Paragraph */}
-      <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl">
+      <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl transition-opacity duration-1000 delay-500">
         An autonomous collegiate ecosystem interconnecting students, verified companies, universities, and live opportunities through neural agent shuttles and real-time voice intelligence.
       </p>
 
@@ -63,11 +81,11 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
         </div>
       </div>
 
-      {/* Primary & Secondary Actions */}
+      {/* Primary & Secondary Actions with Micro Hover Lift */}
       <div className="flex flex-wrap items-center gap-4 pt-2">
         <Link
           href="/overview"
-          className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-950 font-semibold px-6 py-3 text-sm hover:bg-slate-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-200 group"
+          className="inline-flex items-center gap-2 rounded-xl bg-white text-slate-950 font-semibold px-6 py-3 text-sm hover:bg-slate-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-200 card-hover-lift group"
         >
           <span>Enter Workspace</span>
           <ArrowRight className="h-4 w-4 text-slate-700 group-hover:translate-x-0.5 transition" />
@@ -75,7 +93,7 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
 
         <a
           href="#the-problem"
-          className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-slate-300 font-medium px-5 py-3 text-sm transition-all duration-200"
+          className="inline-flex items-center gap-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.09] text-slate-300 font-medium px-5 py-3 text-sm transition-all duration-200 card-hover-lift"
         >
           Read the Story
         </a>
