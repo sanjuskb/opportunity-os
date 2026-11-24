@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   PlusCircle,
   ChevronRight,
+  Network,
 } from 'lucide-react';
 import { useMockStore, UserRole } from '../../lib/mock-data/mockStore';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
@@ -67,6 +68,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Applications', href: '/applications', icon: Briefcase },
     { label: 'Mock Interview AI', href: '/interview', icon: Video },
     { label: 'Market Analytics', href: '/analytics', icon: BarChart3 },
+    { label: 'Agent Control Center', href: '/agent-control-center', icon: Network, badge: 'Live' },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -75,6 +77,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Post Opportunity', href: '/company/create', icon: PlusCircle, badge: 'New' },
     { label: 'Candidate Discovery', href: '/company/candidates', icon: Users },
     { label: 'Applicant Pipeline', href: '/company/applicants', icon: Briefcase },
+    { label: 'Agent Control Center', href: '/agent-control-center', icon: Network, badge: 'Live' },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
@@ -82,6 +85,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     { label: 'Placement Dashboard', href: '/university/dashboard', icon: School },
     { label: 'Student Directory', href: '/university/students', icon: Users },
     { label: 'Institutional Verification', href: '/university/verification', icon: ShieldCheck, badge: 'DigiLocker' },
+    { label: 'Agent Control Center', href: '/agent-control-center', icon: Network, badge: 'Live' },
     { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
