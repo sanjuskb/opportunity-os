@@ -27,12 +27,12 @@ export default function RoleSelectionPage() {
         <div className="space-y-2">
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="text-2xl font-black text-white">
-              Opportunity <span className="text-cyan-400">OS</span>
+              Nexte<span className="text-cyan-400">RaS</span>
             </span>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Select Your Ecosystem Role</h1>
           <p className="text-sm text-slate-400 max-w-md mx-auto">
-            Opportunity OS is customized for the distinct requirements of students, hiring companies, and colleges.
+            NexteRaS is customized for the distinct requirements of students, hiring companies, and colleges.
           </p>
         </div>
 

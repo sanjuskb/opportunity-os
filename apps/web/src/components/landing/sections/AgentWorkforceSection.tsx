@@ -51,7 +51,7 @@ export function AgentWorkforceSection() {
             </h2>
 
             <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
-              In Opportunity OS, AI is not a passive chatbot waiting for text prompts. Autonomous geometric agent shuttles traverse ecosystem conduits to continuously ingest internships, compute ATS alignment, verify prerequisites, and prepare candidate packages.
+              In NexteRaS, AI is not a passive chatbot waiting for text prompts. Autonomous geometric agent shuttles traverse ecosystem conduits to continuously ingest internships, compute ATS alignment, verify prerequisites, and prepare candidate packages.
             </p>
 
             <div className="space-y-3 pt-1">

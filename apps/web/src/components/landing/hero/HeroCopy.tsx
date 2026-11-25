@@ -33,16 +33,16 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
       {/* Discreet Platform Category Indicator */}
       <div className="flex items-center gap-2.5 text-xs font-mono text-slate-400">
         <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span className="text-slate-300 font-medium">Opportunity OS</span>
+        <span className="text-slate-200 font-semibold">NexteRaS</span>
         <span className="text-slate-600">•</span>
-        <span className="text-cyan-400 font-medium">Autonomous Career Intelligence</span>
+        <span className="text-cyan-400 font-medium">The Upcoming Era.</span>
       </div>
 
       {/* Main Editorial Headline with Character Reveal (Protected against mid-word break) */}
       <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.08]">
         <span className="block">
           <SplitTextReveal
-            text="The Connected"
+            text="AI Career"
             delayOffsetMs={40}
             charDelayMs={18}
             isRevealed={isRevealed}
@@ -50,16 +50,16 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
         </span>
         <span className="block italic font-serif text-cyan-300">
           <SplitTextReveal
-            text="Career Intelligence"
-            delayOffsetMs={240}
+            text="Intelligence &"
+            delayOffsetMs={200}
             charDelayMs={18}
             isRevealed={isRevealed}
           />
         </span>
         <span className="block">
           <SplitTextReveal
-            text="Operating System."
-            delayOffsetMs={520}
+            text="Employability System."
+            delayOffsetMs={420}
             charDelayMs={18}
             isRevealed={isRevealed}
           />
@@ -68,7 +68,7 @@ export function HeroCopy({ activeRole, onSelectRole }: HeroCopyProps) {
 
       {/* Supporting Paragraph */}
       <p className="text-base sm:text-lg text-slate-400 font-normal leading-relaxed max-w-xl">
-        An autonomous collegiate ecosystem interconnecting students, verified companies, universities, and live opportunities through neural agent shuttles and real-time voice intelligence.
+        An autonomous employability system interconnecting students, verified companies, universities, and live opportunities through neural agent shuttles and real-time voice intelligence.
       </p>
 
       {/* Restrained Perspective Selector */}

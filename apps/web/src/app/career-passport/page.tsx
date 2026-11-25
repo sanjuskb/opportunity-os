@@ -14,7 +14,7 @@ export default function CareerPassportPage() {
   const [copied, setCopied] = useState(false);
 
   const handleCopyShareLink = () => {
-    navigator.clipboard.writeText(`https://opportunity-os.in/passport/${studentProfile.careerPassportId}`);
+    navigator.clipboard.writeText(`https://nexteras.in/passport/${studentProfile.careerPassportId}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };

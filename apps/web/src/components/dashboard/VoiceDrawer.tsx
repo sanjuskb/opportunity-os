@@ -213,7 +213,7 @@ export function VoiceDrawer() {
               <div className="rounded-xl border border-violet-500/30 bg-violet-950/20 p-3 text-xs space-y-2 animate-in fade-in duration-300">
                 <div className="text-[10px] uppercase font-bold text-violet-300 flex items-center gap-1.5">
                   <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-                  <span>Opportunity OS Intelligence:</span>
+                  <span>NexteRaS Intelligence:</span>
                 </div>
                 <p className="text-slate-200 leading-relaxed">{currentAiResponse}</p>
                 <div className="pt-1">

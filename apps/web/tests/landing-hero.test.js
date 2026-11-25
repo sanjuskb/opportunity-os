@@ -19,6 +19,11 @@ test('3D Architectural Maquette materials are properly defined', () => {
   assert.strictEqual(materials3D.emissivePath, '#38BDF8', 'Pathways must be emissive cyan');
 });
 
+test('Product brand identity matches official NexteRaS configuration', () => {
+  assert.strictEqual(APP_CONFIG.APP_NAME, 'NexteRaS', 'Official product name must be NexteRaS');
+  assert.strictEqual(APP_CONFIG.APP_TAGLINE, 'The Upcoming Era.', 'Official tagline must match');
+});
+
 test('Supported languages configuration supports 7 Indian regional languages', () => {
   const codes = APP_CONFIG.SUPPORTED_LANGUAGES.map((l) => l.code);
   assert.strictEqual(codes.length, 7, 'Must support exactly 7 languages');

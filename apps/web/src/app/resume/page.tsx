@@ -162,7 +162,7 @@ export default function ResumePage() {
 
               <div className="p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 space-y-2">
                 <div className="text-[10px] uppercase font-bold text-amber-400">Original Bullet Point:</div>
-                <p className="text-slate-400 italic">&quot;Built the frontend for Opportunity OS using Next.js.&quot;</p>
+                <p className="text-slate-400 italic">&quot;Built the frontend for NexteRaS using Next.js.&quot;</p>
                 <div className="text-[10px] uppercase font-bold text-emerald-400 pt-1">AI Quantified Optimization:</div>
                 <p className="text-slate-200 font-medium">
                   &quot;Engineered an accessible React Three Fiber 3D architectural campus and responsive Tailwind UI across 7 native Indic languages, achieving sub-120ms interaction latency.&quot;

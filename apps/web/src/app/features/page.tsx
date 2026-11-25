@@ -52,7 +52,7 @@ export default function FeaturesPage() {
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <Badge variant="cyan">Platform Capabilities</Badge>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white">The Opportunity OS Feature Suite</h1>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white">The NexteRaS Feature Suite</h1>
           <p className="text-base text-slate-300">
             A comprehensive operating system designed specifically for the Indian collegiate ecosystem.
           </p>
@@ -87,7 +87,7 @@ export default function FeaturesPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Opportunity OS • Autonomous Intelligence Campus • Apache-2.0
+        NexteRaS • AI Career Intelligence &amp; Autonomous Employability System • Apache-2.0
       </footer>
     </div>
   );

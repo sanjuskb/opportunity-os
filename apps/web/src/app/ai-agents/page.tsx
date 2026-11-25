@@ -36,7 +36,7 @@ export default function AiAgentsPage() {
             </div>
             <h2 className="text-lg font-bold text-white">Human-in-the-Loop Guardrail</h2>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Opportunity OS strictly enforces a zero-unauthorized-action policy. Shuttles prepare tailored application packages, but they never submit an application or send an outreach email without explicit student review and one-click cryptographic approval.
+              NexteRaS strictly enforces a zero-unauthorized-action policy. Shuttles prepare tailored application packages, but they never submit an application or send an outreach email without explicit student review and one-click cryptographic approval.
             </p>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function AiAgentsPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Opportunity OS • Autonomous Intelligence Campus • Apache-2.0
+        NexteRaS • AI Career Intelligence &amp; Autonomous Employability System • Apache-2.0
       </footer>
     </div>
   );

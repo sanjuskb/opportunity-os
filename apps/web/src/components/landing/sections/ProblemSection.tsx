@@ -79,12 +79,12 @@ export function ProblemSection() {
             </div>
           </ScrollRevealCard>
 
-          {/* Opportunity OS Solution */}
+          {/* NexteRaS Solution */}
           <ScrollRevealCard delayMs={200} replay={true}>
             <div className="relative rounded-2xl border border-cyan-500/30 bg-[#0C121E]/80 p-8 sm:p-10 space-y-6 shadow-[0_0_50px_rgba(6,182,212,0.06)] card-hover-lift h-full">
               <div className="flex items-center justify-between pb-4 border-b border-white/[0.08]">
                 <span className="text-xs font-mono uppercase tracking-wider text-cyan-400 font-semibold flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4" /> The Connected Operating System
+                  <CheckCircle2 className="h-4 w-4" /> The NexteRaS System
                 </span>
                 <span className="text-[11px] font-mono text-cyan-400/70">Neural Transit</span>
               </div>

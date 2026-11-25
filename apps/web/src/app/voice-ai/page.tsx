@@ -48,7 +48,7 @@ export default function VoiceAiPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Opportunity OS • Autonomous Intelligence Campus • Apache-2.0
+        NexteRaS • AI Career Intelligence &amp; Autonomous Employability System • Apache-2.0
       </footer>
     </div>
   );

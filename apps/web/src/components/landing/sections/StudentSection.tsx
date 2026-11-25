@@ -37,7 +37,7 @@ export function StudentSection() {
               </h2>
 
               <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
-                Never get rejected by opaque algorithms. Opportunity OS verifies your degree, marks, and projects directly via DigiLocker and GitHub, then tailors your resume with 94%+ ATS alignment.
+                Never get rejected by opaque algorithms. NexteRaS verifies your degree, marks, and projects directly via DigiLocker and GitHub, then tailors your resume with 94%+ ATS alignment.
               </p>
 
               <div className="space-y-3 pt-2">

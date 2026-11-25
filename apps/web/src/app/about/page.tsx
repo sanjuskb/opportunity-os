@@ -17,7 +17,7 @@ export default function AboutPage() {
             Leveling the Playing Field for 40M+ Indian College Students
           </h1>
           <p className="text-base text-slate-300 leading-relaxed">
-            Opportunity OS was created for Homingo Hackathon Edition 01 to solve the fragmented, opaque, and English-biased internship ecosystem across Tier 1, 2, and 3 Indian institutions.
+            NexteRaS (The Upcoming Era.) is an AI-powered career intelligence and autonomous employability system built to solve the fragmented, opaque, and English-biased internship ecosystem across Tier 1, 2, and 3 Indian institutions.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ export default function AboutPage() {
         <div className="text-center pt-8">
           <Link href="/register">
             <Button variant="glow" size="lg">
-              <span>Join Opportunity OS</span>
+              <span>Join NexteRaS</span>
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>
@@ -55,7 +55,7 @@ export default function AboutPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Opportunity OS • Autonomous Intelligence Campus • Apache-2.0
+        NexteRaS • AI Career Intelligence &amp; Autonomous Employability System • Apache-2.0
       </footer>
     </div>
   );

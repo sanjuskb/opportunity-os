@@ -44,7 +44,7 @@ export default function HowItWorksPage() {
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <Badge variant="cyan">4-Step Lifecycle</Badge>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white">How Opportunity OS Works</h1>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-white">How NexteRaS Works</h1>
           <p className="text-base text-slate-300">
             From raw opportunity discovery to verified submission in minutes, without ever fabricating credentials.
           </p>
@@ -79,7 +79,7 @@ export default function HowItWorksPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-6 text-center text-xs text-slate-500">
-        Opportunity OS • Autonomous Intelligence Campus • Apache-2.0
+        NexteRaS • AI Career Intelligence &amp; Autonomous Employability System • Apache-2.0
       </footer>
     </div>
   );

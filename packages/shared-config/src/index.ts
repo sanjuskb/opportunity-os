@@ -1,5 +1,7 @@
 export const APP_CONFIG = {
-  APP_NAME: 'Opportunity OS',
+  APP_NAME: 'NexteRaS',
+  APP_TAGLINE: 'The Upcoming Era.',
+  APP_DESCRIPTION: 'An AI-powered career intelligence and autonomous employability system.',
   SUPPORTED_LANGUAGES: [
     { code: 'en', name: 'English', native: 'English' },
     { code: 'hi', name: 'Hindi', native: 'हिन्दी' },

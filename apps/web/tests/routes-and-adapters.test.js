@@ -4,7 +4,7 @@ import { MOCK_OPPORTUNITIES, MOCK_ELIGIBILITY_CACHE } from '../src/lib/mock-data
 import { CURRENT_STUDENT, MOCK_CANDIDATES } from '../src/lib/mock-data/students.ts';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
 
-test('Mock opportunities dataset is robust and adheres to Opportunity OS schema', () => {
+test('Mock opportunities dataset is robust and adheres to NexteRaS schema', () => {
   assert.ok(MOCK_OPPORTUNITIES.length >= 6, 'Must provide at least 6 ingested opportunities');
 
   for (const opp of MOCK_OPPORTUNITIES) {
