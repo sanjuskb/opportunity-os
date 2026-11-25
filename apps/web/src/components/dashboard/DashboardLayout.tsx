@@ -106,7 +106,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
             </div>
             <span className="font-bold text-base tracking-tight text-white">
-              Opportunity <span className="text-cyan-400">OS</span>
+              Nexte<span className="text-cyan-400">RaS</span>
             </span>
           </Link>
           <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-800">
@@ -216,7 +216,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <Menu className="h-5 w-5" />
             </button>
             <Link href="/" className="font-bold text-sm tracking-tight text-white">
-              Opportunity <span className="text-cyan-400">OS</span>
+              Nexte<span className="text-cyan-400">RaS</span>
             </Link>
           </div>
 
@@ -364,7 +364,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-slate-800">
                 <span className="font-bold text-sm text-white">
-                  Opportunity <span className="text-cyan-400">OS</span>
+                  Nexte<span className="text-cyan-400">RaS</span>
                 </span>
                 <button
                   type="button"

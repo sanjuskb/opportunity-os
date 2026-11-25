@@ -41,7 +41,7 @@ export default function CompanyDashboardPage() {
           <MetricCard
             title="Active Postings"
             value={opportunities.length}
-            subtitle="Live across Opportunity OS"
+            subtitle="Live across NexteRaS"
             icon={Briefcase}
             color="sapphire"
           />

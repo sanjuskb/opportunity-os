@@ -42,7 +42,7 @@ export function AgentControlHeader() {
           <div>
             <div className="flex items-center gap-2.5">
               <h1 className="text-base font-bold tracking-tight text-white font-sans">
-                Agent Control Center
+                NexteRaS Agent Control Center
               </h1>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />

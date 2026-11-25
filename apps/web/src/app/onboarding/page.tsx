@@ -95,7 +95,7 @@ export default function OnboardingPage() {
                 <span>Select Your Preferred Operating & Voice Language</span>
               </div>
               <p className="text-xs text-slate-400">
-                Opportunity OS adapts all opportunity matches, voice assistance, and ATS coaching to your chosen language.
+                NexteRaS adapts all opportunity matches, voice assistance, and ATS coaching to your chosen language.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

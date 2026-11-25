@@ -2,8 +2,14 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Opportunity OS - Voice-First AI Career Intelligence',
-  description: 'Multilingual career and internship intelligence platform for Indian students',
+  title: 'NexteRaS — The Upcoming Era. | AI Career Intelligence System',
+  description: 'An AI-powered career intelligence and autonomous employability system across 7 regional languages.',
+  openGraph: {
+    title: 'NexteRaS — The Upcoming Era.',
+    description: 'An AI-powered career intelligence and autonomous employability system.',
+    siteName: 'NexteRaS',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

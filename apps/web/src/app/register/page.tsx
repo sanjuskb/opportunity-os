@@ -41,7 +41,7 @@ export default function RegisterPage() {
               <span className="h-2.5 w-2.5 rounded-full bg-cyan-400 animate-pulse" />
             </div>
             <span className="text-2xl font-black tracking-tight text-white">
-              Opportunity <span className="text-cyan-400">OS</span>
+              Nexte<span className="text-cyan-400">RaS</span>
             </span>
           </Link>
           <h1 className="text-xl font-bold tracking-tight text-white">Create Your Account</h1>

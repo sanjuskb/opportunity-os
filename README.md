@@ -1,15 +1,15 @@
-# Opportunity OS (opportunity-os)
+# NexteRaS (`opportunity-os`)
 
-> **Voice-First AI Career & Internship Intelligence Platform for Indian Students**  
-> *Developed for Homingo Hackathon Edition 01 by Sanju & Ramaraju.*
+> **The Upcoming Era. — AI Career Intelligence & Autonomous Employability System for Indian Students**  
+> *Developed by Team SyNtRax (Sanju, Sanjeeth S, Ramaraju R, Nikhil N).*
 
 ---
 
 ## 🎯 Executive Summary
 
-**Opportunity OS** bridges the digital divide for millions of Indian undergraduate and postgraduate students seeking internships, entry-level jobs, research fellowships, and government career schemes. 
+**NexteRaS** (*The Upcoming Era*) bridges the digital divide for millions of Indian undergraduate and postgraduate students seeking internships, entry-level jobs, research fellowships, and government career schemes. 
 
-Unlike traditional static job boards or ungrounded generative chatbots, Opportunity OS is a **voice-first agentic operating system**. It understands vernacular queries across **7 Indian languages** (Hindi, Telugu, Tamil, Kannada, Malayalam, Bengali, and English), parses complex eligibility criteria deterministically, conducts semantic talent-to-opportunity matching using vector embeddings, builds ATS-optimized resumes with source grounding, and automates repetitive portal workflows under strict **human-in-the-loop approval gates**.
+Unlike traditional static job boards or ungrounded generative chatbots, NexteRaS is a **voice-first agentic employability system**. It understands vernacular queries across **7 Indian languages** (Hindi, Telugu, Tamil, Kannada, Malayalam, Bengali, and English), parses complex eligibility criteria deterministically, conducts semantic talent-to-opportunity matching using vector embeddings, builds ATS-optimized resumes with source grounding, and automates repetitive portal workflows under strict **human-in-the-loop approval gates**.
 
 ---
 

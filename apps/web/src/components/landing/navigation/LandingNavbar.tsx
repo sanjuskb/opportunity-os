@@ -54,9 +54,9 @@ export function LandingNavbar() {
             </div>
             <div className="flex flex-col">
               <span className="text-sm font-semibold tracking-tight text-white group-hover:text-cyan-300 transition">
-                Opportunity <span className="text-cyan-400">OS</span>
+                Nexte<span className="text-cyan-400">RaS</span>
               </span>
-              <span className="text-[10px] font-mono text-slate-500 tracking-wider">Homingo Ed. 01</span>
+              <span className="text-[10px] font-mono text-slate-400 tracking-wider">The Upcoming Era.</span>
             </div>
           </Link>
 
@@ -137,12 +137,12 @@ export function LandingNavbar() {
             )}
           </div>
 
-          {/* Launch OS Button */}
+          {/* Launch NexteRaS Button */}
           <Link
             href="/overview"
             className="inline-flex items-center gap-1.5 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 px-4 py-1.5 text-xs font-medium text-white shadow-sm transition group"
           >
-            <span>Launch OS</span>
+            <span>Launch NexteRaS</span>
             <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-cyan-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
           </Link>
         </div>
@@ -212,7 +212,7 @@ export function LandingNavbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="inline-flex items-center gap-1 rounded-lg bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1.5 text-xs font-semibold"
             >
-              Launch OS <ArrowUpRight className="h-3 w-3" />
+              Launch NexteRaS <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
         </div>

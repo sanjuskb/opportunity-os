@@ -72,7 +72,7 @@ export function UnifiedPlatformSection() {
           </h2>
 
           <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
-            In Opportunity OS, information does not sit in static tables. Autonomous agent shuttles traverse optical conduits connecting all collegiate participants.
+            In NexteRaS, information does not sit in static tables. Autonomous agent shuttles traverse optical conduits connecting all collegiate participants.
           </p>
         </div>
 

@@ -50,11 +50,11 @@ export default function HomePage() {
       <footer className="border-t border-white/[0.06] bg-[#05070A] py-12 px-4 sm:px-6 lg:px-8 text-xs text-slate-500">
         <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <span className="font-semibold text-slate-300">Opportunity OS</span>
+            <span className="font-semibold text-slate-300">NexteRaS</span>
             <span>•</span>
-            <span>Homingo Hackathon Edition 01</span>
+            <span>The Upcoming Era.</span>
             <span>•</span>
-            <span className="font-mono text-cyan-400">Concept 4 + 1</span>
+            <span className="font-mono text-cyan-400">Team SyNtRax</span>
           </div>
 
           <div className="text-center sm:text-right text-slate-500 text-[11px] font-mono">

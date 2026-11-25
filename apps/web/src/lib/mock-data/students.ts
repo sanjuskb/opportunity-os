@@ -59,7 +59,7 @@ export const CURRENT_STUDENT: StudentFullData = {
   careerPassportId: 'PASSPORT-IN-2026-NIT-8820',
   avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80',
   about:
-    'Third-year undergraduate student focused on voice-first Indic AI applications, agentic orchestrators, and high-performance WebGL interfaces. Recognized finalist at Homingo Hackathon Edition 01.',
+    'Third-year undergraduate student focused on voice-first Indic AI applications, agentic orchestrators, and high-performance WebGL interfaces. Core engineering contributor to NexteRaS (Team SyNtRax).',
   createdAt: '2026-09-01T00:00:00Z',
   updatedAt: '2026-11-23T18:00:00Z',
   verifiedCredentials: [
@@ -85,7 +85,7 @@ export const CURRENT_STUDENT: StudentFullData = {
     },
     {
       id: 'cred-gh-03',
-      title: 'Opportunity OS Autonomous Platform Contributor',
+      title: 'NexteRaS Autonomous Platform Contributor',
       issuer: 'GitHub Verified Commits',
       verificationSource: 'GitHub',
       issueDate: '2026-11-23',
@@ -96,7 +96,7 @@ export const CURRENT_STUDENT: StudentFullData = {
   ],
   projects: [
     {
-      title: 'Opportunity OS — Voice-First Career Intelligence Platform',
+      title: 'NexteRaS — AI Career Intelligence & Autonomous Employability System',
       description:
         'Architected an autonomous career intelligence operating system for Indian students with 7-language speech support, R3F 3D architectural campus, and deterministic eligibility validation.',
       technologies: ['Next.js 15', 'React 19', 'React Three Fiber', 'FastAPI', 'LangGraph', 'Tailwind CSS'],
