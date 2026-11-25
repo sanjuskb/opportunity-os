@@ -92,13 +92,66 @@ class ResumeExtractionService:
         validate_upload_metadata(path.name, len(raw_bytes))
 
         ext = path.suffix.lower()
-        if ext in {".txt", ".md", ".json"}:
+        if ext in {".txt", ".md"}:
             text = raw_bytes.decode("utf-8", errors="replace")
+        elif ext == ".json":
+            raw_str = raw_bytes.decode("utf-8", errors="replace")
+            text = self._normalize_json_resume_to_text(raw_str)
         elif ext == ".pdf":
             text = self._extract_pdf_bytes(raw_bytes)
         else:
             raise ValueError(f"Unsupported extension: {ext}")
         return self.extract_from_text(text)
+
+    @staticmethod
+    def _normalize_json_resume_to_text(raw_json_str: str) -> str:
+        """Flatten structured JSON resume payloads cleanly into grounded plain-text sections."""
+        try:
+            obj = json.loads(raw_json_str)
+        except json.JSONDecodeError:
+            return raw_json_str
+        if not isinstance(obj, dict):
+            return raw_json_str
+        lines: list[str] = []
+        if obj.get("full_name") or obj.get("name"):
+            lines.append(f"Name: {obj.get('full_name') or obj.get('name')}")
+        edu_parts = [
+            str(v)
+            for k in ("institution", "college", "degree", "branch")
+            if (v := obj.get(k))
+        ]
+        if obj.get("graduation_year"):
+            edu_parts.append(f"Batch {obj['graduation_year']}")
+        if obj.get("cgpa") is not None:
+            edu_parts.append(f"CGPA: {obj['cgpa']}/10")
+        elif obj.get("percentage") is not None:
+            edu_parts.append(f"{obj['percentage']}%")
+        if edu_parts:
+            lines.extend(["Education", " | ".join(edu_parts)])
+        skills = obj.get("skills") or obj.get("technical_skills")
+        if isinstance(skills, list) and skills:
+            lines.extend(["Technical Skills", ", ".join(str(s) for s in skills)])
+        for sec, hdr in [
+            ("projects", "Projects"),
+            ("experience", "Experience"),
+            ("internships", "Internships"),
+            ("certifications", "Certifications"),
+            ("achievements", "Achievements"),
+        ]:
+            val = obj.get(sec)
+            if isinstance(val, list) and val:
+                lines.append(hdr)
+                for item in val:
+                    if isinstance(item, dict):
+                        title = str(item.get("title") or item.get("name") or "")
+                        desc = str(item.get("summary") or item.get("description") or "")
+                        lines.append(f"- {title} - {desc}".strip(" -"))
+                    else:
+                        lines.append(f"- {item}")
+        interests = obj.get("interests") or obj.get("relevant_interests") or obj.get("career_interests")
+        if isinstance(interests, list) and interests:
+            lines.extend(["Interests", ", ".join(str(i) for i in interests)])
+        return "\n".join(lines) if lines else raw_json_str
 
     @staticmethod
     def _extract_pdf_bytes(raw_bytes: bytes) -> str:

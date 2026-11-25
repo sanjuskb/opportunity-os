@@ -38,7 +38,10 @@ class ResourceManagedModelCache:
         self.cpu_threads = cpu_threads
         self._lock = threading.RLock()
         self._cache: OrderedDict[str, Any] = OrderedDict()
+        self._model_locks: dict[str, threading.RLock] = {}
         self._load_times_ms: dict[str, float] = {}
+        self._cache_hits: int = 0
+        self._cache_misses: int = 0
         self._runtime_initialized = False
 
     def ensure_cpu_runtime(self) -> dict[str, Any]:
@@ -47,6 +50,13 @@ class ResourceManagedModelCache:
             self._runtime_initialized = True
             return info
 
+    def _get_model_lock(self, cache_key: str) -> threading.RLock:
+        lock = self._model_locks.get(cache_key)
+        if lock is None:
+            lock = threading.RLock()
+            self._model_locks[cache_key] = lock
+        return lock
+
     def get_or_load(self, cache_key: str, loader: Callable[[], T]) -> T:
         with self._lock:
             if not self._runtime_initialized:
@@ -54,12 +64,21 @@ class ResourceManagedModelCache:
 
             if cache_key in self._cache:
                 self._cache.move_to_end(cache_key)
+                self._cache_hits += 1
+                self._get_model_lock(cache_key)
                 return self._cache[cache_key]
 
+            self._cache_misses += 1
             while len(self._cache) >= self.max_loaded_models:
                 evicted_key, evicted_obj = self._cache.popitem(last=False)
-                logger.info("Evicting cached ML model '%s' to protect laptop RAM.", evicted_key)
-                del evicted_obj
+                evicted_lock = self._model_locks.get(evicted_key)
+                if evicted_lock is not None:
+                    with evicted_lock:
+                        logger.info("Evicting cached ML model '%s' to protect laptop RAM.", evicted_key)
+                        del evicted_obj
+                else:
+                    logger.info("Evicting cached ML model '%s' to protect laptop RAM.", evicted_key)
+                    del evicted_obj
                 gc.collect()
 
             t0 = time.perf_counter()
@@ -73,9 +92,29 @@ class ResourceManagedModelCache:
                 ) from exc
             elapsed_ms = round((time.perf_counter() - t0) * 1000.0, 2)
             self._cache[cache_key] = loaded
+            self._get_model_lock(cache_key)
             self._load_times_ms[cache_key] = elapsed_ms
             logger.info("Loaded ML model '%s' in %.1f ms on CPU.", cache_key, elapsed_ms)
             return loaded
+
+    def execute_with_model(
+        self,
+        cache_key: str,
+        loader: Callable[[], T],
+        fn: Callable[[T], Any],
+    ) -> Any:
+        """
+        Safely retrieve or load `cache_key` and serialize shared model access across threads
+        so concurrent requests neither corrupt tokenizer/torch state nor evict mid-inference.
+        """
+        with self._lock:
+            model = self.get_or_load(cache_key, loader)
+            model_lock = self._get_model_lock(cache_key)
+        with model_lock:
+            # Re-verify cache membership in case an eviction raced between locks
+            with self._lock:
+                model = self.get_or_load(cache_key, loader)
+            return fn(model)
 
     def unload(self, cache_key: str) -> bool:
         with self._lock:
@@ -98,6 +137,8 @@ class ResourceManagedModelCache:
                 "max_loaded_models": self.max_loaded_models,
                 "cpu_threads": min(self.cpu_threads, os.cpu_count() or self.cpu_threads),
                 "load_times_ms": dict(self._load_times_ms),
+                "cache_hits": self._cache_hits,
+                "cache_misses": self._cache_misses,
             }
 
 

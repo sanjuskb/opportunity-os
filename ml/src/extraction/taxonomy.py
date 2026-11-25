@@ -147,6 +147,51 @@ BRANCH_ALIASES: dict[str, str] = {
     "mechanical": "Mechanical Engineering",
 }
 
+LOCATION_ALIASES: dict[str, str] = {
+    "bangalore": "Bengaluru",
+    "bengaluru": "Bengaluru",
+    "blr": "Bengaluru",
+    "hyderabad": "Hyderabad",
+    "hyd": "Hyderabad",
+    "pune": "Pune",
+    "chennai": "Chennai",
+    "madras": "Chennai",
+    "mumbai": "Mumbai",
+    "bombay": "Mumbai",
+    "navi mumbai": "Mumbai",
+    "delhi": "Delhi NCR",
+    "new delhi": "Delhi NCR",
+    "delhi ncr": "Delhi NCR",
+    "ncr": "Delhi NCR",
+    "gurgaon": "Delhi NCR",
+    "gurugram": "Delhi NCR",
+    "noida": "Delhi NCR",
+    "kolkata": "Kolkata",
+    "calcutta": "Kolkata",
+    "ahmedabad": "Ahmedabad",
+    "jaipur": "Jaipur",
+    "remote": "Remote",
+    "work from home": "Remote",
+    "wfh": "Remote",
+    "anywhere in india": "Remote",
+    "pan india": "Remote",
+}
+
+
+def normalize_location(raw_location: str | None) -> str | None:
+    """Normalize common Indian city names and remote work markers into canonical labels."""
+    if not raw_location:
+        return None
+    low = " ".join(raw_location.strip().lower().split())
+    if not low:
+        return None
+    if low in LOCATION_ALIASES:
+        return LOCATION_ALIASES[low]
+    for alias, canonical in sorted(LOCATION_ALIASES.items(), key=lambda kv: len(kv[0]), reverse=True):
+        if re.search(rf"(?<![a-z]){re.escape(alias)}(?![a-z])", low):
+            return canonical
+    return raw_location.strip().title()
+
 
 def normalize_skill(raw_skill: str) -> tuple[str, str] | None:
     """Return canonical (skill_name, category) ONLY for recognized skills cleanly."""

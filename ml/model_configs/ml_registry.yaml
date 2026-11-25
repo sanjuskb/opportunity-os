@@ -7,26 +7,26 @@ models:
   semantic_matcher:
     name: "NexteRaS Semantic Opportunity Matcher"
     model_id: "sentence-transformers/all-MiniLM-L6-v2"
-    version: "1.0.0-baseline"
+    version: "1.0.0-nexteras-v1"
     model_type: "sentence_transformer_biencoder"
     task: "semantic_opportunity_matching"
     input_schema: "StudentProfileText & OpportunityPassageText"
     output_schema: "NormalizedEmbedding384 & CosineSimilarity"
     embedding_dimension: 384
-    # PLACEHOLDER for Sanju's personal fine-tuning output checkpoint:
     local_path: "ml/artifacts/minilm-nexteras-v1"
     fallback_model_id: "sentence-transformers/all-MiniLM-L6-v2"
     license: "Apache-2.0"
-    owner: "Sanju (personal fine-tuning ownership)"
-    fine_tuning_status: "pending_personal_training"
-    evaluation_status: "baseline_evaluated_synthetic"
-    lifecycle_status: "INTEGRATED"
-    approx_ram_mb: 320
+    owner: "Team SyNtRax ML Engineering (branch: ml)"
+    fine_tuning_status: "completed_synthetic_cpu"
+    evaluation_status: "finetuned_vs_baseline_evaluated_synthetic"
+    lifecycle_status: "FINE_TUNED"
+    approx_ram_mb: 340
     approx_disk_mb: 90
     known_limitations:
-      - "Outputs 384-dim vectors whereas initial_schema.sql uses vector(768); see proposed 20261125000001 migration."
-      - "English-centric pretraining; weaker on native Indian scripts without multilingual encoder."
-      - "Fine-tuning owned personally by Sanju; runtime automatically falls back to pretrained baseline until local_path exists."
+      - "Fine-tuned on synthetic contrastive curriculum (48 train / 16 val / 24 untouched test triplets, is_synthetic=true); production generalization still requires real student telemetry."
+      - "Outputs 384-dim vectors whereas initial_schema.sql uses vector(768); see additive 20261125000001 migration."
+      - "English-centric pretraining; weaker on native Indian scripts without multilingual encoder or translation fallback."
+      - "Runtime automatically falls back to pretrained sentence-transformers/all-MiniLM-L6-v2 whenever local_path checkpoint is absent."
 
   multilingual_encoder:
     name: "NexteRaS Multilingual Understanding Encoder"

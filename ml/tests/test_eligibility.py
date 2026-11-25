@@ -74,3 +74,52 @@ def test_first_year_study_restriction() -> None:
     fourth_yr = StudentEligibilityInput(student_id="s2", current_academic_year=4, skills=["Python"])
     assert eng.evaluate(second_yr, reqs).is_eligible is True
     assert eng.evaluate(fourth_yr, reqs).status == "ineligible"
+
+
+def test_location_restrictions_and_experience_and_missing_fields() -> None:
+    eng = DeterministicEligibilityEngine()
+    jd = """
+    Location: Bangalore (On-site only)
+    Eligibility: Open for B.Tech students batch 2026 with minimum 6 months of internship experience.
+    Minimum CGPA 7.0. Required: Python, SQL.
+    """
+    reqs = parse_opportunity_requirements("opp-loc-1", "On-Site Backend Intern", jd)
+    assert "Bengaluru" in reqs.allowed_locations
+    assert reqs.remote_allowed is False
+    assert reqs.min_experience_months == 6
+
+    base_stu = StudentEligibilityInput(
+        student_id="st-loc",
+        degree="B.Tech",
+        graduation_year=2026,
+        cgpa=8.0,
+        experience_months=6,
+        skills=["Python", "SQL"],
+    )
+
+    # Matching city alias (Bangalore <-> Bengaluru) -> eligible
+    same_city = base_stu.model_copy(update={"preferred_locations": ["Bangalore"], "open_to_relocate": False})
+    assert eng.evaluate(same_city, reqs).is_eligible is True
+
+    # Different city + NOT open to relocate -> ineligible
+    no_reloc = base_stu.model_copy(update={"preferred_locations": ["Hyderabad"], "open_to_relocate": False})
+    dec_reject = eng.evaluate(no_reloc, reqs)
+    assert dec_reject.status == "ineligible"
+    assert any("location" in a.requirement.lower() for a in dec_reject.audit_trail)
+
+    # Different city + open to relocate -> eligible
+    yes_reloc = base_stu.model_copy(update={"preferred_locations": ["Hyderabad"], "open_to_relocate": True})
+    assert eng.evaluate(yes_reloc, reqs).is_eligible is True
+
+    # Unknown location and relocation flag -> needs_more_info (never assumed eligible)
+    unk_loc = base_stu.model_copy(update={"preferred_locations": [], "open_to_relocate": None})
+    assert eng.evaluate(unk_loc, reqs).status == "needs_more_info"
+
+    # Insufficient experience -> ineligible
+    low_exp = yes_reloc.model_copy(update={"experience_months": 2})
+    assert eng.evaluate(low_exp, reqs).status == "ineligible"
+
+    # Branch restriction mismatch -> ineligible
+    reqs_br = reqs.model_copy(update={"eligible_branches": ["CSE"], "allowed_locations": []})
+    mech_stu = yes_reloc.model_copy(update={"branch": "Mechanical Engineering"})
+    assert eng.evaluate(mech_stu, reqs_br).status == "ineligible"

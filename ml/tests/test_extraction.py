@@ -76,3 +76,62 @@ def test_file_validation_and_pii_redaction(tmp_path: Path) -> None:
         validate_upload_metadata("resume.exe", 1024)
     with pytest.raises(ValueError):
         validate_upload_metadata("huge.txt", 10 * 1024 * 1024)
+
+
+def test_extract_from_json_md_and_real_pdf(tmp_path: Path) -> None:
+    svc = ResumeExtractionService()
+
+    # Markdown resume
+    md_path = tmp_path / "resume.md"
+    md_path.write_text(
+        "# Sneha Kulkarni\n## Education\nB.Tech CSE Batch 2026 CGPA: 8.9/10\n## Technical Skills\nPython, FastAPI, Docker\n",
+        encoding="utf-8",
+    )
+    md_res = svc.extract_from_file(md_path)
+    assert md_res.profile.graduation_year == 2026
+    assert "FastAPI" in md_res.normalized_skills
+
+    # JSON resume
+    json_path = tmp_path / "resume.json"
+    json_path.write_text(
+        '{"full_name": "Arjun Verma", "degree": "B.E.", "branch": "ECE", "graduation_year": 2027, "cgpa": 8.3, "skills": ["C++", "STM32", "RTOS"]}',
+        encoding="utf-8",
+    )
+    json_res = svc.extract_from_file(json_path)
+    assert json_res.profile.full_name == "Arjun Verma"
+    assert json_res.profile.degree == "B.E."
+    assert "STM32" in json_res.normalized_skills
+
+    # Real PDF binary generated with PyMuPDF
+    import pymupdf
+
+    pdf_path = tmp_path / "student_cv.pdf"
+    doc = pymupdf.open()
+    page = doc.new_page()
+    page.insert_text(
+        (72, 72),
+        "Name: Kavya Reddy\nEducation\nNIT Warangal | B.Tech CSE | Batch 2026 | CGPA: 8.6/10\nSkills\nPython, PostgreSQL, PyTorch",
+    )
+    doc.save(str(pdf_path))
+    doc.close()
+
+    pdf_res = svc.extract_from_file(pdf_path)
+    assert pdf_res.profile.full_name == "Kavya Reddy"
+    assert pdf_res.profile.cgpa == 8.6
+    assert {"Python", "PostgreSQL", "PyTorch"}.issubset(set(pdf_res.normalized_skills))
+
+
+def test_gemini_backend_blocks_missing_credentials_and_rejects_placeholders() -> None:
+    from ml.src.integration.gemini_backends import (
+        GeminiCredentialsMissingError,
+        GeminiStructuredLLMBackend,
+        get_external_service_status,
+    )
+
+    backend = GeminiStructuredLLMBackend(api_key="placeholder-google-gemini-api-key")
+    assert backend.is_configured is False
+    with pytest.raises(GeminiCredentialsMissingError):
+        backend.extract_json("Sample resume")
+
+    status = get_external_service_status({"GEMINI_API_KEY": "placeholder-key"})
+    assert status["gemini_api"]["status"] == "CREDENTIALS_REQUIRED"

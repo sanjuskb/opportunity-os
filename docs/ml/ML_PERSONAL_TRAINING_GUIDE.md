@@ -1,5 +1,8 @@
 # Sanju's Personal 3-Hour CPU Fine-Tuning Guide (`all-MiniLM-L6-v2`)
 
+> [!NOTE]
+> **Status Update (`ml` branch):** Due to hackathon timeline constraints, Team SyNtRax authorized executing the reproducible CPU fine-tuning pipeline using `ml/model_configs/minilm_cpu_finetune.yaml` over `ml/datasets/synthetic/matching_curriculum_v2.json`, producing the verified checkpoint at `ml/artifacts/minilm-nexteras-v1`. This starter guide & `ml/model_configs/personal_minilm_cpu.yaml` remain preserved for additional experimentation.
+
 **Model:** `sentence-transformers/all-MiniLM-L6-v2` (22.7M params, 384-dim embeddings, pretrained weights)  
 **Objective:** Learn end-to-end bi-encoder domain adaptation using `MultipleNegativesRankingLoss` on **CPU-only Windows (`13th Gen Intel Core i5-1334U`, `Intel Iris Xe`, `15.64 GB` RAM)** — never training a transformer from scratch.
 

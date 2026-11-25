@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from datetime import date
 from typing import Any, Sequence
 
@@ -42,6 +43,7 @@ class NexteRaSMLService:
         *,
         cache: ResourceManagedModelCache | None = None,
         registry: ModelRegistry | None = None,
+        semantic_model_path: str | None = None,
         llm_extractor_backend: StructuredLLMBackend | None = None,
         translation_fallback: TranslationFallbackBackend | None = None,
         nli_backend: NLIProbabilityBackend | None = None,
@@ -56,12 +58,13 @@ class NexteRaSMLService:
         self.eligibility_engine = DeterministicEligibilityEngine()
         self.ranker = DeterministicOpportunityRanker()
         self.semantic_matcher = SemanticMatcher(
+            model_name_or_path=semantic_model_path,
             cache=self.cache,
             registry=self.registry,
             encoder_override=semantic_encoder_override,
         )
         self.multilingual_service = MultilingualUnderstandingService(
-            model_id=self.registry.get("multilingual_encoder").model_id,
+            model_id=os.environ.get("ML_MULTILINGUAL_MODEL_ID") or self.registry.get("multilingual_encoder").model_id,
             cache=self.cache,
             fallback_backend=translation_fallback,
             encoder_override=multilingual_encoder_override,
@@ -69,6 +72,37 @@ class NexteRaSMLService:
         self.evidence_verifier = EvidenceVerificationService(
             backend=nli_backend,
             use_pretrained_nli=use_pretrained_nli,
+        )
+
+    @classmethod
+    def from_env(cls) -> "NexteRaSMLService":
+        """Instantiate NexteRaSMLService configured safely from runtime environment variables."""
+        from pathlib import Path
+        from ml.src.integration.gemini_backends import (
+            GeminiStructuredLLMBackend,
+            GeminiTranslationFallbackBackend,
+            is_real_credential,
+        )
+
+        max_models = int(os.environ.get("ML_MAX_LOADED_MODELS", "1"))
+        cpu_threads = int(os.environ.get("TORCH_NUM_THREADS", "6"))
+        cache = (
+            GLOBAL_MODEL_CACHE
+            if max_models == GLOBAL_MODEL_CACHE.max_loaded_models and cpu_threads == GLOBAL_MODEL_CACHE.cpu_threads
+            else ResourceManagedModelCache(max_loaded_models=max_models, cpu_threads=cpu_threads)
+        )
+        env_model_path = os.environ.get("ML_MATCHING_MODEL_PATH", "").strip()
+        resolved_model_path = env_model_path if env_model_path and Path(env_model_path).exists() else None
+        gemini_key = os.environ.get("GEMINI_API_KEY", "")
+        has_gemini = is_real_credential(gemini_key)
+        enable_nli = os.environ.get("ENABLE_PRETRAINED_NLI", "false").strip().lower() in ("1", "true", "yes")
+
+        return cls(
+            cache=cache,
+            semantic_model_path=resolved_model_path,
+            llm_extractor_backend=GeminiStructuredLLMBackend(gemini_key) if has_gemini else None,
+            translation_fallback=GeminiTranslationFallbackBackend(gemini_key) if has_gemini else None,
+            use_pretrained_nli=enable_nli,
         )
 
     def health_and_readiness(self) -> HealthReadinessPayload:

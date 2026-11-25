@@ -73,3 +73,36 @@ def test_multilingual_service_fallback_preserves_original_text() -> None:
     assert meta_te.preprocessed.original_text == te_q
     assert meta_te.fallback_triggered is True
     assert ranked_te[0][0] == 1
+
+
+class _FailingTranslator:
+    def normalize_to_english(self, text: str, source_locale: str, preserved_terms: list[str]) -> str:
+        raise RuntimeError("Simulated translation API outage")
+
+
+def test_multilingual_translation_failure_and_empty_inputs_never_crash() -> None:
+    import pytest
+
+    svc = MultilingualUnderstandingService(
+        fallback_backend=_FailingTranslator(),
+        low_confidence_threshold=0.95,
+        encoder_override=_MockMultilingualEncoder(),
+    )
+    orig = "నాకు బ్యాకెండ్ ఇంటర్న్‌షిప్ కావాలి"
+    ranked, meta = svc.match_query_to_documents(
+        orig,
+        ["Frontend React role", "FastAPI backend server internship"],
+    )
+    assert meta.preprocessed.original_text == orig
+    assert meta.fallback_triggered is True
+    assert meta.fallback_query_text is None
+    assert len(ranked) == 2
+    assert any("Translation fallback failed" in w for w in meta.warnings)
+
+    # Empty document list degrades cleanly without cosine matrix crash
+    empty_ranked, empty_meta = svc.match_query_to_documents(orig, [])
+    assert empty_ranked == []
+    assert empty_meta.preprocessed.original_text == orig
+
+    with pytest.raises(ValueError):
+        svc.match_query_to_documents("   ", ["Doc A"])

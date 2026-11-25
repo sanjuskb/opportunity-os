@@ -1,7 +1,7 @@
 {
   "system": "NexteRaS Machine Learning Benchmark Register",
-  "version": "1.1.0",
-  "note": "Synthetic benchmark scores reflect locally executed CPU tests on ml branch; real/production portal benchmarks and Sanju's personal MiniLM fine-tuning remain pending.",
+  "version": "2.0.0",
+  "note": "Synthetic benchmark scores reflect locally executed CPU tests on ml branch, including fine-tuned all-MiniLM-L6-v2 vs pretrained baseline on matching_curriculum_v2. Real production portal telemetry remains pending.",
   "benchmarks": {
     "resume_extraction": {
       "model": "deterministic-rule-parser-v1",
@@ -54,19 +54,33 @@
     },
     "semantic_matching_pretrained_baseline": {
       "model": "sentence-transformers/all-MiniLM-L6-v2",
-      "dataset": "ml/datasets/synthetic/matching_seed_examples.json (8 held-out queries vs 12 docs)",
+      "dataset": "ml/datasets/synthetic/matching_curriculum_v2.json (24 held-out test queries vs 48 docs)",
       "is_synthetic": true,
-      "metric": "ndcg_at_10 / mean_pos_neg_margin",
+      "metric": "recall_at_1 / ndcg_at_10 / mean_pos_neg_margin",
       "measured_synthetic_baseline": {
+        "recall_at_1": 0.7917,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
+        "mrr_at_10": 0.8958,
+        "ndcg_at_10": 0.9231,
+        "mean_pos_neg_margin": 0.0982,
+        "encode_latency_per_query_ms": 51.01,
+        "peak_rss_mb": 619.9
+      },
+      "finetuned_best_achieved": {
+        "model": "ml/artifacts/minilm-nexteras-v1",
         "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "recall_at_5": 1.0,
         "mrr_at_10": 1.0,
         "ndcg_at_10": 1.0,
-        "mean_pos_neg_margin": 0.2009,
-        "encode_latency_per_query_ms": 58.36,
-        "peak_rss_mb": 615.3
+        "mean_pos_neg_margin": 0.2357,
+        "encode_latency_per_query_ms": 61.49,
+        "peak_rss_mb": 867.9,
+        "starter_reference_margin_before": 0.2009,
+        "starter_reference_margin_after": 0.4618
       },
-      "finetuned_best_achieved": null,
-      "status": "pretrained_baseline_evaluated_personal_training_pending_user"
+      "status": "finetuned_vs_baseline_evaluated_synthetic_curriculum_v2"
     },
     "multilingual_understanding": {
       "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",

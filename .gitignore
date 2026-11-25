@@ -89,6 +89,7 @@ ml/artifacts/
 ml/checkpoints/
 ml/datasets/raw/*
 ml/datasets/processed/*
+ml/datasets/processed_v2/*
 *.pt
 *.pth
 *.bin

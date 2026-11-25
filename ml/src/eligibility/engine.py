@@ -16,6 +16,7 @@ from ml.src.extraction.taxonomy import (
     deduplicate_skills,
     normalize_branch,
     normalize_degree,
+    normalize_location,
 )
 
 
@@ -340,6 +341,69 @@ class DeterministicEligibilityEngine:
                         comparison_result="fail",
                         evidence_source=_evidence_for("required_citizenship", f"Citizenship: {requirements.required_citizenship}"),
                         reason=f"Posting restricts applicants to '{requirements.required_citizenship}'.",
+                    )
+                )
+
+        # 9b. Location & Remote Restrictions
+        norm_req_locs = [
+            loc for loc in (normalize_location(x) for x in requirements.allowed_locations) if loc
+        ]
+        if requirements.remote_allowed is True or "Remote" in norm_req_locs:
+            audit.append(
+                RuleAuditItem(
+                    requirement="Location: Remote or hybrid remote allowed",
+                    student_value="Remote compatible",
+                    comparison_result="pass",
+                    evidence_source=_evidence_for("allowed_locations", f"Allowed: {requirements.allowed_locations}"),
+                    reason="Opportunity explicitly permits remote participation.",
+                )
+            )
+        elif norm_req_locs:
+            stu_locs = {
+                loc for loc in (normalize_location(x) for x in student.preferred_locations) if loc
+            }
+            matched_locs = sorted(set(norm_req_locs) & stu_locs)
+            if matched_locs:
+                audit.append(
+                    RuleAuditItem(
+                        requirement=f"On-site location in [{', '.join(norm_req_locs)}]",
+                        student_value=", ".join(matched_locs),
+                        comparison_result="pass",
+                        evidence_source=_evidence_for("allowed_locations", f"Allowed: {norm_req_locs}"),
+                        reason=f"Student preferred location matches '{matched_locs[0]}'.",
+                    )
+                )
+            elif student.open_to_relocate is True:
+                audit.append(
+                    RuleAuditItem(
+                        requirement=f"On-site location in [{', '.join(norm_req_locs)}]",
+                        student_value="Open to relocate",
+                        comparison_result="pass",
+                        evidence_source=_evidence_for("allowed_locations", f"Allowed: {norm_req_locs}"),
+                        reason="Student explicitly indicated willingness to relocate.",
+                    )
+                )
+            elif student.open_to_relocate is False:
+                audit.append(
+                    RuleAuditItem(
+                        requirement=f"On-site location in [{', '.join(norm_req_locs)}]",
+                        student_value=", ".join(sorted(stu_locs)) or "Not relocating",
+                        comparison_result="fail",
+                        evidence_source=_evidence_for("allowed_locations", f"Allowed: {norm_req_locs}"),
+                        reason=(
+                            f"Posting requires on-site presence in {', '.join(norm_req_locs)}, "
+                            "and student is not open to relocation or location does not match."
+                        ),
+                    )
+                )
+            else:
+                audit.append(
+                    RuleAuditItem(
+                        requirement=f"On-site location in [{', '.join(norm_req_locs)}]",
+                        student_value=", ".join(sorted(stu_locs)) or None,
+                        comparison_result="missing_student_info",
+                        evidence_source=_evidence_for("allowed_locations", f"Allowed: {norm_req_locs}"),
+                        reason="Student location match and relocation willingness are unconfirmed.",
                     )
                 )
 

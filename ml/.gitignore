@@ -13,6 +13,7 @@ venv/
 # Large Datasets & Raw Data
 datasets/raw/*
 datasets/processed/*
+datasets/processed_v2/*
 !datasets/README.md
 !datasets/synthetic/
 datasets/synthetic/*.csv

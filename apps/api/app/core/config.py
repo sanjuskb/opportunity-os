@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     OLOSTEP_API_KEY: str = ""
     CRUSTDATA_API_KEY: str = ""
 
+    # Machine Learning Runtime
+    ML_MATCHING_MODEL_PATH: str = "ml/artifacts/minilm-nexteras-v1"
+    ML_MAX_LOADED_MODELS: int = 1
+    TORCH_NUM_THREADS: int = 6
+    ENABLE_PRETRAINED_NLI: bool = False
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 

@@ -1,9 +1,12 @@
 from fastapi import APIRouter
 
+from app.api.v1.ml import eligibility_router, ml_router
 from app.core.config import settings
 from app.schemas.common import HealthResponse, OpportunityResponse
 
 v1_router = APIRouter(prefix="/v1")
+v1_router.include_router(ml_router)
+v1_router.include_router(eligibility_router)
 
 
 @v1_router.get("/health", response_model=HealthResponse, tags=["Health"])

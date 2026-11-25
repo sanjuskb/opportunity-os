@@ -39,3 +39,56 @@ def test_verification_lexical_fallback_benchmark() -> None:
     assert metrics["cases_evaluated"] == 9
     assert metrics["false_supported_rate"] == 0.0
     assert metrics["accuracy"] >= 0.75
+
+
+class _TimeoutNLIBackend:
+    model_name = "slow-nli-mock"
+
+    def score_pair(self, premise: str, hypothesis: str) -> dict[str, float]:
+        import time
+
+        time.sleep(0.3)
+        return {"entailment": 0.99, "contradiction": 0.0, "neutral": 0.01}
+
+
+class _BrokenLoadNLIBackend:
+    model_name = "broken-nli-mock"
+
+    def score_pair(self, premise: str, hypothesis: str) -> dict[str, float]:
+        from ml.src.infrastructure.runtime import MLInferenceError
+
+        raise MLInferenceError("MODEL_LOAD_FAILED", "Simulated offline weights failure")
+
+
+def test_verification_invalid_inputs_timeout_and_load_failure_fallback() -> None:
+    import pytest
+
+    svc_timeout = EvidenceVerificationService(
+        backend=_TimeoutNLIBackend(), timeout_seconds=0.05, fallback_on_error=True
+    )
+    res_t = svc_timeout.verify_claim(
+        VerificationRequest(
+            claim_id="t1",
+            premise_text="Built FastAPI REST APIs with PostgreSQL in 2025.",
+            hypothesis_claim="Built FastAPI REST APIs with PostgreSQL in 2025.",
+        )
+    )
+    assert "fallback_after_TimeoutError" in res_t.model_used
+    assert res_t.is_advisory_only is True
+    assert res_t.never_auto_approves_actions is True
+
+    svc_err = EvidenceVerificationService(backend=_BrokenLoadNLIBackend(), fallback_on_error=True)
+    res_e = svc_err.verify_claim(
+        VerificationRequest(
+            claim_id="e1",
+            premise_text="GPA 7.4 in B.Tech ECE.",
+            hypothesis_claim="GPA 9.8 in B.Tech CSE.",
+        )
+    )
+    assert res_e.verdict == "contradicted"
+    assert "fallback_after_MLInferenceError" in res_e.model_used
+
+    with pytest.raises(ValueError):
+        svc_err.verify_claim(
+            VerificationRequest(claim_id="bad", premise_text="   ", hypothesis_claim="Built API")
+        )

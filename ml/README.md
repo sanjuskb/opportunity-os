@@ -21,18 +21,18 @@ Machine Learning models, deterministic eligibility/ranking engines, reproducible
 
 | Package | Role | Key Docs |
 | :--- | :--- | :--- |
-| `ml/src/infrastructure/` | Model registry (`ml_registry.yaml`), single-model lazy eviction cache, PII redaction (`redact_pii`) & upload safety checks | [ML_DEPLOYMENT_GUIDE.md](../docs/ml/ML_DEPLOYMENT_GUIDE.md) |
-| `ml/src/extraction/` | Hybrid resume profile & skill extraction (canonical CS/ECE aliases, evidence spans, broken LLM JSON recovery) | [NEXTERAS_ML_ARCHITECTURE_INVENTORY.md](../docs/ml/NEXTERAS_ML_ARCHITECTURE_INVENTORY.md) |
-| `ml/src/eligibility/` | Unstructured JD prerequisite parser & strict deterministic eligibility evaluator (`eligible \| ineligible \| needs_more_info \| unable_to_verify`) | [NEXTERAS_ML_ARCHITECTURE_INVENTORY.md](../docs/ml/NEXTERAS_ML_ARCHITECTURE_INVENTORY.md) |
+| `ml/src/infrastructure/` | Model registry (`ml_registry.yaml`), single-model thread-safe eviction cache (`execute_with_model`), PII redaction (`redact_pii`) & upload safety checks | [ML_DEPLOYMENT_GUIDE.md](../docs/ml/ML_DEPLOYMENT_GUIDE.md) |
+| `ml/src/extraction/` | Hybrid resume profile & skill extraction (`.txt`, `.md`, `.json`, `.pdf` via PyMuPDF, canonical taxonomy, LLM JSON recovery) | [NEXTERAS_ML_ARCHITECTURE_INVENTORY.md](../docs/ml/NEXTERAS_ML_ARCHITECTURE_INVENTORY.md) |
+| `ml/src/eligibility/` | Unstructured JD prerequisite parser & strict deterministic evaluator (degree equivalence, branch, batch, academic year, CGPA/%, backlogs, experience, location/remote, deadline, citizenship & missing-info tracking) | [NEXTERAS_ML_ARCHITECTURE_INVENTORY.md](../docs/ml/NEXTERAS_ML_ARCHITECTURE_INVENTORY.md) |
 | `ml/src/ranking/` | Deduplication, expiry filtering, eligibility separation & weighted baseline ranker + supervised GBDT feature pipeline (`pending_user_interaction_data`) | [ML_EVALUATION_REPORT.md](../docs/ml/ML_EVALUATION_REPORT.md) |
-| `ml/src/multilingual/` | Non-destructive Unicode NFC script preprocessing (`en, hi, te, ta, kn, ml, bn, hinglish`) + `paraphrase-multilingual-MiniLM-L12-v2` + fallback hooks | [ML_EVALUATION_REPORT.md](../docs/ml/ML_EVALUATION_REPORT.md) |
-| `ml/src/verification/` | Auxiliary evidence consistency service (`cross-encoder/nli-deberta-v3-small` + lightweight lexical fallback; `is_advisory_only=True`) | [ML_EVALUATION_REPORT.md](../docs/ml/ML_EVALUATION_REPORT.md) |
-| `ml/src/matching/` | `SemanticMatcher` resolving Sanju's personal fine-tuned checkpoint or automatic pretrained `all-MiniLM-L6-v2` baseline | [ML_PERSONAL_TRAINING_GUIDE.md](../docs/ml/ML_PERSONAL_TRAINING_GUIDE.md) |
-| `ml/src/integration/` | Unified dependency-injectable `NexteRaSMLService` & `NexteRaSLangGraphAdapter` aligned with `apps/api/app/ml/adapter.py` | [ML_INTEGRATION_CONTRACT.md](../docs/ml/ML_INTEGRATION_CONTRACT.md) |
+| `ml/src/multilingual/` | Non-destructive Unicode NFC script preprocessing (`en, hi, te, ta, kn, ml, bn, hinglish`) + `paraphrase-multilingual-MiniLM-L12-v2` + exception-safe translation fallback | [ML_EVALUATION_REPORT.md](../docs/ml/ML_EVALUATION_REPORT.md) |
+| `ml/src/verification/` | Auxiliary evidence consistency service (`cross-encoder/nli-deberta-v3-small` + timeout/error lexical fallback; `is_advisory_only=True`) | [ML_EVALUATION_REPORT.md](../docs/ml/ML_EVALUATION_REPORT.md) |
+| `ml/src/matching/` | `SemanticMatcher` resolving fine-tuned `ml/artifacts/minilm-nexteras-v1` checkpoint or automatic pretrained `all-MiniLM-L6-v2` fallback | [MINILM_CHECKPOINT_REPRODUCTION.md](model_configs/MINILM_CHECKPOINT_REPRODUCTION.md) |
+| `ml/src/integration/` | Unified dependency-injectable `NexteRaSMLService`, real executable `build_nexteras_career_workflow()` LangGraph `StateGraph` (M11 halt/resume), & optional Gemini credential-checked backends | [BACKEND_INTEGRATION_HANDOFF.md](../docs/ml/BACKEND_INTEGRATION_HANDOFF.md) |
 
 ---
 
-## 3. Running Tests, Evaluations & Services
+## 3. Running Tests, Evaluations & Fine-Tuning
 
 ### Activate Environment (PowerShell)
 ```powershell
@@ -40,39 +40,36 @@ cd "d:\ai career intelligence autonomous system"
 .\ml\.venv\Scripts\Activate.ps1
 ```
 
-### Run Full Automated Test Suite (`pytest` across all 8 test modules)
+### Run Automated Tests (Separated Modes)
 ```powershell
-.\ml\.venv\Scripts\python.exe -m pytest ml\tests -v
+# Fast unit, API integration, and LangGraph E2E tests
+.\ml\.venv\Scripts\python.exe -m pytest ml\tests -m "not slow" -v
+
+# Real Hugging Face & fine-tuned PyTorch CPU model inference tests
+.\ml\.venv\Scripts\python.exe -m pytest ml\tests -m "slow" -v
 ```
 
-### Run Offline & Pretrained Model Benchmarks (One Heavy Model Per Process)
+### Run Offline & Pretrained Model Benchmarks
 ```powershell
-# Fast offline checks (< 1s)
-python ml\scripts\run_full_ml_evaluation.py --components extraction eligibility ranking nli_fallback
-
-# Optional sequential Hugging Face CPU evaluations (isolates memory cleanly per process):
-python ml\scripts\run_full_ml_evaluation.py --components semantic_baseline
-python ml\scripts\run_full_ml_evaluation.py --components multilingual
-python ml\scripts\run_full_ml_evaluation.py --components nli
+python ml\scripts\run_full_ml_evaluation.py --components extraction eligibility ranking semantic_baseline multilingual nli_fallback nli
 ```
 
 ---
 
-## 4. Integrating Sanju's Personally Fine-Tuned `all-MiniLM-L6-v2` Model
+## 4. Fine-Tuned `all-MiniLM-L6-v2` Checkpoint (`ml/artifacts/minilm-nexteras-v1`)
 
-Your personal training kit (`ml/scripts/train_minilm.py`, `ml/notebooks/01_minilm_personal_training.ipynb`, `ml/model_configs/personal_minilm_cpu.yaml`) was preserved completely untouched:
-
-1. **Train personally during your 3-hour session:**
+1. **Reproduce Fine-Tuning on CPU (`matching_curriculum_v2.json`):**
    ```powershell
-   python ml\scripts\prepare_minilm_data.py
-   python ml\scripts\train_minilm.py
+   python ml\scripts\generate_curriculum_v2.py
+   python ml\scripts\prepare_minilm_data.py --config ml\model_configs\minilm_cpu_finetune.yaml
+   python ml\scripts\train_minilm.py --config ml\model_configs\minilm_cpu_finetune.yaml
    ```
-   This saves your fine-tuned checkpoint cleanly to **`ml/artifacts/minilm-nexteras-v1`** (gitignored).
-2. **Automatic Activation (Zero Code Changes Needed):**
-   `ModelRegistry` (`ml/model_configs/ml_registry.yaml`) points `semantic_matcher.local_path` to `ml/artifacts/minilm-nexteras-v1`. As soon as that directory contains your saved model files, `SemanticMatcher` and `NexteRaSMLService` automatically switch from pretrained baseline to your fine-tuned checkpoint (`using_finetuned_checkpoint == True`), while continuing to fall back safely when absent!
-3. **Compare Before vs After:**
+   Saves the validation-selected checkpoint to **`ml/artifacts/minilm-nexteras-v1`** (gitignored; weights are never committed to Git).
+2. **Automatic Activation & Pretrained Fallback:**
+   `ModelRegistry` (`ml/model_configs/ml_registry.yaml`) points `semantic_matcher.local_path` to `ml/artifacts/minilm-nexteras-v1`. When present, `SemanticMatcher` and `NexteRaSMLService` load it automatically (`using_finetuned_checkpoint == True`); when absent (e.g., fresh clone), they fall back cleanly to pretrained `sentence-transformers/all-MiniLM-L6-v2`.
+3. **Compare Baseline vs Fine-Tuned:**
    ```powershell
-   python ml\scripts\evaluate_minilm.py
+   python ml\scripts\evaluate_minilm.py --config ml\model_configs\minilm_cpu_finetune.yaml
    ```
 4. **Vector Dimension Contract (`vector(384)` vs `vector(768)`):**
    Before persisting 384-dim MiniLM vectors into Supabase `pgvector`, review [VECTOR_DIMENSION_COMPATIBILITY.md](../docs/ml/VECTOR_DIMENSION_COMPATIBILITY.md) and coordinate applying [20261125000001_add_minilm_384_embeddings.sql](../supabase/migrations/20261125000001_add_minilm_384_embeddings.sql).

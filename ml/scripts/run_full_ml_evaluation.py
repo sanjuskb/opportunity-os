@@ -96,8 +96,8 @@ def main() -> None:
         from sentence_transformers import SentenceTransformer
 
         rss_before = _mem_mb()
-        seed_path = resolve_repo_path("ml/datasets/synthetic/matching_seed_examples.json")
-        proc_dir = resolve_repo_path("ml/datasets/processed")
+        seed_path = resolve_repo_path("ml/datasets/synthetic/matching_curriculum_v2.json")
+        proc_dir = resolve_repo_path("ml/datasets/processed_v2")
         counts = write_processed_splits(seed_path, proc_dir)
         test_q = _read_jsonl(proc_dir / "test_queries.jsonl")
         test_c = _read_jsonl(proc_dir / "test_corpus.jsonl")
@@ -111,7 +111,8 @@ def main() -> None:
         gc.collect()
         results["semantic_baseline_pretrained"] = {
             "model_id": "sentence-transformers/all-MiniLM-L6-v2",
-            "status": "PRETRAINED_BASELINE_ONLY (fine-tuning owned by Sanju)",
+            "status": "PRETRAINED_BASELINE_EVALUATED",
+            "dataset": "matching_curriculum_v2",
             "split_counts": counts,
             "is_synthetic": True,
             "model_load_ms": load_ms,
@@ -119,6 +120,28 @@ def main() -> None:
             "rss_delta_mb": round(rss_peak - rss_before, 1),
             **metrics,
         }
+
+        tuned_dir = resolve_repo_path("ml/artifacts/minilm-nexteras-v1")
+        if tuned_dir.exists() and any(tuned_dir.iterdir()):
+            rss_ft_before = _mem_mb()
+            t1 = time.perf_counter()
+            ft_model = SentenceTransformer(str(tuned_dir), device="cpu")
+            ft_load_ms = round((time.perf_counter() - t1) * 1000.0, 2)
+            ft_metrics = evaluate_sentence_transformer(ft_model, test_q, test_c)
+            ft_peak = _mem_mb()
+            del ft_model
+            gc.collect()
+            results["semantic_finetuned_minilm_v1"] = {
+                "model_id": "ml/artifacts/minilm-nexteras-v1",
+                "base_model": "sentence-transformers/all-MiniLM-L6-v2",
+                "status": "FINE_TUNED_SYNTHETIC_CPU",
+                "dataset": "matching_curriculum_v2",
+                "is_synthetic": True,
+                "model_load_ms": ft_load_ms,
+                "peak_rss_mb": ft_peak,
+                "rss_delta_mb": round(ft_peak - rss_ft_before, 1),
+                **ft_metrics,
+            }
 
     if "multilingual" in args.components:
         rss_before = _mem_mb()
@@ -162,6 +185,7 @@ def main() -> None:
             existing = {}
 
     merged_results = {**(existing.get("results") or {}), **results}
+    tuned_exists = (resolve_repo_path("ml/artifacts/minilm-nexteras-v1") / "model.safetensors").exists()
     report = {
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "system_runtime": runtime,
@@ -170,7 +194,11 @@ def main() -> None:
             "available_gb_at_start": round(vm.available / 1e9, 2),
         },
         "registered_models_summary": registry.summary(),
-        "personal_minilm_training_status": "PENDING_USER_EXECUTION (not executed autonomously per ownership rule)",
+        "minilm_finetuning_status": (
+            "COMPLETED_SYNTHETIC_CPU (ml/artifacts/minilm-nexteras-v1)"
+            if tuned_exists
+            else "CHECKPOINT_ABSENT (using pretrained fallback)"
+        ),
         "results": merged_results,
     }
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")

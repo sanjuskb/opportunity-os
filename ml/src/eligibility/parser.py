@@ -9,10 +9,12 @@ from ml.src.eligibility.schemas import RequirementEvidence, StructuredOpportunit
 from ml.src.extraction.taxonomy import (
     BRANCH_ALIASES,
     DEGREE_ALIASES,
+    LOCATION_ALIASES,
     deduplicate_skills,
     find_skills_with_evidence,
     normalize_branch,
     normalize_degree,
+    normalize_location,
 )
 
 
@@ -27,6 +29,8 @@ def parse_opportunity_requirements(
     explicit_degrees: list[str] | None = None,
     explicit_min_cgpa: float | None = None,
     explicit_deadline: date | None = None,
+    explicit_locations: list[str] | None = None,
+    explicit_remote_allowed: bool | None = None,
 ) -> StructuredOpportunityRequirements:
     """
     Extract explicit requirements with source snippets from raw descriptions.
@@ -43,6 +47,12 @@ def parse_opportunity_requirements(
     min_cgpa = explicit_min_cgpa
     max_backlogs: int | None = None
     min_exp_months: int | None = None
+    allowed_locations: list[str] = [
+        loc for loc in (normalize_location(x) for x in (explicit_locations or [])) if loc and loc != "Remote"
+    ]
+    remote_allowed: bool | None = explicit_remote_allowed
+    if explicit_locations and any((normalize_location(x) == "Remote") for x in explicit_locations):
+        remote_allowed = True if remote_allowed is None else remote_allowed
     citizenship: str | None = None
     ambiguous: list[str] = []
 
@@ -129,6 +139,22 @@ def parse_opportunity_requirements(
             citizenship = "India"
             evidence.append(RequirementEvidence(field="required_citizenship", is_explicit=True, source_snippet=ln[:160]))
 
+        # Location & remote work flags
+        if re.search(r"\b(remote|work from home|wfh|anywhere in india)\b", low):
+            remote_allowed = True
+            evidence.append(RequirementEvidence(field="allowed_locations", is_explicit=True, source_snippet=ln[:160]))
+        if re.search(r"\b(on[-\s]?site|in[-\s]?office|location\s*:|based in)\b", low):
+            if "on-site only" in low or "onsite only" in low or "no remote" in low:
+                remote_allowed = False
+            for loc_alias in sorted(LOCATION_ALIASES, key=len, reverse=True):
+                if loc_alias in {"remote", "work from home", "wfh", "anywhere in india", "pan india"}:
+                    continue
+                if re.search(rf"(?<![a-z]){re.escape(loc_alias)}(?![a-z])", low):
+                    loc_canon = normalize_location(loc_alias)
+                    if loc_canon and loc_canon not in allowed_locations:
+                        allowed_locations.append(loc_canon)
+                        evidence.append(RequirementEvidence(field="allowed_locations", is_explicit=True, source_snippet=ln[:160]))
+
         # Flag vague subjective prerequisites that cannot be verified automatically
         if re.search(r"\b(subject to department chair approval|equivalent industry distinction|special institutional clearance)\b", low):
             ambiguous.append(ln[:160])
@@ -161,6 +187,8 @@ def parse_opportunity_requirements(
         required_skills=req_skills,
         preferred_skills=[s for s in pref_skills if s not in set(req_skills)],
         min_experience_months=min_exp_months,
+        allowed_locations=allowed_locations,
+        remote_allowed=remote_allowed,
         required_citizenship=citizenship,
         deadline=explicit_deadline,
         ambiguous_clauses=ambiguous,

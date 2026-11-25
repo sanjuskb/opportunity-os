@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-11-25T14:47:39.173393+00:00",
+  "generated_at_utc": "2026-11-25T17:06:14.135202+00:00",
   "system_runtime": {
     "torch_version": "2.15.0+cpu",
     "device": "cpu",
@@ -9,21 +9,21 @@
   },
   "system_memory_snapshot": {
     "total_gb": 16.79,
-    "available_gb_at_start": 1.47
+    "available_gb_at_start": 3.28
   },
   "registered_models_summary": [
     {
       "key": "semantic_matcher",
       "model_id": "sentence-transformers/all-MiniLM-L6-v2",
-      "version": "1.0.0-baseline",
+      "version": "1.0.0-nexteras-v1",
       "task": "semantic_opportunity_matching",
       "embedding_dimension": 384,
-      "lifecycle_status": "INTEGRATED",
-      "fine_tuning_status": "pending_personal_training",
-      "evaluation_status": "baseline_evaluated_synthetic",
-      "active_identifier": "sentence-transformers/all-MiniLM-L6-v2",
-      "using_finetuned_checkpoint": false,
-      "approx_ram_mb": 320
+      "lifecycle_status": "FINE_TUNED",
+      "fine_tuning_status": "completed_synthetic_cpu",
+      "evaluation_status": "finetuned_vs_baseline_evaluated_synthetic",
+      "active_identifier": "ml\\artifacts\\minilm-nexteras-v1",
+      "using_finetuned_checkpoint": true,
+      "approx_ram_mb": 340
     },
     {
       "key": "multilingual_encoder",
@@ -91,7 +91,7 @@
       "approx_ram_mb": 20
     }
   ],
-  "personal_minilm_training_status": "PENDING_USER_EXECUTION (not executed autonomously per ownership rule)",
+  "minilm_finetuning_status": "COMPLETED_SYNTHETIC_CPU (ml/artifacts/minilm-nexteras-v1)",
   "results": {
     "extraction": {
       "dataset": "nexteras_resume_extraction_benchmark",
@@ -104,7 +104,7 @@
       "skill_f1": 1.0,
       "unsupported_extraction_count": 0,
       "missing_field_checks_passed": 2,
-      "total_latency_ms": 22.05,
+      "total_latency_ms": 90.88,
       "per_case": [
         {
           "case_id": "res-01",
@@ -140,8 +140,8 @@
           ]
         }
       ],
-      "process_rss_mb_after": 205.4,
-      "rss_delta_mb": 0.4
+      "process_rss_mb_after": 206.6,
+      "rss_delta_mb": 0.6
     },
     "eligibility": {
       "dataset": "nexteras_eligibility_edge_cases",
@@ -152,7 +152,7 @@
       "false_ineligible_rate": 0.0,
       "unknown_and_unverified_handling_rate": 1.0,
       "explanation_traceability_rate": 1.0,
-      "total_latency_ms": 0.34,
+      "total_latency_ms": 1.33,
       "per_case": [
         {
           "case_id": "elig-pass-be-equiv",
@@ -211,7 +211,7 @@
           "audit_rules_checked": 2
         }
       ],
-      "process_rss_mb_after": 205.4,
+      "process_rss_mb_after": 206.6,
       "rss_delta_mb": 0.0
     },
     "ranking": {
@@ -243,9 +243,9 @@
           "score": 25.53
         }
       ],
-      "latency_ms": 0.24,
-      "process_rss_mb_after": 205.4,
-      "rss_delta_mb": 0.0
+      "latency_ms": 0.97,
+      "process_rss_mb_after": 206.7,
+      "rss_delta_mb": 0.1
     },
     "verification_lexical_fallback": {
       "dataset": "nexteras_verification_claims_benchmark",
@@ -259,7 +259,7 @@
         "contradicted": 1.0,
         "insufficient_evidence": 1.0
       },
-      "total_latency_ms": 0.36,
+      "total_latency_ms": 10.72,
       "per_case": [
         {
           "claim_id": "ver-sup-01",
@@ -334,31 +334,34 @@
           "correct": true
         }
       ],
-      "peak_rss_mb": 205.4
+      "peak_rss_mb": 532.7
     },
     "semantic_baseline_pretrained": {
       "model_id": "sentence-transformers/all-MiniLM-L6-v2",
-      "status": "PRETRAINED_BASELINE_ONLY (fine-tuning owned by Sanju)",
+      "status": "PRETRAINED_BASELINE_EVALUATED",
+      "dataset": "matching_curriculum_v2",
       "split_counts": {
-        "train_pairs": 20,
-        "val_pairs": 6,
-        "test_queries": 8,
-        "test_corpus_docs": 12
+        "train_pairs": 48,
+        "val_pairs": 16,
+        "val_queries": 16,
+        "val_corpus_docs": 32,
+        "test_queries": 24,
+        "test_corpus_docs": 48
       },
       "is_synthetic": true,
-      "model_load_ms": 23672.87,
-      "peak_rss_mb": 615.3,
-      "rss_delta_mb": 163.2,
-      "recall_at_1": 1.0,
+      "model_load_ms": 2054.11,
+      "peak_rss_mb": 598.3,
+      "rss_delta_mb": 141.7,
+      "recall_at_1": 0.7917,
       "recall_at_3": 1.0,
       "recall_at_5": 1.0,
-      "mrr_at_10": 1.0,
-      "ndcg_at_10": 1.0,
-      "mean_pos_neg_margin": 0.2009,
-      "num_queries": 8.0,
-      "corpus_size": 12.0,
-      "encode_latency_total_ms": 466.89,
-      "encode_latency_per_query_ms": 58.36
+      "mrr_at_10": 0.8958,
+      "ndcg_at_10": 0.9231,
+      "mean_pos_neg_margin": 0.0982,
+      "num_queries": 24.0,
+      "corpus_size": 48.0,
+      "encode_latency_total_ms": 4938.65,
+      "encode_latency_per_query_ms": 205.78
     },
     "multilingual": {
       "dataset": "nexteras_multilingual_7_languages_eval",
@@ -471,10 +474,10 @@
         "ta",
         "te"
       ],
-      "total_latency_ms": 646.93,
-      "model_load_ms": 63801.61,
-      "peak_rss_mb": 1215.6,
-      "rss_delta_mb": 1010.5
+      "total_latency_ms": 1017.77,
+      "model_load_ms": 5969.77,
+      "peak_rss_mb": 1227.9,
+      "rss_delta_mb": 699.6
     },
     "verification_pretrained_nli": {
       "dataset": "nexteras_verification_claims_benchmark",
@@ -488,7 +491,7 @@
         "contradicted": 1.0,
         "insufficient_evidence": 0.6667
       },
-      "total_latency_ms": 67417.86,
+      "total_latency_ms": 6105.33,
       "per_case": [
         {
           "claim_id": "ver-sup-01",
@@ -563,8 +566,28 @@
           "correct": false
         }
       ],
-      "peak_rss_mb": 1054.6,
-      "rss_delta_mb": 849.3
+      "peak_rss_mb": 1207.7,
+      "rss_delta_mb": 675.0
+    },
+    "semantic_finetuned_minilm_v1": {
+      "model_id": "ml/artifacts/minilm-nexteras-v1",
+      "base_model": "sentence-transformers/all-MiniLM-L6-v2",
+      "status": "FINE_TUNED_SYNTHETIC_CPU",
+      "dataset": "matching_curriculum_v2",
+      "is_synthetic": true,
+      "model_load_ms": 1488.21,
+      "peak_rss_mb": 617.9,
+      "rss_delta_mb": 114.9,
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "mean_pos_neg_margin": 0.2357,
+      "num_queries": 24.0,
+      "corpus_size": 48.0,
+      "encode_latency_total_ms": 5821.07,
+      "encode_latency_per_query_ms": 242.54
     }
   }
 }

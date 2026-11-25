@@ -40,6 +40,25 @@ def test_seed_dataset_schema_and_zero_leakage(tmp_path: Path) -> None:
     assert counts["test_corpus_docs"] > counts["test_queries"]
 
 
+def test_curriculum_v2_dataset_quality_and_zero_leakage(tmp_path: Path) -> None:
+    cur_path = REPO_ROOT / "ml" / "datasets" / "synthetic" / "matching_curriculum_v2.json"
+    records = load_seed_records(cur_path)
+    assert len(records) == 88
+    assert all(r.is_synthetic for r in records)
+    assert all(r.hard_negative_opportunity is not None for r in records)
+
+    # Validates zero split leakage, duplicate summaries, or same-domain false negatives
+    validate_no_split_leakage(records)
+
+    counts = write_processed_splits(cur_path, tmp_path)
+    assert counts["train_pairs"] == 48
+    assert counts["val_pairs"] == 16
+    assert counts["val_queries"] == 16
+    assert counts["val_corpus_docs"] == 32
+    assert counts["test_queries"] == 24
+    assert counts["test_corpus_docs"] == 48
+
+
 def test_personal_cpu_config_bounds() -> None:
     cfg = load_yaml_config("ml/model_configs/personal_minilm_cpu.yaml")
     assert cfg["hardware"]["device"] == "cpu"

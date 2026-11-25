@@ -23,7 +23,7 @@ def is_ml_subsystem_available() -> bool:
 
 
 def get_ml_service(**kwargs: Any) -> Any:
-    """Dependency injection factory returning NexteRaSMLService cleanly when ml package is present."""
+    """Dependency injection factory returning env-configured NexteRaSMLService cleanly when ml package is present."""
     try:
         from ml.src.integration.fastapi_adapter import NexteRaSMLService
     except ImportError as exc:
@@ -31,4 +31,6 @@ def get_ml_service(**kwargs: Any) -> Any:
             "NexteRaS ML package (`ml.src`) is not installed in the API-only environment."
         ) from exc
 
+    if not kwargs:
+        return NexteRaSMLService.from_env()
     return NexteRaSMLService(**kwargs)
