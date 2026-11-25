@@ -1,25 +1,11 @@
 name: opportunity-os
 
+# Local development uses Supabase CLI (`supabase start`) as the single source of truth
+# for PostgreSQL 16 + pgvector (port 54322), Auth (GoTrue), and Storage (port 54321).
+# Start Supabase before starting the containerized API:
+#   supabase start && supabase db reset
+#   docker compose up -d
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: opportunity-os-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-    ports:
-      - "54322:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     container_name: opportunity-os-redis
@@ -42,16 +28,16 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@host.docker.internal:54322/postgres
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OLOSTEP_API_KEY=${OLOSTEP_API_KEY:-}
       - CRUSTDATA_API_KEY=${CRUSTDATA_API_KEY:-}
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
 
@@ -69,5 +55,4 @@ services:
       - api
 
 volumes:
-  postgres_data:
   redis_data:
