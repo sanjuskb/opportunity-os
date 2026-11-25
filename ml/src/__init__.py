@@ -1,4 +1,4 @@
 """
-Opportunity OS ML Python Package
+NexteRaS ML Python Package
 """
 __version__ = "0.1.0"

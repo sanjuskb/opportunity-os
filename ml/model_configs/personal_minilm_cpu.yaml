@@ -1,0 +1,37 @@
+# Personal CPU Fine-Tuning Configuration for NexteRaS
+# Hardware Target: Windows 11 · Intel Core i5-1334U (10C/12T) · Intel Iris Xe · 15.6 GB RAM (CPU-Only)
+# Estimated CPU Run Time (~30-45 synthetic pairs, 3 epochs): ~1.5 to 4 minutes after ~90 MB model download
+
+experiment_name: "personal_minilm_nexteras_cpu"
+seed: 42
+
+hardware:
+  device: "cpu"
+  cpu_threads: 6
+  use_fp16: false
+
+model:
+  base_model_name: "sentence-transformers/all-MiniLM-L6-v2"
+  embedding_dimension: 384
+  max_sequence_length: 256
+
+data:
+  seed_file: "ml/datasets/synthetic/matching_seed_examples.json"
+  processed_dir: "ml/datasets/processed"
+  train_file: "ml/datasets/processed/train_pairs.jsonl"
+  val_file: "ml/datasets/processed/val_pairs.jsonl"
+  test_queries_file: "ml/datasets/processed/test_queries.jsonl"
+  test_corpus_file: "ml/datasets/processed/test_corpus.jsonl"
+
+training:
+  loss: "MultipleNegativesRankingLoss"
+  epochs: 3
+  batch_size: 8
+  learning_rate: 2.0e-5
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  save_checkpoints: false
+
+output:
+  model_dir: "ml/artifacts/minilm-nexteras-v1"
+  report_dir: "ml/experiments/runs"

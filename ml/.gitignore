@@ -7,26 +7,46 @@ __pycache__/
 .venv/
 env/
 venv/
+.pytest_cache/
+.ruff_cache/
 
-# Large Datasets
+# Large Datasets & Raw Data
 datasets/raw/*
 datasets/processed/*
 !datasets/README.md
+!datasets/synthetic/
+datasets/synthetic/*.csv
+datasets/synthetic/*.parquet
+datasets/synthetic/*.large.*
+*.csv
+*.parquet
+*.zip
+*.tar.gz
 
-# Model Checkpoints & Binaries
+# Model Caches, Checkpoints & Weights
+.cache/
+hf_cache/
+huggingface/
+models_cache/
 *.pt
 *.pth
 *.bin
 *.safetensors
 *.onnx
 *.onnx.data
+*.h5
+*.ckpt
 checkpoints/
 models_exported/
+artifacts/
 
 # Experiment Logs & Tracking
 mlruns/
 .dvc/cache/
 wandb/
+*.log
+experiments/runs/*
+!experiments/runs/.gitkeep
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/

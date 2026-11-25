@@ -77,3 +77,23 @@ Thumbs.db
 
 # Supabase Local
 supabase/.temp/
+
+# Jupyter & ML Local Artifacts / Caches
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+.cache/
+hf_cache/
+mlruns/
+ml/.venv/
+ml/artifacts/
+ml/checkpoints/
+ml/datasets/raw/*
+ml/datasets/processed/*
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.onnx
+*.ckpt
+logs/
+*.log
