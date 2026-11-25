@@ -1,14 +1,16 @@
-"""Decoupled inference interface for base vs. fine-tuned semantic bi-encoder matching."""
+"""Decoupled inference interface for base vs. personally fine-tuned semantic bi-encoder matching."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 
 from ml.src.evaluation.retrieval_metrics import cosine_similarity_matrix
+from ml.src.infrastructure.model_registry import ModelRegistry
+from ml.src.infrastructure.runtime import GLOBAL_MODEL_CACHE, ResourceManagedModelCache
 
 
 @dataclass(frozen=True)
@@ -19,22 +21,54 @@ class RankedMatch:
 
 
 class SemanticMatcher:
-    """Wrapper over SentenceTransformer keeping model loading decoupled from API routes."""
+    """
+    Lazy CPU bi-encoder wrapper keeping model loading cleanly decoupled from API routes.
+    Automatically resolves Sanju's fine-tuned checkpoint when present, or safely falls
+    back to pretrained 'sentence-transformers/all-MiniLM-L6-v2' without failing.
+    """
 
-    def __init__(self, model_name_or_path: str | Path, device: str = "cpu") -> None:
-        from sentence_transformers import SentenceTransformer
-
-        self.model_identifier = str(model_name_or_path)
+    def __init__(
+        self,
+        model_name_or_path: str | Path | None = None,
+        device: str = "cpu",
+        *,
+        cache: ResourceManagedModelCache | None = None,
+        registry: ModelRegistry | None = None,
+        encoder_override: Any | None = None,
+    ) -> None:
         self.device = device
-        self._model = SentenceTransformer(self.model_identifier, device=device)
+        self.cache = cache or GLOBAL_MODEL_CACHE
+        self._encoder_override = encoder_override
+
+        if model_name_or_path is not None:
+            self.model_identifier = str(model_name_or_path)
+            self.using_finetuned_checkpoint = Path(self.model_identifier).exists()
+        else:
+            reg = registry or ModelRegistry()
+            spec = reg.get("semantic_matcher")
+            self.model_identifier, self.using_finetuned_checkpoint = spec.resolve_active_identifier()
+
+    def _get_model(self) -> Any:
+        if self._encoder_override is not None:
+            return self._encoder_override
+
+        def _load() -> Any:
+            from sentence_transformers import SentenceTransformer
+
+            return SentenceTransformer(self.model_identifier, device=self.device)
+
+        return self.cache.get_or_load(f"semantic::{self.model_identifier}", _load)
 
     @property
     def embedding_dimension(self) -> int:
-        dim = self._model.get_sentence_embedding_dimension()
-        return int(dim) if dim is not None else 384
+        if self._encoder_override is not None and hasattr(self._encoder_override, "get_sentence_embedding_dimension"):
+            dim = self._encoder_override.get_sentence_embedding_dimension()
+            return int(dim) if dim is not None else 384
+        return 384
 
     def encode(self, texts: Sequence[str]) -> np.ndarray:
-        return self._model.encode(
+        model = self._get_model()
+        return model.encode(
             list(texts),
             normalize_embeddings=True,
             convert_to_numpy=True,

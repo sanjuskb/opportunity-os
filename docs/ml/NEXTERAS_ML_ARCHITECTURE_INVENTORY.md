@@ -1,35 +1,25 @@
-# NexteRaS — ML Architecture Inventory & Readiness Audit
+# NexteRaS — ML Architecture Inventory & Final Status Matrix
 
-**Branch:** `ml` (branched cleanly from `origin/sanju` at `a8022a3`)  
-**Scope:** Strictly grounded audit of designed vs. implemented NexteRaS ML capabilities and architectural boundaries.
-
----
-
-## 1. Intelligence Layer Boundaries (Non-Negotiable Separation)
-
-| Intelligence Tier | Owns | Must Never Do |
-| :--- | :--- | :--- |
-| **Deterministic Python Logic** | CGPA inequality, graduation year/batch check, degree/branch exact & synonym mapping, schema validation, hard eligibility gating | Use probabilistic thresholding to guess or override hard prerequisites |
-| **Specialized Local ML (`ml/`)** | Dense semantic embeddings (`all-MiniLM-L6-v2` 384-dim), ESCO skill linking, NLI bullet grounding, calibrated multi-factor / gradient-boosted ranking (once labeled click data exists) | Fabricate factual credentials or replace deterministic rules |
-| **Gemini / Frontier LLM** | Conversational reasoning, structured JD/resume JSON extraction, plain-language match explanations, multilingual coaching, LangGraph tool selection | Bypass eligibility gates or hallucinate unverified projects |
+**Branch:** `ml`  
+**Audit Date:** 2026-11-25  
+**Status Legend (Strictly Applied):**
+- `IMPLEMENTED`: Production/modular code exists on `ml`.
+- `TESTED`: Automated `pytest` suite passes for the component.
+- `EVALUATED`: Measured on a documented local CPU benchmark dataset.
+- `INTEGRATED`: Compatibility adapter built and test-verified against `apps/api` & LangGraph shapes (awaiting live Postgres/Gemini credentials).
+- `DEPLOYED`: Actually deployed to live Cloud Run / Vercel / Supabase (none yet).
+- `PENDING`: Intentionally awaiting personal execution or external data/integration.
 
 ---
 
-## 2. Six Intended ML Capabilities — Current Audit Status
+## 1. Reconciliation Inventory Table (Part 4 Requirement)
 
-| # | Capability | Candidate Approach / Model | Inputs | Outputs | Status on `ml` Branch Start (`a8022a3`) | Planned Implementation Target |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1** | **Semantic Opportunity Matching** | `sentence-transformers/all-MiniLM-L6-v2` (384-dim CPU baseline) + fine-tuned bi-encoder (`MultipleNegativesRankingLoss`) | Normalized Student Profile text & Opportunity Passage text | 384-dim unit vectors, cosine scores, top-K matches | Config & scaffold (`ml/model_configs/baseline_matching.yaml`), `pgvector` schema uses `vector(768)`; **starter CPU training & eval code now prepared** | Personal 3-hr CPU fine-tuning (`minilm-nexteras-v1`), then decoupled inference adapter |
-| **2** | **Resume Skill Extraction** | PyMuPDF deterministic text read + Pydantic schema-enforced structured extraction (Gemini Flash JSON mode API or local GLiNER `urchade/gliner_base-v2.1` + rule normalizer) | Raw resume text / PDF blocks | Validated `ExtractedResume` JSON (`skills`, `education`, `projects`, `experience`, `certifications`) | Designed in `docs/ml/ML_MODEL_SELECTION_AND_EVALUATION.md`; **not yet coded** | Overnight Task A (`ml/src/extraction/`) |
-| **3** | **Opportunity Ranking** | Hard deterministic gate $M_{\text{elig}} \times (w_1 S_{\text{sem}} + w_2 S_{\text{skills}} + w_3 S_{\text{urgency}} + w_4 S_{\text{loc}})$; upgrade to LightGBM/XGBoost **only once interaction labels exist** | Eligible candidate-opportunity pairs + semantic scores + deadline | Ordered opportunity feed + score breakdown | Formula designed in `ML_MODEL_SELECTION_AND_EVALUATION.md`; `best_achieved: null` | Overnight Task C: transparent deterministic-gated heuristic baseline first; document labeling needs for GBDT |
-| **4** | **Eligibility Assessment** | Deterministic Python rule evaluator (`batch`, `degree`, `CGPA`, `branch`, normalized skill match) + structured prerequisite extractor | Student Career Passport + extracted JD prerequisites | `EligibilityResult` (`is_eligible`, boolean flags, traceable reason strings) | Frontend TypeScript explainer exists in `mockStore.ts`; Python engine **not yet implemented** | Overnight Task D (`ml/src/eligibility/`) returning traceable reasons |
-| **5** | **Multilingual Text Understanding** | Pretrained multilingual encoder / normalization test suite (`paraphrase-multilingual-MiniLM-L12-v2` or Indic-capable encoder) + Gemini translation/voice | Text / mixed Hinglish / regional queries across `en, hi, te, ta, kn, ml, bn` | Multilingual query embeddings, language validation report | **Not tested** on Python ML side; frontend locale list supports 7 codes | Overnight Task B: audit all 7 locales individually without unverified support claims |
-| **6** | **Resume Analysis & Hallucination Gate** | Reused pretrained NLI cross-encoder (`cross-encoder/nli-deberta-v3-small`) checking Career Passport premise vs tailored resume bullet hypothesis | Verified Career Passport items + tailored resume bullets | Entailment score, `is_grounded` flag, unsupported-claim warning | Modeled as `M09` in frontend Agent Control Center; **no Python inference module yet** | Overnight Task E (`ml/src/extraction/nli_gate.py`) reusing pretrained NLI without unnecessary custom training |
-
----
-
-## 3. Existing Codebase Surfaces Inspected
-- **Frontend (`sanju`, untouched):** 29 Next.js App Router pages, `Agent Control Center` (`M01`–`M14`), `packages/shared-types/src/index.ts` (`StudentProfile`, `Opportunity`, `EligibilityResult`, `IndianLanguage`).
-- **Backend (`apps/api`, untouched):** FastAPI `app/main.py` with `/api/v1/health` and empty `/api/v1/opportunities` stub (`router.py`), Pydantic schemas (`app/schemas/common.py`: `OpportunityResponse`, `EligibilityCheckRequest`, `EligibilityCheckResponse`), empty placeholder directory `apps/api/app/ml/__init__.py`.
-- **Database (`supabase/migrations/20261123000001_initial_schema.sql`, untouched):** 25 PostgreSQL tables including `opportunity_embeddings (embedding vector(768))` indexed with `ivfflat (vector_cosine_ops)`.
-- **LangGraph Workflows (`docs/agents/langgraph-workflows.md`):** Planned workflow graphs (`DiscoveryWorkflow`, `EligibilityWorkflow`, `ResumeWorkflow`, `ApplicationWorkflow`) and Pydantic tool schemas.
+| Capability | Existing Implementation (Start of `ml`) | Remaining Work Completed on `ml` | Chosen Approach | Current Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **A. Resume Skill & Profile Extraction** | Blueprint only in `ML_MODEL_SELECTION_AND_EVALUATION.md` | Implemented Pydantic schemas, canonical CS/ECE skill/degree/branch taxonomy, word-boundary evidence extraction, malformed LLM JSON recovery & hallucination guard (`ml/src/extraction/`) | Deterministic rule parser + pluggable `StructuredLLMBackend` (no key hardcoding) | **IMPLEMENTED, TESTED, EVALUATED** (`1.0` Skill F1 / `0` hallucinated on synthetic benchmark; real PDF LLM eval `PENDING` API key) |
+| **B. Multilingual Text Understanding** | Only UI locale enum `IndianLanguage` (`en, hi, te, ta, kn, ml, bn`) | Implemented non-destructive NFC script preprocessor (`ml/src/multilingual/preprocessing.py`), lazy `paraphrase-multilingual-MiniLM-L12-v2` service + confidence/locale fallback routing, and 8-locale audit | Pretrained `paraphrase-multilingual-MiniLM-L12-v2` + explicit `EMPIRICALLY_WEAK_DIRECT_LOCALES` fallback to translation/LLM | **IMPLEMENTED, TESTED, EVALUATED** (Strong `en`/`hinglish` 1.0 R@1; `hi` 0.67; `ta`/`bn`/`kn`/`te`/`ml` routed to translation fallback) |
+| **C. Opportunity Ranking Engine** | Mathematical weights drafted in blueprint only | Implemented deduplication, expiry filtering, eligibility separation (`ranked` vs `excluded`), explainable score contributions, & supervised GBDT feature/readiness pipeline (`ml/src/ranking/`) | Rule-gated linear baseline; LightGBM/XGBoost deferred until `>= 500` real user interaction sessions exist | **IMPLEMENTED, TESTED, EVALUATED** (`1.0` P@1 / nDCG@3 on synthetic benchmark; supervised GBDT `PENDING` real telemetry) |
+| **D. Deterministic Eligibility Engine** | Client-side mock helper in `apps/web/src/lib/mock-data/` | Implemented JD requirement parser (`parser.py`) + strict deterministic evaluator covering degree equivalence, branch, batch, academic year, CGPA/%, backlogs, deadline, citizenship & missing-info tracking (`ml/src/eligibility/`) | Pure deterministic logic returning `eligible \| ineligible \| needs_more_info \| unable_to_verify` with audit spans | **IMPLEMENTED, TESTED, EVALUATED** (`1.0` exact accuracy, `0.0` false eligible rate on 8 edge cases) |
+| **E. Evidence Verification (NLI)** | Modeled visually as `M09` node in Agent Control Center | Implemented replaceable `EvidenceVerificationService` supporting lazy `cross-encoder/nli-deberta-v3-small` + lightweight lexical fallback, strict thresholds, and advisory invariants (`ml/src/verification/`) | Auxiliary pretrained NLI cross-encoder (`is_advisory_only=True`, never auto-approves external actions) | **IMPLEMENTED, TESTED, EVALUATED** (`0.8889` accuracy, `0.0` false-supported rate with DeBERTa-v3-small; async worker binding `PENDING`) |
+| **F. Semantic Matching & Personal Lab** | `personal_minilm_cpu.yaml`, `train_minilm.py`, starter splits | Preserved Sanju's training kit untouched; upgraded `SemanticMatcher` with lazy loading, registry checkpoint resolution & automatic pretrained fallback (`ml/src/matching/`) | `sentence-transformers/all-MiniLM-L6-v2` (`384`-dim CPU) + placeholder `ml/artifacts/minilm-nexteras-v1` | **PRETRAINED BASELINE EVALUATED & INTEGRATED** (`1.0` synthetic R@1; personal fine-tuning **PENDING Sanju**) |
+| **G. Inference Service, Registry & DB Compat** | Empty `apps/api/app/ml/` stub; `pgvector(768)` schema conflict | Built `ModelRegistry`, `ResourceManagedModelCache(max_loaded_models=1)`, `redact_pii`, `NexteRaSMLService`, `NexteRaSLangGraphAdapter`, `apps/api/app/ml/adapter.py`, `Dockerfile.ml`, & proposed additive `vector(384)` SQL migration | Modular clean boundaries decoupled from FastAPI routes; forward-only `20261125000001_add_minilm_384_embeddings.sql` | **IMPLEMENTED, TESTED, INTEGRATION-READY** (`DEPLOYED: PENDING` PR review & staging DB/Cloud Run deploy) |

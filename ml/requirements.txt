@@ -1,4 +1,4 @@
-﻿# Reproducible CPU-only Python 3.11 dependencies for NexteRaS ML (ml/.venv)
+# Reproducible CPU-only Python 3.11 dependencies for NexteRaS ML (ml/.venv)
 # Generated from verified ml/.venv on Windows (Python 3.11.16, Intel Iris Xe CPU-only)
 --extra-index-url https://download.pytorch.org/whl/cpu
 annotated-doc==0.0.7

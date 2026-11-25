@@ -1,34 +1,117 @@
 {
-  "system": "Opportunity OS Machine Learning Benchmark Register",
-  "version": "1.0.0",
+  "system": "NexteRaS Machine Learning Benchmark Register",
+  "version": "1.1.0",
+  "note": "Synthetic benchmark scores reflect locally executed CPU tests on ml branch; real/production portal benchmarks and Sanju's personal MiniLM fine-tuning remain pending.",
   "benchmarks": {
-    "resume_parser": {
-      "metric": "field_extraction_accuracy",
-      "baseline": 0.82,
+    "resume_extraction": {
+      "model": "deterministic-rule-parser-v1",
+      "dataset": "ml/datasets/synthetic/resume_extraction_benchmark.json",
+      "is_synthetic": true,
+      "metric": "skill_f1 / scalar_exact_match",
+      "measured_synthetic": {
+        "schema_validity_rate": 1.0,
+        "scalar_exact_match_accuracy": 1.0,
+        "skill_precision": 1.0,
+        "skill_recall": 1.0,
+        "skill_f1": 1.0,
+        "unsupported_extraction_count": 0
+      },
       "target": 0.98,
-      "best_achieved": null,
-      "status": "pending_experimentation"
+      "production_best_achieved": null,
+      "status": "evaluated_on_synthetic_benchmark_pending_real_resumes"
     },
-    "semantic_matching": {
-      "metric": "ndcg_at_10",
-      "baseline": 0.68,
-      "target": 0.85,
-      "best_achieved": null,
-      "status": "pending_experimentation"
+    "deterministic_eligibility": {
+      "model": "deterministic-rule-engine-v1",
+      "dataset": "ml/datasets/synthetic/eligibility_edge_cases.json",
+      "is_synthetic": true,
+      "metric": "exact_outcome_accuracy / false_eligible_rate",
+      "measured_synthetic": {
+        "exact_outcome_accuracy": 1.0,
+        "false_eligible_rate": 0.0,
+        "false_ineligible_rate": 0.0,
+        "unknown_and_unverified_handling_rate": 1.0,
+        "explanation_traceability_rate": 1.0
+      },
+      "target": 1.0,
+      "production_best_achieved": null,
+      "status": "evaluated_on_synthetic_edge_cases"
     },
-    "skill_classification": {
-      "metric": "taxonomy_linkage_accuracy",
-      "baseline": 0.74,
-      "target": 0.95,
-      "best_achieved": null,
-      "status": "pending_experimentation"
+    "opportunity_ranking_baseline": {
+      "model": "deterministic-weighted-ranker-v1",
+      "dataset": "ml/datasets/synthetic/ranking_benchmark.json",
+      "is_synthetic": true,
+      "metric": "precision_at_1 / ndcg_at_3",
+      "measured_synthetic": {
+        "precision_at_1": 1.0,
+        "ndcg_at_3": 1.0,
+        "eligibility_violations_in_ranked": 0,
+        "duplicates_removed": 1,
+        "expired_removed": 1
+      },
+      "supervised_ml_status": "pending_user_interaction_data (>= 500 sessions)",
+      "production_best_achieved": null,
+      "status": "baseline_evaluated_supervised_pending_data"
     },
-    "hallucination_verification": {
-      "metric": "hallucination_detection_precision",
-      "baseline": 0.88,
-      "target": 0.99,
-      "best_achieved": null,
-      "status": "pending_experimentation"
+    "semantic_matching_pretrained_baseline": {
+      "model": "sentence-transformers/all-MiniLM-L6-v2",
+      "dataset": "ml/datasets/synthetic/matching_seed_examples.json (8 held-out queries vs 12 docs)",
+      "is_synthetic": true,
+      "metric": "ndcg_at_10 / mean_pos_neg_margin",
+      "measured_synthetic_baseline": {
+        "recall_at_1": 1.0,
+        "mrr_at_10": 1.0,
+        "ndcg_at_10": 1.0,
+        "mean_pos_neg_margin": 0.2009,
+        "encode_latency_per_query_ms": 58.36,
+        "peak_rss_mb": 615.3
+      },
+      "finetuned_best_achieved": null,
+      "status": "pretrained_baseline_evaluated_personal_training_pending_user"
+    },
+    "multilingual_understanding": {
+      "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "dataset": "ml/datasets/synthetic/multilingual_eval_corpus.json (24 queries across 8 language variants)",
+      "is_synthetic": true,
+      "metric": "overall_recall_at_1 / per_language_ndcg_at_10",
+      "measured_synthetic": {
+        "overall_recall_at_1": 0.5,
+        "overall_recall_at_3": 0.7083,
+        "overall_mrr_at_10": 0.666,
+        "overall_ndcg_at_10": 0.748,
+        "en_recall_at_1": 1.0,
+        "hinglish_recall_at_1": 1.0,
+        "hi_recall_at_1": 0.6667,
+        "ta_recall_at_1": 0.6667,
+        "bn_recall_at_1": 0.3333,
+        "kn_recall_at_1": 0.3333,
+        "te_recall_at_1": 0.0,
+        "ml_recall_at_1": 0.0,
+        "fallback_required_locales": ["bn", "kn", "ml", "ta", "te"],
+        "peak_rss_mb": 1215.6
+      },
+      "status": "evaluated_translation_fallback_required_for_5_indic_locales"
+    },
+    "evidence_verification_nli": {
+      "model": "cross-encoder/nli-deberta-v3-small",
+      "dataset": "ml/datasets/synthetic/verification_claims_benchmark.json (9 cases)",
+      "is_synthetic": true,
+      "metric": "accuracy / false_supported_rate",
+      "measured_synthetic_nli": {
+        "accuracy": 0.8889,
+        "false_supported_rate": 0.0,
+        "supported_accuracy": 1.0,
+        "contradicted_accuracy": 1.0,
+        "insufficient_evidence_accuracy": 0.6667,
+        "peak_rss_mb": 1054.6
+      },
+      "measured_lexical_fallback": {
+        "accuracy": 0.7778,
+        "false_supported_rate": 0.0,
+        "supported_accuracy": 0.3333,
+        "contradicted_accuracy": 1.0,
+        "insufficient_evidence_accuracy": 1.0
+      },
+      "status": "evaluated_auxiliary_advisory_signal_only"
     }
   }
 }

@@ -1,0 +1,570 @@
+{
+  "generated_at_utc": "2026-11-25T14:47:39.173393+00:00",
+  "system_runtime": {
+    "torch_version": "2.15.0+cpu",
+    "device": "cpu",
+    "cuda_available": false,
+    "cpu_threads": 6,
+    "logical_cores": 12
+  },
+  "system_memory_snapshot": {
+    "total_gb": 16.79,
+    "available_gb_at_start": 1.47
+  },
+  "registered_models_summary": [
+    {
+      "key": "semantic_matcher",
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "version": "1.0.0-baseline",
+      "task": "semantic_opportunity_matching",
+      "embedding_dimension": 384,
+      "lifecycle_status": "INTEGRATED",
+      "fine_tuning_status": "pending_personal_training",
+      "evaluation_status": "baseline_evaluated_synthetic",
+      "active_identifier": "sentence-transformers/all-MiniLM-L6-v2",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 320
+    },
+    {
+      "key": "multilingual_encoder",
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "version": "1.0.0-pretrained",
+      "task": "multilingual_text_understanding",
+      "embedding_dimension": 384,
+      "lifecycle_status": "EVALUATED",
+      "fine_tuning_status": "pretrained_only",
+      "evaluation_status": "evaluated_7_indic_languages",
+      "active_identifier": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 750
+    },
+    {
+      "key": "evidence_nli_verifier",
+      "model_id": "cross-encoder/nli-deberta-v3-small",
+      "version": "1.0.0-pretrained",
+      "task": "requirement_and_claim_consistency",
+      "embedding_dimension": null,
+      "lifecycle_status": "EVALUATED",
+      "fine_tuning_status": "pretrained_only",
+      "evaluation_status": "evaluated_synthetic_claims",
+      "active_identifier": "cross-encoder/nli-deberta-v3-small",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 850
+    },
+    {
+      "key": "resume_structured_extractor",
+      "model_id": "deterministic-rules-plus-optional-gemini-json",
+      "version": "1.0.0",
+      "task": "resume_skill_and_profile_extraction",
+      "embedding_dimension": null,
+      "lifecycle_status": "EVALUATED",
+      "fine_tuning_status": "not_applicable",
+      "evaluation_status": "evaluated_synthetic_resumes",
+      "active_identifier": "deterministic-rule-parser-v1",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 45
+    },
+    {
+      "key": "deterministic_eligibility",
+      "model_id": "deterministic-rule-engine-v1",
+      "version": "1.0.0",
+      "task": "eligibility_assessment",
+      "embedding_dimension": null,
+      "lifecycle_status": "EVALUATED",
+      "fine_tuning_status": "not_applicable",
+      "evaluation_status": "evaluated_edge_cases",
+      "active_identifier": "deterministic-rule-engine-v1",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 15
+    },
+    {
+      "key": "opportunity_ranker",
+      "model_id": "deterministic-weighted-ranker-v1",
+      "version": "1.0.0",
+      "task": "opportunity_ranking",
+      "embedding_dimension": null,
+      "lifecycle_status": "EVALUATED",
+      "fine_tuning_status": "pending_user_interaction_data",
+      "evaluation_status": "evaluated_synthetic_ranking",
+      "active_identifier": "lightgbm-ranker-pending-data",
+      "using_finetuned_checkpoint": false,
+      "approx_ram_mb": 20
+    }
+  ],
+  "personal_minilm_training_status": "PENDING_USER_EXECUTION (not executed autonomously per ownership rule)",
+  "results": {
+    "extraction": {
+      "dataset": "nexteras_resume_extraction_benchmark",
+      "is_synthetic": true,
+      "cases_evaluated": 4,
+      "schema_validity_rate": 1.0,
+      "scalar_exact_match_accuracy": 1.0,
+      "skill_precision": 1.0,
+      "skill_recall": 1.0,
+      "skill_f1": 1.0,
+      "unsupported_extraction_count": 0,
+      "missing_field_checks_passed": 2,
+      "total_latency_ms": 22.05,
+      "per_case": [
+        {
+          "case_id": "res-01",
+          "skill_recall": 1.0,
+          "forbidden_hallucinated": [],
+          "missing_fields_detected": []
+        },
+        {
+          "case_id": "res-02",
+          "skill_recall": 1.0,
+          "forbidden_hallucinated": [],
+          "missing_fields_detected": [
+            "experience_or_internships"
+          ]
+        },
+        {
+          "case_id": "res-03",
+          "skill_recall": 1.0,
+          "forbidden_hallucinated": [],
+          "missing_fields_detected": [
+            "full_name",
+            "branch_or_specialization",
+            "academic_score",
+            "experience_or_internships"
+          ]
+        },
+        {
+          "case_id": "res-04",
+          "skill_recall": 1.0,
+          "forbidden_hallucinated": [],
+          "missing_fields_detected": [
+            "projects"
+          ]
+        }
+      ],
+      "process_rss_mb_after": 205.4,
+      "rss_delta_mb": 0.4
+    },
+    "eligibility": {
+      "dataset": "nexteras_eligibility_edge_cases",
+      "is_synthetic": true,
+      "cases_evaluated": 8,
+      "exact_outcome_accuracy": 1.0,
+      "false_eligible_rate": 0.0,
+      "false_ineligible_rate": 0.0,
+      "unknown_and_unverified_handling_rate": 1.0,
+      "explanation_traceability_rate": 1.0,
+      "total_latency_ms": 0.34,
+      "per_case": [
+        {
+          "case_id": "elig-pass-be-equiv",
+          "expected": "eligible",
+          "predicted": "eligible",
+          "correct": true,
+          "audit_rules_checked": 6
+        },
+        {
+          "case_id": "elig-fail-cgpa",
+          "expected": "ineligible",
+          "predicted": "ineligible",
+          "correct": true,
+          "audit_rules_checked": 3
+        },
+        {
+          "case_id": "elig-missing-cgpa",
+          "expected": "needs_more_info",
+          "predicted": "needs_more_info",
+          "correct": true,
+          "audit_rules_checked": 3
+        },
+        {
+          "case_id": "elig-fail-backlogs",
+          "expected": "ineligible",
+          "predicted": "ineligible",
+          "correct": true,
+          "audit_rules_checked": 2
+        },
+        {
+          "case_id": "elig-fail-expired",
+          "expected": "ineligible",
+          "predicted": "ineligible",
+          "correct": true,
+          "audit_rules_checked": 2
+        },
+        {
+          "case_id": "elig-pct-pass",
+          "expected": "eligible",
+          "predicted": "eligible",
+          "correct": true,
+          "audit_rules_checked": 3
+        },
+        {
+          "case_id": "elig-unable-to-verify",
+          "expected": "unable_to_verify",
+          "predicted": "unable_to_verify",
+          "correct": true,
+          "audit_rules_checked": 2
+        },
+        {
+          "case_id": "elig-fail-citizenship",
+          "expected": "ineligible",
+          "predicted": "ineligible",
+          "correct": true,
+          "audit_rules_checked": 2
+        }
+      ],
+      "process_rss_mb_after": 205.4,
+      "rss_delta_mb": 0.0
+    },
+    "ranking": {
+      "dataset": "nexteras_ranking_benchmark",
+      "is_synthetic": true,
+      "total_candidates": 6,
+      "ranked_count": 3,
+      "excluded_count": 3,
+      "duplicates_removed": 1,
+      "expired_removed": 1,
+      "precision_at_1": 1.0,
+      "ndcg_at_3": 1.0,
+      "eligibility_violations_in_ranked": 0,
+      "deterministic_repeat_consistency": true,
+      "ranked_order": [
+        {
+          "rank": 1,
+          "id": "rk-top-01",
+          "score": 92.36
+        },
+        {
+          "rank": 2,
+          "id": "rk-mid-02",
+          "score": 63.38
+        },
+        {
+          "rank": 3,
+          "id": "rk-low-03",
+          "score": 25.53
+        }
+      ],
+      "latency_ms": 0.24,
+      "process_rss_mb_after": 205.4,
+      "rss_delta_mb": 0.0
+    },
+    "verification_lexical_fallback": {
+      "dataset": "nexteras_verification_claims_benchmark",
+      "is_synthetic": true,
+      "model_used": "lexical-number-and-overlap-fallback-v1",
+      "cases_evaluated": 9,
+      "accuracy": 0.7778,
+      "false_supported_rate": 0.0,
+      "class_accuracy": {
+        "supported": 0.3333,
+        "contradicted": 1.0,
+        "insufficient_evidence": 1.0
+      },
+      "total_latency_ms": 0.36,
+      "per_case": [
+        {
+          "claim_id": "ver-sup-01",
+          "expected": "supported",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.2,
+          "contradiction_score": 0.12,
+          "correct": false
+        },
+        {
+          "claim_id": "ver-sup-02",
+          "expected": "supported",
+          "predicted": "supported",
+          "entailment_score": 0.85,
+          "contradiction_score": 0.05,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-sup-03",
+          "expected": "supported",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.2,
+          "contradiction_score": 0.12,
+          "correct": false
+        },
+        {
+          "claim_id": "ver-con-01",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.08,
+          "contradiction_score": 0.82,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-con-02",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.08,
+          "contradiction_score": 0.82,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-con-03",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.08,
+          "contradiction_score": 0.82,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-01",
+          "expected": "insufficient_evidence",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.2,
+          "contradiction_score": 0.12,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-02",
+          "expected": "insufficient_evidence",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.2,
+          "contradiction_score": 0.12,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-03",
+          "expected": "insufficient_evidence",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.2,
+          "contradiction_score": 0.12,
+          "correct": true
+        }
+      ],
+      "peak_rss_mb": 205.4
+    },
+    "semantic_baseline_pretrained": {
+      "model_id": "sentence-transformers/all-MiniLM-L6-v2",
+      "status": "PRETRAINED_BASELINE_ONLY (fine-tuning owned by Sanju)",
+      "split_counts": {
+        "train_pairs": 20,
+        "val_pairs": 6,
+        "test_queries": 8,
+        "test_corpus_docs": 12
+      },
+      "is_synthetic": true,
+      "model_load_ms": 23672.87,
+      "peak_rss_mb": 615.3,
+      "rss_delta_mb": 163.2,
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "mrr_at_10": 1.0,
+      "ndcg_at_10": 1.0,
+      "mean_pos_neg_margin": 0.2009,
+      "num_queries": 8.0,
+      "corpus_size": 12.0,
+      "encode_latency_total_ms": 466.89,
+      "encode_latency_per_query_ms": 58.36
+    },
+    "multilingual": {
+      "dataset": "nexteras_multilingual_7_languages_eval",
+      "is_synthetic": true,
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "overall": {
+        "recall_at_1": 0.5,
+        "recall_at_3": 0.7083,
+        "recall_at_5": 1.0,
+        "mrr_at_10": 0.666,
+        "ndcg_at_10": 0.748,
+        "mean_pos_neg_margin": 0.0284,
+        "num_queries": 24.0,
+        "corpus_size": 6.0
+      },
+      "per_language": {
+        "bn": {
+          "recall_at_1": 0.3333,
+          "recall_at_3": 0.6667,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.5667,
+          "ndcg_at_10": 0.6726,
+          "mean_pos_neg_margin": -0.0582,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": false
+        },
+        "en": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "mean_pos_neg_margin": 0.2063,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": true
+        },
+        "hi": {
+          "recall_at_1": 0.6667,
+          "recall_at_3": 0.6667,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.75,
+          "ndcg_at_10": 0.8102,
+          "mean_pos_neg_margin": 0.1037,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": true
+        },
+        "hinglish": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 1.0,
+          "ndcg_at_10": 1.0,
+          "mean_pos_neg_margin": 0.2051,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": true
+        },
+        "kn": {
+          "recall_at_1": 0.3333,
+          "recall_at_3": 0.6667,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.5667,
+          "ndcg_at_10": 0.6726,
+          "mean_pos_neg_margin": -0.0368,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": false
+        },
+        "ml": {
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.3333,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.2778,
+          "ndcg_at_10": 0.4538,
+          "mean_pos_neg_margin": -0.0961,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": false
+        },
+        "ta": {
+          "recall_at_1": 0.6667,
+          "recall_at_3": 0.6667,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.75,
+          "ndcg_at_10": 0.8102,
+          "mean_pos_neg_margin": -0.0326,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": false
+        },
+        "te": {
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.6667,
+          "recall_at_5": 1.0,
+          "mrr_at_10": 0.4167,
+          "ndcg_at_10": 0.5642,
+          "mean_pos_neg_margin": -0.0644,
+          "num_queries": 3.0,
+          "corpus_size": 6.0,
+          "adequate_without_translation_fallback": false
+        }
+      },
+      "weak_or_fallback_recommended_languages": [
+        "bn",
+        "kn",
+        "ml",
+        "ta",
+        "te"
+      ],
+      "total_latency_ms": 646.93,
+      "model_load_ms": 63801.61,
+      "peak_rss_mb": 1215.6,
+      "rss_delta_mb": 1010.5
+    },
+    "verification_pretrained_nli": {
+      "dataset": "nexteras_verification_claims_benchmark",
+      "is_synthetic": true,
+      "model_used": "cross-encoder/nli-deberta-v3-small",
+      "cases_evaluated": 9,
+      "accuracy": 0.8889,
+      "false_supported_rate": 0.0,
+      "class_accuracy": {
+        "supported": 1.0,
+        "contradicted": 1.0,
+        "insufficient_evidence": 0.6667
+      },
+      "total_latency_ms": 67417.86,
+      "per_case": [
+        {
+          "claim_id": "ver-sup-01",
+          "expected": "supported",
+          "predicted": "supported",
+          "entailment_score": 0.9941,
+          "contradiction_score": 0.0003,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-sup-02",
+          "expected": "supported",
+          "predicted": "supported",
+          "entailment_score": 0.9984,
+          "contradiction_score": 0.0002,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-sup-03",
+          "expected": "supported",
+          "predicted": "supported",
+          "entailment_score": 0.9965,
+          "contradiction_score": 0.0002,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-con-01",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.0,
+          "contradiction_score": 0.9999,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-con-02",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.0001,
+          "contradiction_score": 0.9992,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-con-03",
+          "expected": "contradicted",
+          "predicted": "contradicted",
+          "entailment_score": 0.0029,
+          "contradiction_score": 0.9798,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-01",
+          "expected": "insufficient_evidence",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.0001,
+          "contradiction_score": 0.0007,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-02",
+          "expected": "insufficient_evidence",
+          "predicted": "insufficient_evidence",
+          "entailment_score": 0.0,
+          "contradiction_score": 0.2484,
+          "correct": true
+        },
+        {
+          "claim_id": "ver-amb-03",
+          "expected": "insufficient_evidence",
+          "predicted": "contradicted",
+          "entailment_score": 0.0,
+          "contradiction_score": 0.9939,
+          "correct": false
+        }
+      ],
+      "peak_rss_mb": 1054.6,
+      "rss_delta_mb": 849.3
+    }
+  }
+}
