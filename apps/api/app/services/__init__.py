@@ -3,6 +3,8 @@
 from app.services.applications import ApplicationService
 from app.services.approvals import ApprovalService
 from app.services.career_passports import CareerPassportService
+from app.services.eligibility import EligibilityService
+from app.services.intelligence import IntelligenceService
 from app.services.notifications import NotificationService
 from app.services.opportunities import OpportunityService
 from app.services.opportunity_text import (
@@ -21,6 +23,8 @@ __all__ = [
     "ApprovalService",
     "CanonicalOpportunityInput",
     "CareerPassportService",
+    "EligibilityService",
+    "IntelligenceService",
     "NotificationService",
     "OpportunityService",
     "ProfileService",

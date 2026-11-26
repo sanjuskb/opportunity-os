@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
+from app.core.security_middleware import rate_limit
 from app.db.session import get_db_session
 from app.schemas.common import (
     VoiceSessionCreateRequest,
@@ -39,7 +40,11 @@ async def create_voice_session(
     return await VoiceSessionService(session).create_session(current_user.user_id, payload)
 
 
-@voice_router.post("/tickets", response_model=VoiceTicketResponse)
+@voice_router.post(
+    "/tickets",
+    response_model=VoiceTicketResponse,
+    dependencies=[Depends(rate_limit("voice_tickets", limit=30, window_seconds=60))],
+)
 async def create_voice_ticket(
     current_user: _AuthenticatedUser,
     ticket_store: Annotated[VoiceTicketStore, Depends(get_voice_ticket_store)],

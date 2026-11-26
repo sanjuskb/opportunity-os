@@ -74,6 +74,19 @@ class StudentProfile(Base):
     cgpa: Mapped[Decimal | None] = mapped_column(Numeric(4, 2), nullable=True)
     state: Mapped[str | None] = mapped_column(Text, nullable=True)
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
+    current_academic_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    active_backlogs: Mapped[int | None] = mapped_column(Integer, nullable=True, server_default="0")
+    experience_months: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, server_default="0"
+    )
+    citizenship: Mapped[str | None] = mapped_column(Text, nullable=True)
+    skills: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=True, server_default="{}")
+    preferred_locations: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True, server_default="{}"
+    )
+    open_to_relocate: Mapped[bool | None] = mapped_column(
+        Boolean, nullable=True, server_default="true"
+    )
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -162,6 +175,18 @@ class Opportunity(Base):
     )
     is_active: Mapped[bool | None] = mapped_column(Boolean, nullable=True, server_default="true")
     raw_data: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=True, server_default="{}")
+    organization_id: Mapped[uuid.UUID | None] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.organizations.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    content_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    confidence_score: Mapped[Decimal | None] = mapped_column(
+        Numeric(4, 3), nullable=True, server_default="0.800"
+    )
+    last_verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -200,6 +225,23 @@ class OpportunityEligibility(Base):
     )
     min_cgpa: Mapped[Decimal | None] = mapped_column(Numeric(4, 2), nullable=True)
     required_skills: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True, server_default="{}"
+    )
+    eligible_academic_years: Mapped[list[int]] = mapped_column(
+        ARRAY(Integer), nullable=True, server_default="{}"
+    )
+    max_active_backlogs: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    min_experience_months: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, server_default="0"
+    )
+    allowed_locations: Mapped[list[str]] = mapped_column(
+        ARRAY(Text), nullable=True, server_default="{}"
+    )
+    remote_allowed: Mapped[bool | None] = mapped_column(
+        Boolean, nullable=True, server_default="true"
+    )
+    required_citizenship: Mapped[str | None] = mapped_column(Text, nullable=True)
+    preferred_skills: Mapped[list[str]] = mapped_column(
         ARRAY(Text), nullable=True, server_default="{}"
     )
     created_at: Mapped[datetime | None] = mapped_column(
@@ -355,6 +397,64 @@ class Resume(Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     master_content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    storage_bucket: Mapped[str | None] = mapped_column(Text, nullable=True)
+    storage_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(150), nullable=True)
+    file_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    file_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    raw_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    extraction_status: Mapped[str | None] = mapped_column(
+        String(30), nullable=True, server_default="pending"
+    )
+    extraction_confidence: Mapped[Decimal | None] = mapped_column(Numeric(4, 3), nullable=True)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ResumeVersion(Base):
+    __tablename__ = "resume_versions"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    resume_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.resumes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    version_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    pdf_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class ResumeCustomization(Base):
+    __tablename__ = "resume_customizations"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    resume_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.resumes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    opportunity_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.opportunities.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    tailored_content: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    alignment_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -406,6 +506,98 @@ class VoiceSession(Base):
     )
     transcript: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str | None] = mapped_column(String(30), server_default="completed")
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class StudentEmbedding(Base):
+    __tablename__ = "student_embeddings"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.profiles.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    embedding_minilm_384: Mapped[list[float] | None] = mapped_column(Vector(384), nullable=True)
+    content_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    embedding_model_id: Mapped[str | None] = mapped_column(
+        Text, nullable=True, server_default="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class Organization(Base):
+    __tablename__ = "organizations"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    name: Mapped[str] = mapped_column(Text, nullable=False)
+    domain: Mapped[str | None] = mapped_column(Text, unique=True, nullable=True)
+    industry: Mapped[str | None] = mapped_column(Text, nullable=True)
+    headcount_range: Mapped[str | None] = mapped_column(Text, nullable=True)
+    funding_stage: Mapped[str | None] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    hiring_velocity_score: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    is_verified: Mapped[bool | None] = mapped_column(Boolean, nullable=True, server_default="false")
+    crustdata_payload: Mapped[dict[str, Any]] = mapped_column(
+        JSONB, nullable=True, server_default="{}"
+    )
+    last_enriched_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class OpportunitySource(Base):
+    __tablename__ = "opportunity_sources"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    domain: Mapped[str] = mapped_column(Text, nullable=False)
+    last_scraped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    scrape_frequency_hours: Mapped[int | None] = mapped_column(Integer, server_default="24")
+    status: Mapped[str | None] = mapped_column(String(20), server_default="healthy")
+    last_response_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    requests_count: Mapped[int | None] = mapped_column(Integer, server_default="0")
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class OpportunityMonitor(Base):
+    __tablename__ = "opportunity_monitors"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.profiles.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    target_organization: Mapped[str] = mapped_column(String(255), nullable=False)
+    criteria: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=True, server_default="{}")
+    is_active: Mapped[bool | None] = mapped_column(Boolean, nullable=True, server_default="true")
     created_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )

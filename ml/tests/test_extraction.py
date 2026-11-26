@@ -120,6 +120,28 @@ def test_extract_from_json_md_and_real_pdf(tmp_path: Path) -> None:
     assert pdf_res.profile.cgpa == 8.6
     assert {"Python", "PostgreSQL", "PyTorch"}.issubset(set(pdf_res.normalized_skills))
 
+    # Real DOCX binary generated with python-docx
+    from docx import Document
+
+    docx_path = tmp_path / "student_cv.docx"
+    docx = Document()
+    docx.add_paragraph("Diya Menon")
+    docx.add_paragraph("Education")
+    docx.add_paragraph("COEP Pune | B.Tech IT | Batch 2027 | CGPA: 8.9/10")
+    docx.add_paragraph("Technical Skills")
+    docx.add_paragraph("Python, FastAPI, Docker, TypeScript")
+    docx.save(str(docx_path))
+
+    docx_res = svc.extract_from_file(docx_path)
+    assert docx_res.profile.graduation_year == 2027
+    assert {"Python", "FastAPI", "Docker", "TypeScript"}.issubset(set(docx_res.normalized_skills))
+
+    # Spoofed magic bytes fail loudly
+    spoof_pdf = tmp_path / "bad.pdf"
+    spoof_pdf.write_bytes(b"NOT A REAL PDF FILE")
+    with pytest.raises(ValueError, match="Invalid PDF"):
+        svc.extract_from_file(spoof_pdf)
+
 
 def test_gemini_backend_blocks_missing_credentials_and_rejects_placeholders() -> None:
     from ml.src.integration.gemini_backends import (

@@ -455,3 +455,80 @@ async def backfill_missing_embeddings(
         "next_cursor": str(last_processed_id) if last_processed_id is not None else None,
         "completed": completed,
     }
+
+
+async def check_opportunity_deadlines(
+    ctx: dict[str, Any],
+    *,
+    window_hours: int = 72,
+) -> dict[str, int]:
+    """Create idempotent unread deadline alerts for bookmarked/draft applications nearing deadline."""
+    from sqlalchemy import and_, select
+
+    from app.models.entities import Application, Notification, Opportunity, SavedOpportunity
+
+    session_factory = ctx.get("session_factory")
+    if session_factory is None:
+        return {"checked": 0, "created": 0}
+
+    now = datetime.now(UTC)
+    horizon = now + timedelta(hours=max(1, window_hours))
+
+    async with session_factory() as session:
+        saved_stmt = (
+            select(
+                SavedOpportunity.user_id, Opportunity.id, Opportunity.title, Opportunity.deadline
+            )
+            .join(Opportunity, Opportunity.id == SavedOpportunity.opportunity_id)
+            .where(
+                and_(
+                    Opportunity.is_active.is_(True),
+                    Opportunity.deadline.is_not(None),
+                    Opportunity.deadline >= now,
+                    Opportunity.deadline <= horizon,
+                )
+            )
+        )
+        draft_stmt = (
+            select(Application.user_id, Opportunity.id, Opportunity.title, Opportunity.deadline)
+            .join(Opportunity, Opportunity.id == Application.opportunity_id)
+            .where(
+                and_(
+                    Application.status.in_(("saved", "drafting", "ready_for_review", "eligible")),
+                    Opportunity.is_active.is_(True),
+                    Opportunity.deadline.is_not(None),
+                    Opportunity.deadline >= now,
+                    Opportunity.deadline <= horizon,
+                )
+            )
+        )
+
+        pairs: dict[tuple[UUID, UUID], tuple[str, datetime]] = {}
+        for uid, oid, title, dl in (await session.execute(saved_stmt)).all():
+            pairs[(uid, oid)] = (title, dl)
+        for uid, oid, title, dl in (await session.execute(draft_stmt)).all():
+            pairs.setdefault((uid, oid), (title, dl))
+
+        created = 0
+        for (uid, _oid), (title, dl) in pairs.items():
+            alert_title = f"Deadline Alert: {title[:180]}"
+            exists_stmt = select(Notification.id).where(
+                Notification.user_id == uid,
+                Notification.type == "deadline_alert",
+                Notification.title == alert_title,
+            )
+            if (await session.execute(exists_stmt)).scalar_one_or_none() is None:
+                session.add(
+                    Notification(
+                        user_id=uid,
+                        title=alert_title,
+                        message=f"Application deadline on {dl.date().isoformat()} is approaching within {window_hours}h.",
+                        type="deadline_alert",
+                        is_read=False,
+                    )
+                )
+                created += 1
+
+        if created:
+            await session.commit()
+        return {"checked": len(pairs), "created": created}

@@ -3,7 +3,7 @@ import logging
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, Response, status
+from fastapi import APIRouter, Depends, File, Form, Query, Request, Response, UploadFile, status
 from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +11,7 @@ from app.api.v1.ml import eligibility_router, ml_router
 from app.api.v1.voice import voice_router
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
+from app.core.security_middleware import rate_limit
 from app.db.session import DatabaseManager, check_db_health, get_db_session
 from app.schemas.common import (
     ApplicationCreateRequest,
@@ -21,19 +22,33 @@ from app.schemas.common import (
     ApprovalRequestResponse,
     CareerPassportItemCreateRequest,
     CareerPassportResponse,
+    CompanyEnrichRequest,
+    EducationCreateRequest,
+    EducationItemResponse,
     EligibilityCheckResponse,
     EligibilityEvaluateRequest,
     HealthResponse,
+    MonitorCreateRequest,
+    MonitorResponse,
     NotificationResponse,
     OpportunityDiscoverRequest,
     OpportunityResponse,
+    OrganizationResponse,
     PaginatedOpportunitiesResponse,
     ProfileResponse,
     ProfileUpdateRequest,
     ReadinessDependencies,
     ReadinessResponse,
+    ResearchDiscoverRequest,
+    ResearchDiscoverResponse,
+    ResumeAnalyzeRequest,
+    ResumeAnalyzeResponse,
     ResumeCreateRequest,
+    ResumeCustomizationResponse,
+    ResumeDownloadUrlResponse,
     ResumeResponse,
+    ResumeTailorRequest,
+    ResumeVersionResponse,
     SaveOpportunityRequest,
     SaveOpportunityResponse,
     StudentProfileResponse,
@@ -43,6 +58,8 @@ from app.services import (
     ApplicationService,
     ApprovalService,
     CareerPassportService,
+    EligibilityService,
+    IntelligenceService,
     NotificationService,
     OpportunityService,
     ProfileService,
@@ -158,6 +175,48 @@ async def upsert_my_student_profile(
     )
 
 
+@v1_router.get(
+    "/users/me/education",
+    response_model=list[EducationItemResponse],
+    tags=["Users"],
+)
+async def list_my_education(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> list[EducationItemResponse]:
+    """List education entries owned by the authenticated student."""
+    return await StudentProfileService(session).list_education(current_user.user_id)
+
+
+@v1_router.post(
+    "/users/me/education",
+    response_model=EducationItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Users"],
+)
+async def add_my_education(
+    payload: EducationCreateRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> EducationItemResponse:
+    """Add an academic education record to the authenticated student's profile."""
+    return await StudentProfileService(session).add_education(current_user.user_id, payload)
+
+
+@v1_router.delete(
+    "/users/me/education/{education_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Users"],
+)
+async def delete_my_education(
+    education_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> None:
+    """Delete an education record owned by the authenticated student."""
+    await StudentProfileService(session).delete_education(current_user.user_id, education_id)
+
+
 # ---------------------------------------------------------------------------
 # Career Passport APIs
 # ---------------------------------------------------------------------------
@@ -265,19 +324,18 @@ async def get_opportunity_detail(
     "/opportunities/discover",
     response_model=PaginatedOpportunitiesResponse,
     tags=["Opportunities"],
+    dependencies=[Depends(rate_limit("discover", window_seconds=60))],
 )
 async def discover_opportunities(
+    request: Request,
     payload: OpportunityDiscoverRequest,
     current_user: _AuthenticatedUser,
     session: _DbSession,
 ) -> PaginatedOpportunitiesResponse:
-    """Authenticated search over vetted database opportunities."""
-    _ = current_user.user_id
-    return await OpportunityService(session).list_opportunities(
-        limit=payload.limit,
-        opp_type=payload.type,
-        search_query=payload.query,
-        active_only=True,
+    """Authenticated hybrid pgvector + eligibility-ranked discovery over vetted opportunities."""
+    embedding_adapter = getattr(request.app.state, "embedding_adapter", None)
+    return await OpportunityService(session, embedding_adapter=embedding_adapter).discover(
+        current_user.user_id, payload
     )
 
 
@@ -453,7 +511,7 @@ async def mark_notification_read(
 
 
 # ---------------------------------------------------------------------------
-# Eligibility Endpoint (Pending ML Integration)
+# Eligibility Evaluation (Deterministic Rules + Career Passport + Vector)
 # ---------------------------------------------------------------------------
 
 
@@ -465,20 +523,14 @@ async def mark_notification_read(
 async def evaluate_eligibility(
     payload: EligibilityEvaluateRequest,
     current_user: _AuthenticatedUser,
+    session: _DbSession,
 ) -> EligibilityCheckResponse:
-    """Evaluate eligibility for the authenticated student (identity from JWT sub only)."""
-    return EligibilityCheckResponse(
-        opportunity_id=str(payload.opportunity_id),
-        student_id=str(current_user.user_id),
-        is_eligible=False,
-        score=0.0,
-        reasons=["Profile evaluation pending ML integration."],
-        missing_skills=[],
-    )
+    """Evaluate real eligibility for the authenticated student from Postgres + deterministic rules."""
+    return await EligibilityService(session).evaluate(current_user.user_id, payload.opportunity_id)
 
 
 # ---------------------------------------------------------------------------
-# Resumes (Basic CRUD)
+# Resumes (Upload, Storage, Extraction, Grounded Tailoring & PDF Export)
 # ---------------------------------------------------------------------------
 
 
@@ -510,6 +562,33 @@ async def create_resume(
     return await ResumeService(session).create_resume(current_user.user_id, payload)
 
 
+@v1_router.post(
+    "/resumes/upload",
+    response_model=ResumeResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Resumes"],
+    dependencies=[Depends(rate_limit("resume_upload", limit=20, window_seconds=60))],
+)
+async def upload_resume(
+    request: Request,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    file: Annotated[UploadFile, File(...)],
+    title: Annotated[str | None, Form()] = None,
+    sync_to_profile: Annotated[bool, Form()] = False,
+) -> ResumeResponse:
+    """Upload a PDF/DOCX/TXT/MD/JSON resume, store privately, and extract structured fields."""
+    raw_bytes = await file.read()
+    storage_client = getattr(request.app.state, "resume_storage", None)
+    return await ResumeService(session, storage_client=storage_client).upload_resume(
+        current_user.user_id,
+        filename=file.filename or "resume.pdf",
+        raw_bytes=raw_bytes,
+        title=title,
+        sync_to_profile=sync_to_profile,
+    )
+
+
 @v1_router.get(
     "/resumes/{resume_id}",
     response_model=ResumeResponse,
@@ -524,6 +603,94 @@ async def get_resume(
     return await ResumeService(session).get_resume(resume_id, current_user.user_id)
 
 
+@v1_router.get(
+    "/resumes/{resume_id}/download-url",
+    response_model=ResumeDownloadUrlResponse,
+    tags=["Resumes"],
+)
+async def get_resume_download_url(
+    request: Request,
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ResumeDownloadUrlResponse:
+    """Generate a private signed download URL for an uploaded resume file."""
+    storage_client = getattr(request.app.state, "resume_storage", None)
+    return await ResumeService(session, storage_client=storage_client).get_download_url(
+        resume_id, current_user.user_id
+    )
+
+
+@v1_router.get(
+    "/resumes/{resume_id}/versions",
+    response_model=list[ResumeVersionResponse],
+    tags=["Resumes"],
+)
+async def list_resume_versions(
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> list[ResumeVersionResponse]:
+    """List immutable version snapshots for an owned resume."""
+    return await ResumeService(session).list_versions(resume_id, current_user.user_id)
+
+
+@v1_router.post(
+    "/resumes/{resume_id}/analyze",
+    response_model=ResumeAnalyzeResponse,
+    tags=["Resumes"],
+    dependencies=[Depends(rate_limit("resume_analyze", limit=30, window_seconds=60))],
+)
+async def analyze_resume(
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    payload: ResumeAnalyzeRequest | None = None,
+) -> ResumeAnalyzeResponse:
+    """Analyze resume completeness and skill gaps (optionally against a target opportunity)."""
+    opp_id = payload.opportunity_id if payload is not None else None
+    return await ResumeService(session).analyze_resume(
+        resume_id, current_user.user_id, opportunity_id=opp_id
+    )
+
+
+@v1_router.post(
+    "/resumes/{resume_id}/tailor",
+    response_model=ResumeCustomizationResponse,
+    tags=["Resumes"],
+    dependencies=[Depends(rate_limit("resume_tailor", limit=30, window_seconds=60))],
+)
+async def tailor_resume(
+    resume_id: UUID,
+    payload: ResumeTailorRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ResumeCustomizationResponse:
+    """Tailor an owned resume to a target opportunity using NLI-grounded Passport evidence."""
+    return await ResumeService(session).tailor_resume(resume_id, current_user.user_id, payload)
+
+
+@v1_router.get(
+    "/resumes/{resume_id}/pdf",
+    tags=["Resumes"],
+)
+async def export_resume_pdf(
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    version: int | None = Query(default=None, ge=1),
+) -> Response:
+    """Render and download an ATS-clean PDF for the resume (latest or specified version)."""
+    pdf_bytes, filename = await ResumeService(session).export_pdf(
+        resume_id, current_user.user_id, version_number=version
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @v1_router.delete(
     "/resumes/{resume_id}",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -536,3 +703,126 @@ async def delete_resume(
 ) -> None:
     """Delete a resume owned by the authenticated user."""
     await ResumeService(session).delete_resume(resume_id, current_user.user_id)
+
+
+# ---------------------------------------------------------------------------
+# External Web Research (Olostep), Company Intelligence (Crustdata) & Watchtower
+# ---------------------------------------------------------------------------
+
+
+@v1_router.post(
+    "/research/discover",
+    response_model=ResearchDiscoverResponse,
+    tags=["Research"],
+    dependencies=[Depends(rate_limit("research", limit=15, window_seconds=60))],
+)
+async def research_live_opportunities(
+    request: Request,
+    payload: ResearchDiscoverRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ResearchDiscoverResponse:
+    """Run live web opportunity research via Olostep, deduplicate, and persist with provenance."""
+    olostep_client = getattr(request.app.state, "olostep_client", None)
+    crustdata_client = getattr(request.app.state, "crustdata_client", None)
+    return await IntelligenceService(
+        session,
+        olostep_client=olostep_client,
+        crustdata_client=crustdata_client,
+    ).research_opportunities(current_user.user_id, payload)
+
+
+@v1_router.post(
+    "/companies/enrich",
+    response_model=OrganizationResponse,
+    tags=["Companies"],
+    dependencies=[Depends(rate_limit("companies", limit=20, window_seconds=60))],
+)
+async def enrich_company_intelligence(
+    request: Request,
+    payload: CompanyEnrichRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> OrganizationResponse:
+    """Enrich and verify organization firmographics via Crustdata (24h cached in DB)."""
+    _ = current_user.user_id
+    crustdata_client = getattr(request.app.state, "crustdata_client", None)
+    return await IntelligenceService(session, crustdata_client=crustdata_client).enrich_company(
+        payload
+    )
+
+
+@v1_router.get(
+    "/companies",
+    response_model=list[OrganizationResponse],
+    tags=["Companies"],
+)
+async def list_verified_companies(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    limit: int = Query(default=50, ge=1, le=100),
+) -> list[OrganizationResponse]:
+    """List verified/enriched organizations."""
+    _ = current_user.user_id
+    return await IntelligenceService(session).list_companies(limit=limit)
+
+
+@v1_router.get(
+    "/companies/{org_id}",
+    response_model=OrganizationResponse,
+    tags=["Companies"],
+)
+async def get_company_detail(
+    org_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> OrganizationResponse:
+    """Fetch enriched firmographics for a single organization."""
+    _ = current_user.user_id
+    return await IntelligenceService(session).get_company(org_id)
+
+
+@v1_router.get(
+    "/watchtower/monitors",
+    response_model=list[MonitorResponse],
+    tags=["Watchtower"],
+)
+async def list_watchtower_monitors(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> list[MonitorResponse]:
+    """List opportunity monitors owned by the authenticated user."""
+    return await IntelligenceService(session).list_monitors(current_user.user_id)
+
+
+@v1_router.post(
+    "/watchtower/monitors",
+    response_model=MonitorResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Watchtower"],
+)
+async def create_watchtower_monitor(
+    request: Request,
+    payload: MonitorCreateRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> MonitorResponse:
+    """Create a persistent organization/portal monitor owned by the authenticated user."""
+    olostep_client = getattr(request.app.state, "olostep_client", None)
+    return await IntelligenceService(session, olostep_client=olostep_client).create_monitor(
+        current_user.user_id, payload
+    )
+
+
+@v1_router.delete(
+    "/watchtower/monitors/{monitor_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Watchtower"],
+)
+async def delete_watchtower_monitor(
+    monitor_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> None:
+    """Delete a watchtower monitor owned by the authenticated user."""
+    await IntelligenceService(session).delete_monitor(current_user.user_id, monitor_id)

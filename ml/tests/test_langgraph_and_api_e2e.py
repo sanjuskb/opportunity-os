@@ -7,11 +7,13 @@ True End-to-End Integration Tests:
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 import sys
 from typing import Any
+from uuid import uuid4
 
+import jwt
 from fastapi.testclient import TestClient
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -20,21 +22,56 @@ for p in (str(REPO_ROOT), str(API_DIR)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
+from app.core.config import Settings  # noqa: E402
+from app.core.security import SupabaseJWTVerifier, get_jwt_verifier  # noqa: E402
+from app.core.security_middleware import reset_local_rate_limits  # noqa: E402
 from app.main import create_application  # noqa: E402
 from ml.src.infrastructure.runtime import ResourceManagedModelCache  # noqa: E402
 from ml.src.integration.fastapi_adapter import NexteRaSMLService  # noqa: E402
 from ml.src.integration.langgraph_adapter import build_nexteras_career_workflow  # noqa: E402
 
+_TEST_SECRET = "test-ml-e2e-secret-key-at-least-32-chars"
+_TEST_ISSUER = "https://demo-project.supabase.co/auth/v1"
+
+
+def _make_auth_headers() -> dict[str, str]:
+    now = datetime.now(UTC)
+    token = jwt.encode(
+        {
+            "sub": str(uuid4()),
+            "aud": "authenticated",
+            "iss": _TEST_ISSUER,
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(hours=1)).timestamp()),
+            "role": "authenticated",
+        },
+        _TEST_SECRET,
+        algorithm="HS256",
+    )
+    return {"Authorization": f"Bearer {token}"}
+
 
 def test_real_fastapi_end_to_end_with_trained_minilm() -> None:
+    reset_local_rate_limits()
     cache = ResourceManagedModelCache(max_loaded_models=1, cpu_threads=6)
     try:
         svc = NexteRaSMLService(cache=cache, use_pretrained_nli=False)
-        app = create_application()
+        app = create_application(Settings(ENVIRONMENT="development", REDIS_URL=""))
+        app.dependency_overrides[get_jwt_verifier] = lambda: SupabaseJWTVerifier(
+            Settings(
+                SUPABASE_URL="https://demo-project.supabase.co",
+                SUPABASE_JWT_SECRET=_TEST_SECRET,
+                SUPABASE_JWT_AUDIENCE="authenticated",
+            )
+        )
         app.state.ml_service = svc
         client = TestClient(app)
+        headers = _make_auth_headers()
 
-        health = client.get("/api/v1/ml/health")
+        # Unauthenticated calls must fail cleanly with 401
+        assert client.get("/api/v1/ml/health").status_code == 401
+
+        health = client.get("/api/v1/ml/health", headers=headers)
         assert health.status_code == 200
         assert health.json()["ml_available"] is True
 
@@ -105,7 +142,7 @@ def test_real_fastapi_end_to_end_with_trained_minilm() -> None:
             "reference_date": date(2026, 11, 25).isoformat(),
         }
 
-        resp = client.post("/api/v1/ml/recommend-pipeline", json=req_payload)
+        resp = client.post("/api/v1/ml/recommend-pipeline", json=req_payload, headers=headers)
         assert resp.status_code == 200
         body = resp.json()
 

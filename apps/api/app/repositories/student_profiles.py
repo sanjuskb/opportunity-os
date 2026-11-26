@@ -5,7 +5,7 @@ from __future__ import annotations
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -41,6 +41,13 @@ class StudentProfileRepository:
         cgpa: Decimal | None = None,
         state: str | None = None,
         bio: str | None = None,
+        current_academic_year: int | None = None,
+        active_backlogs: int | None = None,
+        experience_months: int | None = None,
+        citizenship: str | None = None,
+        skills: list[str] | None = None,
+        preferred_locations: list[str] | None = None,
+        open_to_relocate: bool | None = None,
     ) -> StudentProfile:
         existing = await self.get_by_user_id(user_id)
         if existing is None:
@@ -53,6 +60,13 @@ class StudentProfileRepository:
                 cgpa=cgpa,
                 state=state,
                 bio=bio,
+                current_academic_year=current_academic_year,
+                active_backlogs=active_backlogs if active_backlogs is not None else 0,
+                experience_months=experience_months if experience_months is not None else 0,
+                citizenship=citizenship,
+                skills=skills or [],
+                preferred_locations=preferred_locations or [],
+                open_to_relocate=True if open_to_relocate is None else open_to_relocate,
             )
             self._session.add(existing)
         else:
@@ -63,9 +77,34 @@ class StudentProfileRepository:
             existing.cgpa = cgpa
             existing.state = state
             existing.bio = bio
+            if current_academic_year is not None:
+                existing.current_academic_year = current_academic_year
+            if active_backlogs is not None:
+                existing.active_backlogs = active_backlogs
+            if experience_months is not None:
+                existing.experience_months = experience_months
+            if citizenship is not None:
+                existing.citizenship = citizenship
+            if skills is not None:
+                existing.skills = skills
+            if preferred_locations is not None:
+                existing.preferred_locations = preferred_locations
+            if open_to_relocate is not None:
+                existing.open_to_relocate = open_to_relocate
         await self._session.flush()
         await self._session.refresh(existing)
         return existing
+
+    async def list_education_for_user(self, user_id: UUID) -> list[Education]:
+        student = await self.get_by_user_id(user_id)
+        if student is None:
+            return []
+        stmt = (
+            select(Education)
+            .where(Education.student_id == student.id)
+            .order_by(Education.start_year.desc(), Education.created_at.desc())
+        )
+        return list((await self._session.execute(stmt)).scalars().all())
 
     async def add_education_for_user(
         self,
@@ -94,3 +133,14 @@ class StudentProfileRepository:
         await self._session.flush()
         await self._session.refresh(record)
         return record
+
+    async def delete_education_for_user(self, user_id: UUID, education_id: UUID) -> bool:
+        student = await self.get_by_user_id(user_id)
+        if student is None:
+            return False
+        stmt = delete(Education).where(
+            Education.id == education_id,
+            Education.student_id == student.id,
+        )
+        res = await self._session.execute(stmt)
+        return (res.rowcount or 0) > 0  # type: ignore[attr-defined]

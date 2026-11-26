@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 from app.api.v1.router import v1_router
 from app.core.config import Settings, settings
 from app.core.errors import register_exception_handlers
+from app.core.security_middleware import SecurityHeadersMiddleware
 from app.db.session import DatabaseManager
 from app.voice.tickets import VoiceTicketStore
 
@@ -52,6 +53,7 @@ def create_application(app_settings: Settings | None = None) -> FastAPI:
 
     register_exception_handlers(app)
 
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cfg.CORS_ORIGINS,

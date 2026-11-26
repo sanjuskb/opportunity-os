@@ -196,21 +196,67 @@ def test_get_me_uses_jwt_identity_and_rejects_non_bearer_auth(
 
 
 def test_user_identity_derived_from_jwt_ignoring_client_user_id() -> None:
+    from app.models.entities import Opportunity
+
     with _isolated_test_client() as (client, _):
         real_user = uuid4()
         spoofed_user = uuid4()
         opp_id = uuid4()
         token = _make_token(real_user)
 
-        resp = client.post(
-            "/api/v1/eligibility/evaluate",
-            headers={"Authorization": f"Bearer {token}"},
-            json={"opportunityId": str(opp_id), "studentId": str(spoofed_user)},
+        fake_opp = Opportunity(
+            id=opp_id,
+            title="Backend API Intern",
+            organization="NexteRaS",
+            location="Remote",
+            type="internship",
+            description="Python & PostgreSQL internship",
+            source_url="https://example.com/opp",
+            source_provider="manual",
+            is_active=True,
         )
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["studentId"] == str(real_user)
-        assert data["studentId"] != str(spoofed_user)
+
+        class _OppScalarSeq:
+            def all(self) -> list[Any]:
+                return []
+
+        class _OppExecuteResult:
+            def __init__(self, scalar: Any) -> None:
+                self._scalar = scalar
+
+            def scalars(self) -> _OppScalarSeq:
+                return _OppScalarSeq()
+
+            def scalar_one_or_none(self) -> Any:
+                return self._scalar
+
+        class _OppFakeSession(_FakeAsyncSession):
+            def __init__(self) -> None:
+                self._calls = 0
+
+            async def execute(self, _stmt: Any) -> _OppExecuteResult:  # type: ignore[override]
+                self._calls += 1
+                # First execute in EligibilityService.evaluate loads Opportunity by id
+                return _OppExecuteResult(fake_opp if self._calls == 1 else None)
+
+        async def _override_opp_db() -> AsyncIterator[_OppFakeSession]:
+            yield _OppFakeSession()
+
+        from fastapi.testclient import TestClient
+
+        # Override session for this request on the same app via dependency_overrides
+        app_ref: Any = client.app
+        app_ref.dependency_overrides[get_db_session] = _override_opp_db
+        with TestClient(app_ref) as opp_client:
+            resp = opp_client.post(
+                "/api/v1/eligibility/evaluate",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"opportunityId": str(opp_id), "studentId": str(spoofed_user)},
+            )
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["studentId"] == str(real_user)
+            assert data["studentId"] != str(spoofed_user)
 
 
 def test_approval_endpoint_returns_404_for_missing_approval() -> None:

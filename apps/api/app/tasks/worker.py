@@ -192,15 +192,34 @@ async def on_shutdown(ctx: dict[str, Any]) -> None:
 
 
 def _default_worker_functions() -> list[Any]:
-    from app.tasks.embeddings import backfill_missing_embeddings, embed_opportunity
+    from app.tasks.embeddings import (
+        backfill_missing_embeddings,
+        check_opportunity_deadlines,
+        embed_opportunity,
+    )
 
-    return [embed_opportunity, backfill_missing_embeddings]
+    return [embed_opportunity, backfill_missing_embeddings, check_opportunity_deadlines]
+
+
+def _default_cron_jobs() -> list[Any]:
+    try:
+        from arq.cron import cron
+
+        from app.tasks.embeddings import backfill_missing_embeddings, check_opportunity_deadlines
+    except ImportError:
+        return []
+
+    return [
+        cron(backfill_missing_embeddings, minute={0, 15, 30, 45}),
+        cron(check_opportunity_deadlines, minute=5),
+    ]
 
 
 class WorkerSettings:
-    """ARQ WorkerSettings for dedicated background embedding worker."""
+    """ARQ WorkerSettings for dedicated background embedding & monitoring worker."""
 
     functions: list[Any] = _default_worker_functions()
+    cron_jobs: list[Any] = _default_cron_jobs()
     on_startup = on_startup
     on_shutdown = on_shutdown
     redis_settings = _optional_redis_settings(settings.REDIS_URL)
