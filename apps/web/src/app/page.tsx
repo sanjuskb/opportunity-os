@@ -44,6 +44,12 @@ export default function HomePage() {
           >
             Career Passport
           </a>
+          <a
+            href="/login"
+            className="px-5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-indigo-300 font-medium border border-indigo-500/30 transition"
+          >
+            Sign In
+          </a>
         </div>
       </div>
     </main>

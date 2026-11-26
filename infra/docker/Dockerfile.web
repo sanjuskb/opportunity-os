@@ -9,7 +9,7 @@ COPY packages/ ./packages/
 RUN pnpm install --frozen-lockfile
 
 COPY apps/web/ ./apps/web/
-RUN pnpm --filter @opportunity-os/web build
+RUN pnpm --filter @opportunity-os/web build && mkdir -p /app/apps/web/public
 
 FROM base AS runner
 WORKDIR /app

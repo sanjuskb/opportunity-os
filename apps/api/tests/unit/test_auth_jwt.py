@@ -8,7 +8,8 @@ from uuid import uuid4
 
 import jwt
 import pytest
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec, rsa
+from jwt.exceptions import PyJWKClientError
 
 from app.core.config import Settings
 from app.core.errors import ProblemDetailError
@@ -75,8 +76,12 @@ def test_missing_or_malformed_role_rejected() -> None:
         assert exc.value.status_code == 401
 
 
-def test_production_settings_defaults_and_validation() -> None:
+def test_production_settings_defaults_and_validation(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("ENVIRONMENT", "DEBUG", "SUPABASE_URL", "SUPABASE_JWT_ISSUER", "REDIS_URL"):
+        monkeypatch.delenv(var, raising=False)
+
     prod = Settings(
+        _env_file=None,
         ENVIRONMENT="production",
         SUPABASE_URL="https://demo-project.supabase.co",
         REDIS_URL="redis://redis:6379/0",
@@ -85,6 +90,7 @@ def test_production_settings_defaults_and_validation() -> None:
 
     with pytest.raises(ValueError, match="DEBUG must be false"):
         Settings(
+            _env_file=None,
             ENVIRONMENT="production",
             DEBUG=True,
             SUPABASE_URL="https://demo-project.supabase.co",
@@ -93,6 +99,7 @@ def test_production_settings_defaults_and_validation() -> None:
 
     with pytest.raises(ValueError, match="SUPABASE_URL or SUPABASE_JWT_ISSUER"):
         Settings(
+            _env_file=None,
             ENVIRONMENT="production",
             SUPABASE_URL="",
             SUPABASE_JWT_ISSUER="",
@@ -101,13 +108,19 @@ def test_production_settings_defaults_and_validation() -> None:
 
     with pytest.raises(ValueError, match="REDIS_URL"):
         Settings(
+            _env_file=None,
             ENVIRONMENT="production",
             SUPABASE_URL="https://demo-project.supabase.co",
             REDIS_URL="",
         )
 
-    dev = Settings(ENVIRONMENT="development")
+    dev = Settings(_env_file=None, ENVIRONMENT="development")
     assert dev.DEBUG is True
+
+    # Verify environment variable overrides still work when intentionally set
+    monkeypatch.setenv("DEBUG", "false")
+    dev_override = Settings(_env_file=None, ENVIRONMENT="development")
+    assert dev_override.DEBUG is False
 
 
 def test_invalid_signature_rejected() -> None:
@@ -222,3 +235,48 @@ def test_asymmetric_jwks_and_key_rotation(monkeypatch: pytest.MonkeyPatch) -> No
 
     assert verifier.verify_token(tok_1).user_id == uid_1
     assert verifier.verify_token(tok_2).user_id == uid_2
+
+
+def test_es256_jwks_verification_and_jwks_failure_handling(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ec_key = ec.generate_private_key(ec.SECP256R1())
+    uid = uuid4()
+    now = datetime.now(UTC)
+    tok = jwt.encode(
+        {
+            "sub": str(uid),
+            "aud": "authenticated",
+            "iss": TEST_ISSUER,
+            "role": "authenticated",
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(minutes=15)).timestamp()),
+        },
+        ec_key,
+        algorithm="ES256",
+        headers={"kid": "ec-kid-1"},
+    )
+
+    class _FakeECJWKClient:
+        def get_signing_key_from_jwt(self, _token: str) -> SimpleNamespace:
+            return SimpleNamespace(key=ec_key.public_key())
+
+    verifier = SupabaseJWTVerifier(
+        Settings(
+            SUPABASE_URL="https://demo-project.supabase.co",
+            SUPABASE_JWT_AUDIENCE="authenticated",
+        )
+    )
+    monkeypatch.setattr(verifier, "_get_jwks_client", lambda _url: _FakeECJWKClient())
+    user = verifier.verify_token(tok)
+    assert user.user_id == uid
+    assert user.supabase_role == "authenticated"
+
+    class _FailingJWKClient:
+        def get_signing_key_from_jwt(self, _token: str) -> SimpleNamespace:
+            raise PyJWKClientError("JWKS endpoint unreachable")
+
+    monkeypatch.setattr(verifier, "_get_jwks_client", lambda _url: _FailingJWKClient())
+    with pytest.raises(ProblemDetailError) as exc:
+        verifier.verify_token(tok)
+    assert exc.value.status_code == 401
