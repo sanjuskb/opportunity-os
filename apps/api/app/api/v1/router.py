@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response, status
 from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.ml import eligibility_router, ml_router
 from app.api.v1.voice import voice_router
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
@@ -53,6 +54,8 @@ _logger = logging.getLogger("opportunity_os.health")
 
 v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(voice_router)
+v1_router.include_router(ml_router)
+v1_router.include_router(eligibility_router)
 
 _AuthenticatedUser = Annotated[AuthenticatedUser, Depends(require_supabase_role("authenticated"))]
 _DbSession = Annotated[AsyncSession, Depends(get_db_session)]

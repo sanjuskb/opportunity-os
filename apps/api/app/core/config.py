@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     EMBEDDING_BACKFILL_BATCH_SIZE: int = 50
     EMBEDDING_STALE_PENDING_SECONDS: int = 600
     TORCH_NUM_THREADS: int = 4
+    ML_MATCHING_MODEL_PATH: str = "ml/artifacts/minilm-nexteras-v1"
+    ML_MAX_LOADED_MODELS: int = 1
+    ENABLE_PRETRAINED_NLI: bool = False
 
     # AI & Providers
     GEMINI_API_KEY: str = ""

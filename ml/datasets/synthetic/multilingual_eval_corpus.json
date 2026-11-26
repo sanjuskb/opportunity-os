@@ -1,0 +1,71 @@
+{
+  "dataset_name": "nexteras_multilingual_7_languages_eval",
+  "version": "1.0.0",
+  "is_synthetic": true,
+  "provenance": "Curated cross-lingual student career intent queries across English, Hindi, Telugu, Tamil, Kannada, Malayalam, Bengali, and Hinglish mapped to English opportunity descriptions.",
+  "corpus": [
+    {
+      "doc_id": "ml-doc-backend",
+      "title": "Python FastAPI Backend Engineering Intern",
+      "doc_text": "Opportunity: Python FastAPI Backend Engineering Intern | Build REST APIs, PostgreSQL database endpoints, Redis caching, and scalable backend services."
+    },
+    {
+      "doc_id": "ml-doc-ai-nlp",
+      "title": "Indic Speech & NLP AI Research Intern",
+      "doc_text": "Opportunity: AI and Natural Language Processing Research Intern | Work with PyTorch neural networks, transformers, and speech transcription for Indian languages."
+    },
+    {
+      "doc_id": "ml-doc-frontend",
+      "title": "React & Next.js Frontend UI Intern",
+      "doc_text": "Opportunity: Frontend Web Developer Intern | Design accessible React, TypeScript, and Tailwind CSS dashboards and responsive user interfaces."
+    },
+    {
+      "doc_id": "ml-doc-robotics",
+      "title": "Embedded Systems & Robotics Firmware Intern",
+      "doc_text": "Opportunity: Embedded Hardware and Robotics Firmware Intern | Write C microcontroller drivers, RTOS sensor pipelines, and autonomous navigation firmware."
+    },
+    {
+      "doc_id": "ml-doc-data",
+      "title": "SQL & Data Analytics Engineering Intern",
+      "doc_text": "Opportunity: Data Analyst Intern | Query relational databases with SQL, clean tabular spreadsheets in Pandas, and build charts."
+    },
+    {
+      "doc_id": "ml-doc-security",
+      "title": "Cybersecurity & Application Security Intern",
+      "doc_text": "Opportunity: Cybersecurity Analyst Intern | Perform web vulnerability scanning, network traffic auditing, and authentication testing."
+    }
+  ],
+  "queries": [
+    {"id": "q-en-1", "language": "en", "query_text": "I want a backend web development internship building Python APIs with databases.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-en-2", "language": "en", "query_text": "Looking for research work on deep learning, speech recognition, and NLP models.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-en-3", "language": "en", "query_text": "Need an internship designing responsive React websites and frontend screens.", "target_doc_id": "ml-doc-frontend"},
+
+    {"id": "q-hi-1", "language": "hi", "query_text": "मुझे डेटाबेस और बैकएंड वेब सर्वर एपीआई बनाने वाली इंटर्नशिप चाहिए।", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-hi-2", "language": "hi", "query_text": "मैं आर्टिफिशियल इंटेलिजेंस, भाषा और स्पीच मॉडल पर शोध इंटर्नशिप खोज रहा हूँ।", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-hi-3", "language": "hi", "query_text": "मुझे डेटा विश्लेषण और टेबल डेटा की रिपोर्ट बनाने वाली इंटर्नशिप चाहिए।", "target_doc_id": "ml-doc-data"},
+
+    {"id": "q-te-1", "language": "te", "query_text": "నాకు డేటాబేస్ మరియు బ్యాకెండ్ వెబ్ సర్వీసెస్ తయారు చేసే ఇంటర్న్‌షిప్ కావాలి.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-te-2", "language": "te", "query_text": "కృత్రిమ మేధస్సు మరియు స్పీచ్ టెక్నాలజీ పరిశోధన ఇంటర్న్‌షిప్ కోసం చూస్తున్నాను.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-te-3", "language": "te", "query_text": "వెబ్‌సైట్ ఫ్రంట్‌ఎండ్ మరియు యూజర్ ఇంటర్‌ఫేస్ డిజైన్ ఇంటర్న్‌షిప్ కావాలి.", "target_doc_id": "ml-doc-frontend"},
+
+    {"id": "q-ta-1", "language": "ta", "query_text": "பின்தள இணைய சேவைகள் மற்றும் தரவுத்தள நிரலாக்க பயிற்சி வேலை தேடுகிறேன்.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-ta-2", "language": "ta", "query_text": "செயற்கை நுண்ணறிவு மற்றும் மொழி ஆராய்ச்சி பயிற்சி வாய்ப்பு தேவை.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-ta-3", "language": "ta", "query_text": "ரோபாட்டிக்ஸ் மற்றும் உட்பொதிக்கப்பட்ட வன்பொருள் மென்பொருள் பயிற்சி வேண்டும்.", "target_doc_id": "ml-doc-robotics"},
+
+    {"id": "q-kn-1", "language": "kn", "query_text": "ಬ್ಯಾಕೆಂಡ್ ವೆಬ್ ಅಭಿವೃದ್ಧಿ ಮತ್ತು ಡೇಟಾಬೇಸ್ ಇಂಟರ್ನ್‌ಶಿಪ್ ಹುಡುಕುತ್ತಿದ್ದೇನೆ.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-kn-2", "language": "kn", "query_text": "ಕೃತಕ ಬುದ್ಧಿಮತ್ತೆ ಮತ್ತು ಭಾಷಾ ಸಂಶೋಧನಾ ಇಂಟರ್ನ್‌ಶಿಪ್ ಬೇಕಾಗಿದೆ.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-kn-3", "language": "kn", "query_text": "ಡೇಟಾ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ವರದಿ ತಯಾರಿಸುವ ಇಂಟರ್ನ್‌ಶಿಪ್ ಅವಕಾಶ ಬೇಕು.", "target_doc_id": "ml-doc-data"},
+
+    {"id": "q-ml-1", "language": "ml", "query_text": "ബാക്കെൻഡ് വെബ് സെർവറും ഡാറ്റാബേസും നിർമ്മിക്കുന്ന ഇന്റേൺഷിപ്പ് വേണം.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-ml-2", "language": "ml", "query_text": "ആർട്ടിഫിഷ്യൽ ഇന്റലിജൻസും സ്പീച്ച് റിസർച്ച് ഇന്റേൺഷിപ്പും അന്വേഷിക്കുന്നു.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-ml-3", "language": "ml", "query_text": "സൈബർ സുരക്ഷയും നെറ്റ്‌വർക്ക് പരിശോധനയും ഉള്ള ഇന്റേൺഷിപ്പ് വേണം.", "target_doc_id": "ml-doc-security"},
+
+    {"id": "q-bn-1", "language": "bn", "query_text": "আমি ব্যাকএন্ড ওয়েব সার্ভিস ও ডেটাবেস ডেভেলপমেন্ট ইন্টার্নশিপ খুঁজছি।", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-bn-2", "language": "bn", "query_text": "কৃত্রিম বুদ্ধিমত্তা ও ভাষা গবেষণা সংক্রান্ত ইন্টার্নশিপ প্রয়োজন।", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-bn-3", "language": "bn", "query_text": "ফ্রন্টএন্ড ওয়েব ইন্টারফেস ডিজাইন করার ইন্টার্নশিপ খুঁজছি।", "target_doc_id": "ml-doc-frontend"},
+
+    {"id": "q-hinglish-1", "language": "hinglish", "query_text": "Mujhe Python FastAPI aur PostgreSQL backend API banane wali internship chahiye.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-hinglish-2", "language": "hinglish", "query_text": "Mere paas C++ aur robotics microcontroller hardware ka project hai firmware role milega kya.", "target_doc_id": "ml-doc-robotics"},
+    {"id": "q-hinglish-3", "language": "hinglish", "query_text": "Kya mujhe data cleaning aur SQL analytics wali internship mil sakti hai.", "target_doc_id": "ml-doc-data"}
+  ]
+}

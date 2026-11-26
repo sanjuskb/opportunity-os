@@ -1,0 +1,871 @@
+{
+  "dataset_name": "nexteras_synthetic_matching_starter",
+  "version": "1.0.0",
+  "is_synthetic": true,
+  "provenance": "Authored starter dataset for Sanju's personal CPU fine-tuning exercise on sentence-transformers/all-MiniLM-L6-v2. Explicitly synthetic — not production telemetry.",
+  "schema_fields": [
+    "pair_id",
+    "split",
+    "relevance_label",
+    "is_synthetic",
+    "student (student_id, education_year, branch, skills, career_interest, profile_summary, preferred_languages)",
+    "opportunity (opportunity_id, title, organization, domain_family, description, required_skills, eligible_years)",
+    "hard_negative_opportunity (optional distractor)"
+  ],
+  "records": [
+    {
+      "pair_id": "tr-01",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-01",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Computer Science & Engineering",
+        "skills": ["Python", "SQL", "Pandas", "Matplotlib"],
+        "career_interest": "Working with datasets, cleaning tabular pipelines, and deriving analytics insights",
+        "profile_summary": "Built college mess demand dashboards with Python scripts and relational database queries.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-01",
+        "title": "Junior Data Analytics Intern",
+        "organization": "BharatLedger Fintech",
+        "domain_family": "data_analytics",
+        "description": "Write analytical SQL queries, inspect transaction tables, and prepare visual business reports.",
+        "required_skills": ["Relational Databases", "Data Cleaning", "Analytical Reporting"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-02",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-02",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Information Technology",
+        "skills": ["FastAPI", "PostgreSQL", "Docker", "REST APIs"],
+        "career_interest": "Server-side web engineering and microservices backend design",
+        "profile_summary": "Created containerized Python backend endpoints with authentication and database migrations.",
+        "preferred_languages": ["te", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-02",
+        "title": "Backend API Platform Intern",
+        "organization": "KaveriPay Systems",
+        "domain_family": "backend_systems",
+        "description": "Build low-latency HTTP web services in Python frameworks and persist structured records in Postgres.",
+        "required_skills": ["Python Web Frameworks", "HTTP APIs", "Postgres", "Containers"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-03",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-03",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science & AI",
+        "skills": ["PyTorch", "Hugging Face", "Whisper", "Telugu NLP"],
+        "career_interest": "Regional Indian speech recognition and multilingual language technology",
+        "profile_summary": "Trained small acoustic speech-to-text models on open Telugu and Tamil voice clips.",
+        "preferred_languages": ["te", "ta", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-03",
+        "title": "Indic Speech & Voice AI Research Intern",
+        "organization": "SwaraLabs IIT Research",
+        "domain_family": "ai_nlp_speech",
+        "description": "Evaluate automatic speech transcription accuracy and regional language voice interfaces across South Indian dialects.",
+        "required_skills": ["ASR", "Neural Networks", "Multilingual Audio"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech", "M.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-04",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-04",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["TypeScript", "Next.js", "Tailwind CSS", "Figma"],
+        "career_interest": "Accessible user interfaces and responsive interactive web frontends",
+        "profile_summary": "Redesigned campus hackathon portal with keyboard navigation and responsive mobile layouts.",
+        "preferred_languages": ["kn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-04",
+        "title": "Frontend Product Engineering Intern",
+        "organization": "NammaGrid Digital",
+        "domain_family": "frontend_ui",
+        "description": "Implement modern React web components, accessible design systems, and state-driven client dashboards.",
+        "required_skills": ["React", "CSS Utility Frameworks", "UI Accessibility"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-05",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-05",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Electronics & Communication",
+        "skills": ["C", "STM32", "RTOS", "I2C/SPI", "KiCad"],
+        "career_interest": "Low-level microcontroller firmware and hardware sensor integration",
+        "profile_summary": "Developed soil-moisture telemetry firmware running on ARM Cortex microcontrollers over MQTT.",
+        "preferred_languages": ["ta", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-05",
+        "title": "Embedded Firmware Engineering Intern",
+        "organization": "AgriSense Robotics",
+        "domain_family": "embedded_robotics",
+        "description": "Write bare-metal C drivers and real-time scheduler tasks for field IoT boards and motor controllers.",
+        "required_skills": ["Microcontrollers", "Embedded C", "Real-Time OS"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-06",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-06",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Cybersecurity & Computer Engineering",
+        "skills": ["Linux", "Wireshark", "OWASP ZAP", "Burp Suite"],
+        "career_interest": "Web application penetration testing and network traffic auditing",
+        "profile_summary": "Audited college portal endpoints for CSRF and injection flaws during CTF competitions.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-06",
+        "title": "Application Security Analyst Intern",
+        "organization": "KavachCloud Sec",
+        "domain_family": "security",
+        "description": "Inspect API authentication headers, reproduce web vulnerability reports, and verify security patches.",
+        "required_skills": ["AppSec Auditing", "Vulnerability Assessment", "HTTP Security"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-07",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-07",
+        "education_year": "4th Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Kubernetes", "Terraform", "GitHub Actions", "AWS EC2"],
+        "career_interest": "Cloud infrastructure automation and CI/CD reliability engineering",
+        "profile_summary": "Automated multi-stage container builds and zero-downtime staging deploys for student club projects.",
+        "preferred_languages": ["ml", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-07",
+        "title": "DevOps & Site Reliability Intern",
+        "organization": "MeghaScale Infra",
+        "domain_family": "cloud_devops",
+        "description": "Maintain Infrastructure-as-Code templates, automate pipeline tests, and monitor cluster uptime metrics.",
+        "required_skills": ["Container Orchestration", "IaC", "CI/CD Pipelines"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-08",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-08",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Mechanical & Automation",
+        "skills": ["ROS2", "C++", "OpenCV", "SLAM"],
+        "career_interest": "Autonomous mobile robot localization and path planning software",
+        "profile_summary": "Simulated LiDAR obstacle avoidance and indoor warehouse mapping in Gazebo simulator.",
+        "preferred_languages": ["bn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-08",
+        "title": "Autonomous Navigation Software Intern",
+        "organization": "GatiBotics",
+        "domain_family": "embedded_robotics",
+        "description": "Develop perception nodes and trajectory planning stacks for indoor autonomous guided vehicles.",
+        "required_skills": ["Robotics Middleware", "Computer Vision", "Path Planning"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-09",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-09",
+        "education_year": "1st Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["HTML", "CSS", "JavaScript", "Git"],
+        "career_interest": "First coding internship in web development and clean UI layout engineering",
+        "profile_summary": "Built a responsive personal study planner web app and collaborated on GitHub.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-09",
+        "title": "First-Year Web Builder Apprenticeship",
+        "organization": "ShikshaOpen Collective",
+        "domain_family": "frontend_ui",
+        "description": "Collaborate on static educational websites, fix browser layout bugs, and submit structured pull requests.",
+        "required_skills": ["Core Web Standards", "DOM Manipulation", "Version Control"],
+        "eligible_years": ["1st Year B.Tech", "2nd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-10",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-10",
+        "education_year": "4th Year B.Tech",
+        "branch": "Data Science & AI",
+        "skills": ["Sentence Transformers", "pgvector", "Scikit-learn", "Python"],
+        "career_interest": "Applied semantic search, embeddings ranking, and information retrieval engineering",
+        "profile_summary": "Built semantic document FAQ finder using bi-encoder embeddings and cosine similarity scoring.",
+        "preferred_languages": ["en", "hi"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-10",
+        "title": "Information Retrieval & Search ML Intern",
+        "organization": "KhojAI Systems",
+        "domain_family": "ai_nlp_speech",
+        "description": "Improve dense vector recall, benchmark retrieval nDCG metrics, and tune embedding ranking pipelines.",
+        "required_skills": ["Dense Embeddings", "Vector Databases", "Ranking Metrics"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-11",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-11",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Go", "Redis", "gRPC", "Concurrency"],
+        "career_interest": "High-concurrency distributed message queues and low-latency trading infrastructure",
+        "profile_summary": "Wrote concurrent worker pools with Redis streams and measured tail p99 response times.",
+        "preferred_languages": ["te", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-11",
+        "title": "Distributed Systems Engineering Intern",
+        "organization": "VegaStream FinTech",
+        "domain_family": "backend_systems",
+        "description": "Design asynchronous event workers, optimize Redis throughput, and benchmark high-concurrency microservices.",
+        "required_skills": ["Concurrent Programming", "In-Memory Caching", "RPC Services"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-12",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-12",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Electrical & Electronics",
+        "skills": ["Verilog", "Digital Logic", "MATLAB", "Signal Processing"],
+        "career_interest": "RTL verification and FPGA digital signal processing workflows",
+        "profile_summary": "Designed synchronous UART transceiver modules and simulated timing waveforms.",
+        "preferred_languages": ["ta", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-12",
+        "title": "VLSI Digital Design Intern",
+        "organization": "DeccanSilicon Labs",
+        "domain_family": "hardware_vlsi",
+        "description": "Write synthesizable HDL testbenches, inspect digital waveform timing, and verify hardware FSM protocols.",
+        "required_skills": ["Hardware Description Languages", "RTL Simulation", "Digital Circuits"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-13",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-13",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["PyMuPDF", "spaCy", "Pydantic", "JSON Schema"],
+        "career_interest": "Document parsing and structured entity extraction from academic PDFs",
+        "profile_summary": "Created parser pipelines turning multi-column PDF brochures into validated JSON payloads.",
+        "preferred_languages": ["bn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-13",
+        "title": "Document Intelligence & NLP Intern",
+        "organization": "PatraDocs AI",
+        "domain_family": "ai_nlp_speech",
+        "description": "Extract tables and structured entities from noisy PDF forms with strict schema validation and error recovery.",
+        "required_skills": ["PDF Text Extraction", "Named Entity Recognition", "Schema Validation"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-14",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-14",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Information Technology",
+        "skills": ["Playwright", "Node.js", "TypeScript", "E2E Testing"],
+        "career_interest": "Browser automation, QA reliability, and web portal testing harnesses",
+        "profile_summary": "Wrote headless Chromium integration suites validating form inputs and console errors.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-14",
+        "title": "Browser Automation & QA Engineering Intern",
+        "organization": "Pravaah WebTools",
+        "domain_family": "frontend_ui",
+        "description": "Automate resilient browser workflows, verify dynamic web DOM selectors, and capture visual test receipts.",
+        "required_skills": ["Headless Browser Testing", "DOM Selectors", "Test Automation"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-15",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-15",
+        "education_year": "4th Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Apache Spark", "Airflow", "Snowflake", "Python"],
+        "career_interest": "Batch ETL data pipelines and analytical data warehousing",
+        "profile_summary": "Scheduled daily ingestion DAGs transforming event logs into partitioned columnar Parquet datasets.",
+        "preferred_languages": ["kn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-15",
+        "title": "Data Platform & ETL Engineering Intern",
+        "organization": "NadiMetrics",
+        "domain_family": "data_analytics",
+        "description": "Build resilient scheduled ingestion workflows, deduplicate warehouse records, and monitor pipeline SLAs.",
+        "required_skills": ["Workflow Orchestration", "Distributed Data Processing", "Data Warehousing"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-16",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-16",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["React Native", "Expo", "WebSockets", "Offline Storage"],
+        "career_interest": "Cross-platform mobile engineering for low-bandwidth Indian users",
+        "profile_summary": "Engineered bilingual student revision mobile client with offline sync queues.",
+        "preferred_languages": ["ml", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-16",
+        "title": "Mobile Client Engineering Intern",
+        "organization": "GramSetu Apps",
+        "domain_family": "frontend_ui",
+        "description": "Build lightweight mobile experiences supporting regional language text and unreliable cellular connectivity.",
+        "required_skills": ["Cross-Platform Mobile", "Offline Caching", "Mobile UI"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-17",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-17",
+        "education_year": "3rd Year B.Tech",
+        "branch": "AI & Machine Learning",
+        "skills": ["XGBoost", "LightGBM", "SHAP", "Scikit-learn"],
+        "career_interest": "Tabular machine learning classification and explainable credit/risk scoring",
+        "profile_summary": "Evaluated tree-based classifiers with feature importance plots for transparent model decisions.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-17",
+        "title": "Applied Tabular ML Intern",
+        "organization": "SatyaScore Analytics",
+        "domain_family": "data_analytics",
+        "description": "Train gradient-boosted tabular models, audit calibration curves, and generate feature-level explanations.",
+        "required_skills": ["Gradient Boosting", "Model Explainability", "Cross-Validation"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-18",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-18",
+        "education_year": "4th Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Supabase", "Row Level Security", "JWT", "PostgreSQL"],
+        "career_interest": "Multi-tenant database security and backend access control engineering",
+        "profile_summary": "Configured strict Postgres RLS policies and signed storage URLs for confidential user documents.",
+        "preferred_languages": ["te", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-18",
+        "title": "Backend Auth & Data Security Intern",
+        "organization": "PranaVault Cloud",
+        "domain_family": "backend_systems",
+        "description": "Implement multi-tenant tenant isolation rules, token verification middleware, and audit trail logging.",
+        "required_skills": ["PostgreSQL RLS", "Token Auth", "Backend Security"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-19",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-19",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Electronics & Computer",
+        "skills": ["ONNX Runtime", "PyTorch Quantization", "Python", "Benchmarking"],
+        "career_interest": "CPU model compression, quantization, and edge inference optimization",
+        "profile_summary": "Compressed transformer encoders to INT8 ONNX graphs achieving faster CPU inference on laptop hardware.",
+        "preferred_languages": ["en", "ta"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-19",
+        "title": "Edge AI Inference Optimization Intern",
+        "organization": "SuryaSilicon AI",
+        "domain_family": "ai_nlp_speech",
+        "description": "Profile neural network latency on CPU-only targets, run INT8 quantization, and validate accuracy retention.",
+        "required_skills": ["Model Quantization", "CPU Inference", "Performance Profiling"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "tr-20",
+      "split": "train",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-tr-20",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Three.js", "React Three Fiber", "WebGL", "TypeScript"],
+        "career_interest": "Interactive 3D data visualization on the browser without sacrificing accessibility",
+        "profile_summary": "Built adaptive-quality WebGL campus maps with reduced-motion fallbacks on integrated laptop graphics.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-tr-20",
+        "title": "Interactive 3D Web Graphics Intern",
+        "organization": "Drishya Spatial",
+        "domain_family": "frontend_ui",
+        "description": "Author lightweight WebGL scenes embedded inside React dashboards optimized for integrated laptop GPUs.",
+        "required_skills": ["3D Browser Rendering", "React Graphics", "Frame Budget Tuning"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+
+    {
+      "pair_id": "val-01",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-01",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Python", "LangGraph", "Pydantic", "Asyncio"],
+        "career_interest": "Stateful AI workflow orchestration with human-in-the-loop checkpoints",
+        "profile_summary": "Built durable agent graphs that halt before external side effects and resume upon user sign-off.",
+        "preferred_languages": ["en", "te"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-01",
+        "title": "Agentic Workflow Systems Intern",
+        "organization": "SutraAgent Labs",
+        "domain_family": "ai_nlp_speech",
+        "description": "Design checkpointed multi-step autonomous pipelines with deterministic guardrails and operator approval gates.",
+        "required_skills": ["Stateful Agent Graphs", "Typed Tool Schemas", "Async Python"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "val-02",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-02",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Data Science",
+        "skills": ["SQL", "Python", "Seaborn", "Hypothesis Testing"],
+        "career_interest": "Product funnel analysis and cohort telemetry analytics",
+        "profile_summary": "Analyzed onboarding drop-off events and computed weekly retention charts from event tables.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-02",
+        "title": "Product Analytics Intern",
+        "organization": "UdaanMetrics",
+        "domain_family": "data_analytics",
+        "description": "Query funnel metrics in SQL, evaluate user conversion experiments, and brief product managers cleanly.",
+        "required_skills": ["Cohort Analysis", "Database Querying", "Experiment Metrics"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "val-03",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-03",
+        "education_year": "3rd Year B.Tech",
+        "branch": "ECE",
+        "skills": ["ESP32", "C++", "BLE", "Sensor Calibration"],
+        "career_interest": "Connected wearable hardware prototyping and wireless sensor firmware",
+        "profile_summary": "Streamed IMU posture readings over Bluetooth Low Energy to mobile diagnostics.",
+        "preferred_languages": ["kn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-03",
+        "title": "IoT Embedded & BLE Intern",
+        "organization": "Spandana Wearables",
+        "domain_family": "embedded_robotics",
+        "description": "Implement low-power wireless firmware protocols and inertial sensor filtering loops on compact MCUs.",
+        "required_skills": ["Wireless Firmware", "Microcontroller C++", "Sensor Fusion"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "val-04",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-04",
+        "education_year": "4th Year B.Tech",
+        "branch": "Information Technology",
+        "skills": ["Linux Containers", "Prometheus", "Grafana", "Nginx"],
+        "career_interest": "Production observability dashboards and reverse-proxy reliability",
+        "profile_summary": "Instrumented service latency histograms and configured alert thresholds for FastAPI services.",
+        "preferred_languages": ["bn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-04",
+        "title": "Platform Observability & SRE Intern",
+        "organization": "NabhOps Cloud",
+        "domain_family": "cloud_devops",
+        "description": "Monitor HTTP error budgets, tune container health checks, and build operational alerting dashboards.",
+        "required_skills": ["Metrics Telemetry", "Reverse Proxies", "Container Ops"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "val-05",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-05",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Next.js", "TypeScript", "Zustand", "REST Integration"],
+        "career_interest": "Full-stack React application state architecture and API integration",
+        "profile_summary": "Maintained typed frontend monorepo packages shared across student and recruiter dashboards.",
+        "preferred_languages": ["ta", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-05",
+        "title": "React Application Architect Intern",
+        "organization": "SetuWorks SaaS",
+        "domain_family": "frontend_ui",
+        "description": "Build typed App Router portals consuming OpenAPI contracts with clean client state management.",
+        "required_skills": ["Modern React", "Static Typing", "API Client Layers"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "val-06",
+      "split": "val",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-val-06",
+        "education_year": "4th Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["NLI DeBERTa", "PyTorch", "Fact Verification", "NLP"],
+        "career_interest": "Evaluating groundedness and preventing hallucinations in AI-generated text",
+        "profile_summary": "Built premise-hypothesis entailment checks blocking unsupported resume bullet generation.",
+        "preferred_languages": ["en", "hi"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-val-06",
+        "title": "AI Safety & Hallucination Evaluation Intern",
+        "organization": "SatyaAI Guardrails",
+        "domain_family": "ai_nlp_speech",
+        "description": "Benchmark natural language inference models to detect fabricated facts and ensure citation grounding.",
+        "required_skills": ["Text Entailment", "Model Evaluation", "Safety Filtering"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+
+    {
+      "pair_id": "te-01",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-01",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science & Engineering",
+        "skills": ["Sentence Embeddings", "Hindi-English NLP", "PyTorch", "Cosine Retrieval"],
+        "career_interest": "Semantic career search matching student profiles in Indian regional contexts",
+        "profile_summary": "Fine-tuned lightweight CPU bi-encoders for bilingual academic queries against job postings.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-01",
+        "title": "Semantic Search & Multilingual NLP Intern",
+        "organization": "BhashaKhoj AI",
+        "domain_family": "ai_nlp_speech",
+        "description": "Train and evaluate dense passage retrieval pipelines handling English and mixed Indian terminology on CPU targets.",
+        "required_skills": ["Dense Retrieval", "Multilingual Text", "Embedding Fine-Tuning"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      },
+      "hard_negative_opportunity": {
+        "opportunity_id": "syn-opp-hn-01",
+        "title": "Backend Container Security Engineer Intern",
+        "organization": "LohaCloud",
+        "domain_family": "security",
+        "description": "Uses Python scripting tools for Linux container vulnerability scanning and firewall policy checks.",
+        "required_skills": ["Python Scripting", "Container Scanning", "Network Policies"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-02",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-02",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["SQL", "PostgreSQL", "Data Cleaning", "Python Charts"],
+        "career_interest": "Turning noisy student survey spreadsheets into structured metrics and charts",
+        "profile_summary": "Automated placement statistics aggregation using database joins and summary visualizations.",
+        "preferred_languages": ["te", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-02",
+        "title": "BI & SQL Data Analyst Intern",
+        "organization": "DrishtiFin Analytics",
+        "domain_family": "data_analytics",
+        "description": "Clean operational database tables, build SQL aggregations, and publish weekly metric summaries.",
+        "required_skills": ["SQL Joins", "Metric Dashboards", "Data Hygiene"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      },
+      "hard_negative_opportunity": {
+        "opportunity_id": "syn-opp-hn-02",
+        "title": "WebGL Shader & 3D Game Art Intern",
+        "organization": "KhelStudio",
+        "domain_family": "frontend_ui",
+        "description": "Author custom GPU fragment shaders and animated 3D meshes in browser game engines.",
+        "required_skills": ["Shaders", "3D Modeling", "Animation Graphs"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-03",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-03",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Information Technology",
+        "skills": ["FastAPI", "AsyncPG", "Redis", "OAuth2 JWT"],
+        "career_interest": "Scalable asynchronous backend APIs and background job queues",
+        "profile_summary": "Engineered non-blocking Python REST endpoints backed by Postgres connection pooling and Redis.",
+        "preferred_languages": ["en", "kn"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-03",
+        "title": "Asynchronous Python Backend Intern",
+        "organization": "TarangCloud APIs",
+        "domain_family": "backend_systems",
+        "description": "Develop high-throughput async service routes, worker task queues, and strict schema validation middleware.",
+        "required_skills": ["Async Web APIs", "Task Queues", "Relational Storage"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      },
+      "hard_negative_opportunity": {
+        "opportunity_id": "syn-opp-hn-03",
+        "title": "Embedded Motor Controller Intern",
+        "organization": "VidyutDrive",
+        "domain_family": "embedded_robotics",
+        "description": "Write Python calibration scripts alongside real-time CAN bus microcontroller C code for EV inverters.",
+        "required_skills": ["CAN Bus", "Power Electronics", "C Firmware"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-04",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-04",
+        "education_year": "2nd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["React", "Tailwind CSS", "Voice UI", "Accessibility"],
+        "career_interest": "Voice-enabled frontend dashboards accessible in multiple Indian languages",
+        "profile_summary": "Created clean multilingual workspace interfaces with accessible dialogs and microphone controls.",
+        "preferred_languages": ["ta", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-04",
+        "title": "Frontend Accessibility & Voice UI Intern",
+        "organization": "VaniWeb Systems",
+        "domain_family": "frontend_ui",
+        "description": "Craft responsive React component libraries supporting Indic script rendering and conversational audio controls.",
+        "required_skills": ["Client UI Architecture", "Localization", "Component Accessibility"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-05",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-05",
+        "education_year": "4th Year B.Tech",
+        "branch": "Electronics & Instrumentation",
+        "skills": ["ROS2", "Sensor Fusion", "C++", "Linux Embedded"],
+        "career_interest": "Autonomous drone perception and field robotics navigation",
+        "profile_summary": "Integrated depth camera streams with path planner nodes running on onboard edge Linux.",
+        "preferred_languages": ["ml", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-05",
+        "title": "Field Robotics Autonomy Intern",
+        "organization": "VayuDoot Robotics",
+        "domain_family": "embedded_robotics",
+        "description": "Fuse LiDAR and camera odometry streams for resilient autonomous flight navigation outdoors.",
+        "required_skills": ["State Estimation", "Autonomous Navigation", "C++ Robotics"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-06",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-06",
+        "education_year": "3rd Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["SIEM", "Threat Modeling", "Python", "Auth Auditing"],
+        "career_interest": "Application security auditing and credential protection systems",
+        "profile_summary": "Investigated OAuth token leak vectors and enforced secret scanning hooks across CI pipelines.",
+        "preferred_languages": ["hi", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-06",
+        "title": "Security Engineering & AppSec Intern",
+        "organization": "RakshakLabs",
+        "domain_family": "security",
+        "description": "Perform threat modeling on web authentication flows, automate secret scanning, and review access controls.",
+        "required_skills": ["Threat Modeling", "Auth Security", "CI Security Checks"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      },
+      "hard_negative_opportunity": {
+        "opportunity_id": "syn-opp-hn-04",
+        "title": "Frontend Marketing Animation Intern",
+        "organization": "RangaStudio",
+        "domain_family": "frontend_ui",
+        "description": "Animate hero typography using GSAP and Motion libraries for product showcase pages.",
+        "required_skills": ["Motion Choreography", "SVG Graphics", "CSS Transitions"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-07",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-07",
+        "education_year": "4th Year B.Tech",
+        "branch": "Computer Science",
+        "skills": ["Docker", "Cloud Run", "CI Workflows", "Bash"],
+        "career_interest": "Serverless container deployment and developer platform automation",
+        "profile_summary": "Packaged reproducible backend microservices and automated build verification pipelines on GitHub.",
+        "preferred_languages": ["bn", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-07",
+        "title": "Cloud Deployment & DevOps Intern",
+        "organization": "AkashMesh",
+        "domain_family": "cloud_devops",
+        "description": "Streamline multi-service container deployments, build caches, and rollback-safe cloud releases.",
+        "required_skills": ["Cloud Containers", "Build Automation", "Release Reliability"],
+        "eligible_years": ["3rd Year B.Tech", "4th Year B.Tech"]
+      }
+    },
+    {
+      "pair_id": "te-08",
+      "split": "test",
+      "relevance_label": 1,
+      "is_synthetic": true,
+      "student": {
+        "student_id": "syn-st-te-08",
+        "education_year": "2nd Year B.Tech",
+        "branch": "ECE",
+        "skills": ["SystemVerilog", "Timing Analysis", "FPGA", "Digital Design"],
+        "career_interest": "Pre-silicon RTL verification and digital hardware simulation",
+        "profile_summary": "Implemented parameterized FIFO buffers in Verilog and checked setup/hold constraints.",
+        "preferred_languages": ["te", "en"]
+      },
+      "opportunity": {
+        "opportunity_id": "syn-opp-te-08",
+        "title": "ASIC Verification Engineering Intern",
+        "organization": "NizamChip",
+        "domain_family": "hardware_vlsi",
+        "description": "Build randomized simulation environments and check digital block timing closure on FPGA prototypes.",
+        "required_skills": ["RTL Verification", "FPGA Prototyping", "Timing Constraints"],
+        "eligible_years": ["2nd Year B.Tech", "3rd Year B.Tech"]
+      }
+    }
+  ]
+}
