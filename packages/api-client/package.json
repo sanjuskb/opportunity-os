@@ -13,6 +13,6 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "lint": "echo \"@opportunity-os/api-client lint ok\"",
-    "test": "echo \"@opportunity-os/api-client tests ok\""
+    "test": "node --test tests/api-client.test.ts"
   }
 }
