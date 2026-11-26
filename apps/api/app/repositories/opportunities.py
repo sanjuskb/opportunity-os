@@ -16,6 +16,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.entities import Opportunity, OpportunityEmbedding, SavedOpportunity
+from app.repositories.embeddings import (
+    CANONICAL_VECTOR_DIM,
+    LEGACY_VECTOR_DIM,
+    validate_embedding_vector,
+)
 
 
 @dataclass(frozen=True)
@@ -124,12 +129,18 @@ class OpportunityRepository:
         active_only: bool = True,
     ) -> list[tuple[Opportunity, float]]:
         """Query pgvector cosine similarity without fabricating embedding rows."""
+        expected_dim = (
+            CANONICAL_VECTOR_DIM
+            if model_column == "embedding_minilm_384"
+            else LEGACY_VECTOR_DIM
+        )
+        validated = validate_embedding_vector(query_vector, expected_dim=expected_dim)
         vec_col = (
             OpportunityEmbedding.embedding_minilm_384
             if model_column == "embedding_minilm_384"
             else OpportunityEmbedding.embedding
         )
-        distance_expr = vec_col.cosine_distance(list(query_vector)).label("distance")
+        distance_expr = vec_col.cosine_distance(validated).label("distance")
 
         stmt = (
             select(Opportunity, distance_expr)
@@ -137,6 +148,8 @@ class OpportunityRepository:
             .where(vec_col.is_not(None))
             .options(selectinload(Opportunity.eligibility))
         )
+        if model_column == "embedding_minilm_384":
+            stmt = stmt.where(OpportunityEmbedding.embedding_status == "ready")
         if active_only:
             stmt = stmt.where(Opportunity.is_active.is_(True))
 
@@ -175,3 +188,28 @@ class OpportunityRepository:
             SavedOpportunity.opportunity_id == opportunity_id,
         )
         return (await self._session.execute(stmt)).scalar_one_or_none() is not None
+
+    async def list_saved_for_user(
+        self,
+        user_id: UUID,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+        active_only: bool = True,
+    ) -> list[Opportunity]:
+        """List opportunities saved by user_id with deterministic ordering."""
+        stmt = (
+            select(Opportunity)
+            .join(SavedOpportunity, SavedOpportunity.opportunity_id == Opportunity.id)
+            .where(SavedOpportunity.user_id == user_id)
+            .options(selectinload(Opportunity.eligibility))
+        )
+        if active_only:
+            stmt = stmt.where(Opportunity.is_active.is_(True))
+        stmt = (
+            stmt.order_by(SavedOpportunity.saved_at.desc(), SavedOpportunity.id.desc())
+            .limit(max(1, min(limit, 100)))
+            .offset(max(0, offset))
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().unique().all())

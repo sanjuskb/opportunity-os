@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import AsyncIterator
 from urllib.parse import urlparse
@@ -77,13 +78,16 @@ class DatabaseManager:
             finally:
                 await session.close()
 
-    async def health_check(self) -> bool:
-        """Execute lightweight SELECT 1 against PostgreSQL without leaking credentials."""
+    async def health_check(self, timeout_seconds: float = 2.0) -> bool:
+        """Execute bounded SELECT 1 against PostgreSQL without leaking credentials."""
         try:
-            async with self._engine.connect() as conn:
-                await conn.execute(text("SELECT 1"))
+            async def _ping() -> None:
+                async with self._engine.connect() as conn:
+                    await conn.execute(text("SELECT 1"))
+
+            await asyncio.wait_for(_ping(), timeout=timeout_seconds)
             return True
-        except (SQLAlchemyError, OSError):
+        except (SQLAlchemyError, OSError, TimeoutError):
             logger.warning("Database health check failed.")
             return False
 

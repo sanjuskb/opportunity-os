@@ -14,6 +14,7 @@ from app.models.entities import (
     Resume,
     SavedOpportunity,
     StudentProfile,
+    VoiceSession,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "Resume",
     "SavedOpportunity",
     "StudentProfile",
+    "VoiceSession",
 ]

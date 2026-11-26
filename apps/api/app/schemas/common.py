@@ -3,7 +3,7 @@ from decimal import Decimal
 from typing import Any, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic.alias_generators import to_camel
 
 
@@ -26,6 +26,19 @@ class HealthResponse(BaseModel):
     version: str = Field(default="0.1.0", description="API version")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
     environment: str
+
+
+class ReadinessDependencies(CamelModel):
+    database: Literal["healthy", "unavailable"]
+    redis: Literal["healthy", "unavailable"]
+
+
+class ReadinessResponse(CamelModel):
+    status: Literal["ready", "degraded"]
+    version: str = Field(default="0.1.0")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    environment: str
+    dependencies: ReadinessDependencies
 
 
 class ProfileResponse(CamelModel):
@@ -154,20 +167,24 @@ class ApplicationCreateRequest(StrictCamelModel):
     status: Literal["drafting", "saved"] = "drafting"
 
 
+ApplicationStatusLiteral = Literal[
+    "discovered",
+    "saved",
+    "evaluating",
+    "eligible",
+    "ineligible",
+    "drafting",
+    "ready_for_review",
+    "approved",
+    "submitted",
+    "rejected",
+    "accepted",
+]
+
+
 class ApplicationStatusUpdateRequest(StrictCamelModel):
-    status: Literal[
-        "discovered",
-        "saved",
-        "evaluating",
-        "eligible",
-        "ineligible",
-        "drafting",
-        "ready_for_review",
-        "approved",
-        "submitted",
-        "rejected",
-        "accepted",
-    ]
+    status: ApplicationStatusLiteral
+    expected_status: ApplicationStatusLiteral
 
 
 class ApplicationResponse(CamelModel):
@@ -220,3 +237,43 @@ class VoiceTicketResponse(CamelModel):
     ticket: str
     expires_at: datetime
     ttl_seconds: int
+
+
+class ResumeCreateRequest(StrictCamelModel):
+    title: str = Field(min_length=1, max_length=255)
+    master_content: dict[str, Any]
+
+    @field_validator("title")
+    @classmethod
+    def _strip_non_empty_title(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("title must not be empty or whitespace")
+        return stripped
+
+
+class ResumeResponse(CamelModel):
+    id: UUID
+    user_id: UUID
+    title: str
+    master_content: dict[str, Any]
+    created_at: datetime | None = None
+
+
+class VoiceSessionCreateRequest(StrictCamelModel):
+    detected_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn"] = "en"
+    audio_duration_seconds: Decimal = Field(
+        default=Decimal("0"), ge=Decimal("0"), le=Decimal("999999.99")
+    )
+    transcript: str | None = Field(default=None, max_length=20000)
+    status: Literal["completed", "interrupted", "failed"] = "completed"
+
+
+class VoiceSessionResponse(CamelModel):
+    id: UUID
+    user_id: UUID
+    detected_language: str
+    audio_duration_seconds: Decimal
+    transcript: str | None = None
+    status: str
+    created_at: datetime | None = None

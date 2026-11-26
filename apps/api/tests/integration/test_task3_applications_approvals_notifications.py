@@ -162,7 +162,7 @@ async def test_applications_approvals_notifications_and_concurrency_live() -> No
                 client.patch(
                     f"/api/v1/applications/{app_1_id}/status",
                     headers=headers_b,
-                    json={"status": "ready_for_review"},
+                    json={"status": "ready_for_review", "expectedStatus": "drafting"},
                 ).status_code
                 == 404
             )
@@ -173,7 +173,7 @@ async def test_applications_approvals_notifications_and_concurrency_live() -> No
                 client.patch(
                     f"/api/v1/applications/{app_1_id}/status",
                     headers=headers_a,
-                    json={"status": "submitted"},
+                    json={"status": "submitted", "expectedStatus": "drafting"},
                 ).status_code
                 == 403
             )
@@ -181,7 +181,7 @@ async def test_applications_approvals_notifications_and_concurrency_live() -> No
                 client.patch(
                     f"/api/v1/applications/{app_1_id}/status",
                     headers=headers_a,
-                    json={"status": "approved"},
+                    json={"status": "approved", "expectedStatus": "drafting"},
                 ).status_code
                 == 403
             )
@@ -191,7 +191,7 @@ async def test_applications_approvals_notifications_and_concurrency_live() -> No
                 client.patch(
                     f"/api/v1/applications/{app_1_id}/status",
                     headers=headers_a,
-                    json={"status": "ineligible"},
+                    json={"status": "ineligible", "expectedStatus": "drafting"},
                 ).status_code
                 == 422
             )
@@ -200,7 +200,7 @@ async def test_applications_approvals_notifications_and_concurrency_live() -> No
             ready_resp = client.patch(
                 f"/api/v1/applications/{app_1_id}/status",
                 headers=headers_a,
-                json={"status": "ready_for_review"},
+                json={"status": "ready_for_review", "expectedStatus": "drafting"},
             )
             assert ready_resp.status_code == 200
             assert ready_resp.json()["status"] == "ready_for_review"

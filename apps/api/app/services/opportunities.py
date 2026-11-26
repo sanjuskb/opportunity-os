@@ -69,6 +69,19 @@ class OpportunityService:
             )
         return self._to_response(opp)
 
+    async def list_saved_opportunities(
+        self,
+        user_id: UUID,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+        active_only: bool = True,
+    ) -> list[OpportunityResponse]:
+        rows = await self._repo.list_saved_for_user(
+            user_id, limit=limit, offset=offset, active_only=active_only
+        )
+        return [self._to_response(o) for o in rows]
+
     async def toggle_save(
         self,
         user_id: UUID,

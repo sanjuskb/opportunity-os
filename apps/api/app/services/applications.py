@@ -116,22 +116,44 @@ class ApplicationService:
             )
 
         current_status = record.status or "drafting"
-        if target == current_status:
+        if payload.expected_status != current_status:
+            raise ProblemDetailError(
+                status_code=409,
+                problem_type="urn:problem:conflict",
+                title="Stale Application Status",
+                detail=(
+                    f"Application status is '{current_status}', "
+                    f"expected '{payload.expected_status}'."
+                ),
+            )
+
+        expected_status = payload.expected_status
+        if target == expected_status:
             return self._to_response(record)
 
-        allowed = _CLIENT_ALLOWED_TRANSITIONS.get(current_status, set())
+        allowed = _CLIENT_ALLOWED_TRANSITIONS.get(expected_status, set())
         if target not in allowed:
             raise ProblemDetailError(
                 status_code=422,
                 problem_type="urn:problem:invalid_state_transition",
                 title="Invalid Status Transition",
-                detail=f"Cannot transition application from '{current_status}' to '{target}'.",
+                detail=f"Cannot transition application from '{expected_status}' to '{target}'.",
             )
 
-        updated = await self._repo.update_status_for_user(
-            application_id, user_id, status=target
+        updated = await self._repo.transition_status_for_user(
+            application_id,
+            user_id,
+            expected_status=expected_status,
+            new_status=target,
         )
-        assert updated is not None
+        if updated is None:
+            await self._session.rollback()
+            raise ProblemDetailError(
+                status_code=409,
+                problem_type="urn:problem:conflict",
+                title="Concurrent Application Update",
+                detail="Application status was modified concurrently.",
+            )
         await self._session.commit()
         return self._to_response(updated)
 

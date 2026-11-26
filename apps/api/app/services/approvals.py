@@ -90,11 +90,23 @@ class ApprovalService:
         )
         if linked_app is not None and linked_app.status in ("ready_for_review", "drafting", "eligible"):
             next_app_status = "approved" if payload.approved else "drafting"
-            await self._app_repo.update_status_for_user(
+            updated_app = await self._app_repo.transition_status_for_user(
                 linked_app.id,
                 user_id,
-                status=next_app_status,
+                expected_status=linked_app.status,
+                new_status=next_app_status,
             )
+            if updated_app is None:
+                await self._session.rollback()
+                raise ProblemDetailError(
+                    status_code=409,
+                    problem_type="urn:problem:conflict",
+                    title="Concurrent Application Update",
+                    detail=(
+                        "Linked application status changed concurrently; "
+                        "approval decision rolled back."
+                    ),
+                )
 
         # Because atomic decide_for_user succeeds at most once per approval_id,
         # this notification cannot be duplicated on retries or concurrent races.

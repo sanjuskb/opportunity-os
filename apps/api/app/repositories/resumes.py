@@ -17,11 +17,19 @@ class ResumeRepository:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def list_for_user(self, user_id: UUID) -> list[Resume]:
+    async def list_for_user(
+        self,
+        user_id: UUID,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[Resume]:
         stmt = (
             select(Resume)
             .where(Resume.user_id == user_id)
-            .order_by(Resume.created_at.desc())
+            .order_by(Resume.created_at.desc(), Resume.id.desc())
+            .limit(limit)
+            .offset(offset)
         )
         result = await self._session.execute(stmt)
         return list(result.scalars().all())

@@ -1,13 +1,16 @@
-from typing import Annotated, Literal
+import asyncio
+import logging
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, Response, status
+from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.voice import voice_router
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
-from app.db.session import get_db_session
+from app.db.session import DatabaseManager, check_db_health, get_db_session
 from app.schemas.common import (
     ApplicationCreateRequest,
     ApplicationResponse,
@@ -26,6 +29,10 @@ from app.schemas.common import (
     PaginatedOpportunitiesResponse,
     ProfileResponse,
     ProfileUpdateRequest,
+    ReadinessDependencies,
+    ReadinessResponse,
+    ResumeCreateRequest,
+    ResumeResponse,
     SaveOpportunityRequest,
     SaveOpportunityResponse,
     StudentProfileResponse,
@@ -38,8 +45,11 @@ from app.services import (
     NotificationService,
     OpportunityService,
     ProfileService,
+    ResumeService,
     StudentProfileService,
 )
+
+_logger = logging.getLogger("opportunity_os.health")
 
 v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(voice_router)
@@ -48,13 +58,47 @@ _AuthenticatedUser = Annotated[AuthenticatedUser, Depends(require_supabase_role(
 _DbSession = Annotated[AsyncSession, Depends(get_db_session)]
 
 
+async def _check_redis_health(redis_client: Any | None, timeout_seconds: float = 2.0) -> bool:
+    if redis_client is None:
+        return False
+    try:
+        return bool(await asyncio.wait_for(redis_client.ping(), timeout=timeout_seconds))
+    except (RedisError, OSError, TimeoutError):
+        _logger.warning("Redis readiness check failed.")
+        return False
+
+
 @v1_router.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check() -> HealthResponse:
-    """Returns the current operational status of the API."""
+    """Liveness check confirming the FastAPI process is running."""
     return HealthResponse(
         status="healthy",
         version="0.1.0",
         environment=settings.ENVIRONMENT,
+    )
+
+
+@v1_router.get("/health/ready", response_model=ReadinessResponse, tags=["Health"])
+async def readiness_check(request: Request, response: Response) -> ReadinessResponse:
+    """Readiness check verifying live PostgreSQL and Redis connectivity."""
+    db_manager: DatabaseManager | None = getattr(request.app.state, "db", None)
+    redis_client: Any | None = getattr(request.app.state, "redis_client", None)
+
+    db_ok = await check_db_health(db_manager) if db_manager is not None else False
+    redis_ok = await _check_redis_health(redis_client)
+
+    all_healthy = db_ok and redis_ok
+    if not all_healthy:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
+    return ReadinessResponse(
+        status="ready" if all_healthy else "degraded",
+        version="0.1.0",
+        environment=settings.ENVIRONMENT,
+        dependencies=ReadinessDependencies(
+            database="healthy" if db_ok else "unavailable",
+            redis="healthy" if redis_ok else "unavailable",
+        ),
     )
 
 
@@ -180,6 +224,24 @@ async def list_opportunities(
         search_query=q,
         active_only=active_only,
         sort_order=sort_order,
+    )
+
+
+@v1_router.get(
+    "/opportunities/saved",
+    response_model=list[OpportunityResponse],
+    tags=["Opportunities"],
+)
+async def list_saved_opportunities(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    active_only: bool = Query(default=True),
+) -> list[OpportunityResponse]:
+    """List opportunities saved by the authenticated user."""
+    return await OpportunityService(session).list_saved_opportunities(
+        current_user.user_id, limit=limit, offset=offset, active_only=active_only
     )
 
 
@@ -410,3 +472,64 @@ async def evaluate_eligibility(
         reasons=["Profile evaluation pending ML integration."],
         missing_skills=[],
     )
+
+
+# ---------------------------------------------------------------------------
+# Resumes (Basic CRUD)
+# ---------------------------------------------------------------------------
+
+
+@v1_router.get("/resumes", response_model=list[ResumeResponse], tags=["Resumes"])
+async def list_resumes(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> list[ResumeResponse]:
+    """List resumes owned by the authenticated user."""
+    return await ResumeService(session).list_resumes(
+        current_user.user_id, limit=limit, offset=offset
+    )
+
+
+@v1_router.post(
+    "/resumes",
+    response_model=ResumeResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["Resumes"],
+)
+async def create_resume(
+    payload: ResumeCreateRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ResumeResponse:
+    """Create a resume record owned by the authenticated user."""
+    return await ResumeService(session).create_resume(current_user.user_id, payload)
+
+
+@v1_router.get(
+    "/resumes/{resume_id}",
+    response_model=ResumeResponse,
+    tags=["Resumes"],
+)
+async def get_resume(
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ResumeResponse:
+    """Fetch a single resume owned by the authenticated user."""
+    return await ResumeService(session).get_resume(resume_id, current_user.user_id)
+
+
+@v1_router.delete(
+    "/resumes/{resume_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Resumes"],
+)
+async def delete_resume(
+    resume_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> None:
+    """Delete a resume owned by the authenticated user."""
+    await ResumeService(session).delete_resume(resume_id, current_user.user_id)

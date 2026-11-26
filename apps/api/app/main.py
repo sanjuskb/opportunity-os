@@ -21,7 +21,12 @@ def create_application(app_settings: Settings | None = None) -> FastAPI:
         db_manager = DatabaseManager(cfg)
         redis_client: Redis | None = None
         if cfg.REDIS_URL:
-            redis_client = Redis.from_url(cfg.REDIS_URL, decode_responses=True)
+            redis_client = Redis.from_url(
+                cfg.REDIS_URL,
+                decode_responses=True,
+                socket_connect_timeout=2.0,
+                socket_timeout=2.0,
+            )
         app.state.db = db_manager
         app.state.redis_client = redis_client
         app.state.voice_ticket_store = VoiceTicketStore(

@@ -139,6 +139,7 @@ async def test_repositories_crud_isolation_pagination_and_constraints() -> None:
                     OpportunityEmbedding(
                         opportunity_id=opp_ids[0],
                         embedding_minilm_384=vec_384,
+                        embedding_status="ready",
                     )
                 )
                 await session.flush()

@@ -6,15 +6,37 @@ import json
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
-from app.schemas.common import VoiceTicketResponse
+from app.db.session import get_db_session
+from app.schemas.common import (
+    VoiceSessionCreateRequest,
+    VoiceSessionResponse,
+    VoiceTicketResponse,
+)
+from app.services.voice_sessions import VoiceSessionService
 from app.voice.tickets import VoiceTicketStore, get_voice_ticket_store
 
 voice_router = APIRouter(prefix="/voice", tags=["Voice"])
 
 _AuthenticatedUser = Annotated[AuthenticatedUser, Depends(require_supabase_role("authenticated"))]
+_DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+
+@voice_router.post(
+    "/sessions",
+    response_model=VoiceSessionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_voice_session(
+    payload: VoiceSessionCreateRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> VoiceSessionResponse:
+    """Persist a voice interaction telemetry session owned by the authenticated user."""
+    return await VoiceSessionService(session).create_session(current_user.user_id, payload)
 
 
 @voice_router.post("/tickets", response_model=VoiceTicketResponse)

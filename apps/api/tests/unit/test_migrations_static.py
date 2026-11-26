@@ -136,6 +136,20 @@ def test_constraints_and_dual_vector_alignment() -> None:
     assert "idx_embeddings_minilm_384_hnsw" in constraints_sql
 
 
+def test_embedding_pipeline_metadata_migration() -> None:
+    meta_sql = (
+        MIGRATIONS_DIR / "20261126000004_embedding_pipeline_metadata.sql"
+    ).read_text(encoding="utf-8")
+    for col in ("content_hash", "embedding_status", "error_message", "retry_count", "updated_at"):
+        assert col in meta_sql
+    assert "CHECK (embedding_status IN ('pending', 'ready', 'failed'))" in meta_sql
+    assert "CHECK (retry_count >= 0)" in meta_sql
+    assert "CHECK (embedding_status <> 'ready' OR embedding_minilm_384 IS NOT NULL)" in meta_sql
+    assert "embedding_model_id = 'sentence-transformers/all-MiniLM-L6-v2'" in meta_sql
+    assert "DROP COLUMN" not in meta_sql
+    assert "CREATE POLICY" not in meta_sql
+
+
 def test_seed_sql_is_idempotent() -> None:
     seed_sql = SEED_FILE.read_text(encoding="utf-8")
     assert "INSERT INTO public.skills" in seed_sql

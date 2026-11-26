@@ -11,6 +11,8 @@
 --      with origin/ml's additive migration (20261125000001_add_minilm_384_embeddings.sql).
 -- =============================================================================
 
+SET LOCAL search_path = public, extensions;
+
 -- -----------------------------------------------------------------------------
 -- 1. Safe Uniqueness Constraint on public.applications (Duplicate Guard)
 -- -----------------------------------------------------------------------------

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.entities import Application
@@ -90,6 +90,36 @@ class ApplicationRepository:
         await self._session.flush()
         await self._session.refresh(record)
         return record
+
+    async def transition_status_for_user(
+        self,
+        application_id: UUID,
+        user_id: UUID,
+        *,
+        expected_status: str,
+        new_status: str,
+        submission_method: str | None = None,
+        applied_at: datetime | None = None,
+    ) -> Application | None:
+        """Atomically transition status only if current status matches expected_status."""
+        values: dict[str, object] = {"status": new_status}
+        if submission_method is not None:
+            values["submission_method"] = submission_method
+        if applied_at is not None:
+            values["applied_at"] = applied_at
+
+        stmt = (
+            update(Application)
+            .where(
+                Application.id == application_id,
+                Application.user_id == user_id,
+                Application.status == expected_status,
+            )
+            .values(**values)
+            .returning(Application)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
 
     async def delete_draft_for_user(self, application_id: UUID, user_id: UUID) -> bool:
         stmt = delete(Application).where(
