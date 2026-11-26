@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, User, Globe, Bell, Shield, Save, Check } from 'lucide-react';
+import Link from 'next/link';
+import { Globe, Save, Check, Shield, User } from 'lucide-react';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useMockStore } from '../../lib/mock-data/mockStore';
+import { useAuth } from '@/components/auth/AuthProvider';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
 
 export default function SettingsPage() {
+  const { user, loading, signOut } = useAuth();
   const { studentProfile, updateStudentProfile, activeLanguage, setActiveLanguage } = useMockStore();
 
   const [fullName, setFullName] = useState(studentProfile.fullName);
@@ -50,6 +52,45 @@ export default function SettingsPage() {
             <span>Profile settings saved successfully!</span>
           </div>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-4 w-4 text-emerald-400" />
+              <span>Account Session (Supabase Auth)</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              {loading ? (
+                <p className="text-sm text-slate-300">Checking session...</p>
+              ) : user ? (
+                <p className="text-sm text-slate-200">
+                  Signed in as <span className="font-medium text-cyan-300">{user.email}</span>
+                </p>
+              ) : (
+                <p className="text-sm text-slate-400">Not signed in.</p>
+              )}
+            </div>
+
+            {user ? (
+              <button
+                type="button"
+                onClick={signOut}
+                className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-500/20 transition"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition"
+              >
+                Sign In
+              </Link>
+            )}
+          </CardContent>
+        </Card>
 
         <form onSubmit={handleSave} className="space-y-6">
           <Card>
