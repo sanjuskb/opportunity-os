@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "opportunity-os-ml"
 version = "0.1.0"
-description = "Machine Learning pipelines, embeddings, and ranking models for Opportunity OS"
+description = "Machine Learning pipelines, embeddings, and ranking models for NexteRaS"
 readme = "README.md"
 requires-python = ">=3.11"
 authors = [
@@ -15,24 +15,48 @@ dependencies = [
     "torch>=2.2.0",
     "transformers>=4.38.0",
     "sentence-transformers>=2.5.0",
+    "datasets>=2.18.0",
     "scikit-learn>=1.4.0",
     "pandas>=2.2.0",
     "numpy>=1.26.0",
+    "matplotlib>=3.8.0",
     "pyyaml>=6.0.1",
     "pydantic>=2.6.0",
-    "tqdm>=4.66.0"
+    "python-dotenv>=1.0.0",
+    "tqdm>=4.66.0",
+    "accelerate>=1.1.0",
+    "psutil>=6.0.0",
+    "httpx>=0.27.0",
+    "pymupdf>=1.24.0"
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0.0",
-    "ruff>=0.3.0",
-    "black>=24.2.0",
-    "jupyterlab>=4.1.0"
+    "jupyter>=1.1.0",
+    "ipykernel>=6.29.0",
+    "ruff>=0.3.0"
+]
+api-integration = [
+    "fastapi>=0.115.0",
+    "pydantic-settings>=2.6.0",
+    "uvicorn[standard]>=0.32.0",
+    "langgraph>=0.2.35",
+    "sqlalchemy[asyncio]>=2.0.35",
+    "asyncpg>=0.29.0",
+    "redis>=5.1.0",
+    "pyjwt[crypto]>=2.9.0",
+    "pgvector>=0.3.0"
 ]
 export = [
     "onnx>=1.15.0",
     "onnxruntime>=1.17.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "slow: real Hugging Face model download and CPU inference tests"
 ]
 
 [tool.hatch.build.targets.wheel]

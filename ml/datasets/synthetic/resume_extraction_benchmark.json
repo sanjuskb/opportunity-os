@@ -1,0 +1,68 @@
+{
+  "dataset_name": "nexteras_resume_extraction_benchmark",
+  "version": "1.0.0",
+  "is_synthetic": true,
+  "provenance": "Anonymized synthetic Indian undergraduate engineering resumes testing normalization, evidence preservation, missing-field handling, and non-hallucination.",
+  "cases": [
+    {
+      "case_id": "res-01",
+      "resume_text": "Ananya Iyer\nEducation\nNIT Surathkal | B.Tech in Computer Science and Engineering | Batch 2026 | CGPA: 8.75/10\nTechnical Skills\nLanguages: Python3, TypeScript, SQL\nFrameworks: FastAPI, React.js, Next.js, PyTorch\nTools: PostgreSQL, Docker, Git\nProjects\nVoice Career Copilot - Built React.js UI with FastAPI backend endpoints and PostgreSQL.\nExperience\nBackend Engineering Intern - FinTech Labs - Built REST APIs with FastAPI and Redis caching.\nCertifications\nNPTEL Deep Learning Gold\nAchievements\nFinalist Smart India Hackathon 2025\nInterests\nDistributed Systems, Applied NLP",
+      "expected": {
+        "full_name": "Ananya Iyer",
+        "degree": "B.Tech",
+        "branch": "Computer Science & Engineering",
+        "graduation_year": 2026,
+        "cgpa": 8.75,
+        "required_skills": ["Python", "TypeScript", "SQL", "FastAPI", "React", "Next.js", "PyTorch", "PostgreSQL", "Docker", "Git", "Redis", "REST APIs"],
+        "forbidden_skills": ["TensorFlow", "Kubernetes", "AWS"],
+        "min_projects": 1,
+        "min_internships": 1
+      }
+    },
+    {
+      "case_id": "res-02",
+      "resume_text": "Rohan Deshmukh\nAcademics\nVTU Belagavi | B.E in ECE | Graduating Year: 2027 | 81.4%\nSkills\nC, C++, Verilog, STM32, RTOS, GitHub\nProjects\nLine Follower Controller - Bare-metal motor PWM tasks on STM32 using C and RTOS.\nInterests\nEmbedded Firmware, Edge Robotics",
+      "expected": {
+        "full_name": "Rohan Deshmukh",
+        "degree": "B.E.",
+        "branch": "Electronics & Communication Engineering",
+        "graduation_year": 2027,
+        "percentage": 81.4,
+        "required_skills": ["C", "C++", "Verilog", "STM32", "RTOS", "GitHub"],
+        "forbidden_skills": ["PyTorch", "ROS2", "Python"],
+        "min_projects": 1,
+        "min_internships": 0
+      }
+    },
+    {
+      "case_id": "res-03",
+      "resume_text": "Education\nJNTU Hyderabad | MCA | 2024 - 2026\nTechnical Skills\nSQL, Pandas, NumPy, Scikit-learn, LightGBM\nProjects\nPlacement Readiness Scorecards - Analyzed tabular cohort scores using Pandas and Scikit-learn.\nCertificates\nGoogle Data Analytics Certificate",
+      "expected": {
+        "full_name": null,
+        "degree": "MCA",
+        "branch": null,
+        "graduation_year": 2026,
+        "cgpa": null,
+        "required_skills": ["SQL", "Pandas", "NumPy", "Scikit-learn", "LightGBM"],
+        "forbidden_skills": ["XGBoost", "FastAPI", "React"],
+        "min_projects": 1,
+        "min_internships": 0
+      }
+    },
+    {
+      "case_id": "res-04",
+      "resume_text": "Meera Nair\nEducation\nIIIT Kottayam | Bachelor of Technology in Data Science | Class of 2025 | CGPA 9.10\nSkills\nPython, huggingface, sentence-transformers, pgvector, Supabase, Playwright\nInternships\nAI Evaluation Intern - Evaluated retrieval NDCG metrics using sentence-transformers.\nAchievements\nDean's Merit List 2024",
+      "expected": {
+        "full_name": "Meera Nair",
+        "degree": "B.Tech",
+        "branch": "Data Science & AI",
+        "graduation_year": 2025,
+        "cgpa": 9.10,
+        "required_skills": ["Python", "Hugging Face", "Sentence Transformers", "pgvector", "Supabase", "Playwright"],
+        "forbidden_skills": ["LangChain", "Django", "Java"],
+        "min_projects": 0,
+        "min_internships": 1
+      }
+    }
+  ]
+}

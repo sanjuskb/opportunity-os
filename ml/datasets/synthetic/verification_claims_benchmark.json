@@ -1,0 +1,62 @@
+{
+  "dataset_name": "nexteras_verification_claims_benchmark",
+  "version": "1.0.0",
+  "is_synthetic": true,
+  "provenance": "Curated evidence-consistency test pairs modeling verified Career Passport entries vs candidate resume claims and requirement statements.",
+  "cases": [
+    {
+      "claim_id": "ver-sup-01",
+      "premise_text": "Built a FastAPI REST service backed by PostgreSQL database tables with Docker containerization.",
+      "hypothesis_claim": "Developed FastAPI REST APIs with PostgreSQL and Docker.",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "ver-sup-02",
+      "premise_text": "Fine-tuned a Conformer automatic speech recognition model on Telugu audio datasets achieving 14.2% WER.",
+      "hypothesis_claim": "Trained a speech recognition Conformer model on Telugu datasets with 14.2% WER.",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "ver-sup-03",
+      "premise_text": "Graduated B.Tech Computer Science from NIT Tiruchirappalli in 2026 with CGPA 8.82 out of 10.",
+      "hypothesis_claim": "Completed B.Tech Computer Science at NIT Tiruchirappalli in 2026 with 8.82 CGPA.",
+      "expected_verdict": "supported"
+    },
+    {
+      "claim_id": "ver-con-01",
+      "premise_text": "Completed a 2-month backend internship building internal Python reporting scripts.",
+      "hypothesis_claim": "Led a 3-year production Kubernetes infrastructure migration across 40 engineers.",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "ver-con-02",
+      "premise_text": "Achieved 7.4 CGPA in B.E. Electronics with coursework in Verilog and digital circuits.",
+      "hypothesis_claim": "Maintained 9.8 CGPA throughout B.Tech Computer Science.",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "ver-con-03",
+      "premise_text": "Opportunity requires candidates with zero active backlogs and graduation year 2026.",
+      "hypothesis_claim": "Students graduating in 2024 with active backlogs are eligible to apply.",
+      "expected_verdict": "contradicted"
+    },
+    {
+      "claim_id": "ver-amb-01",
+      "premise_text": "Built a React web dashboard for campus event schedules using TypeScript and Tailwind CSS.",
+      "hypothesis_claim": "Reduced user page load latency by 65% and scaled to 50,000 daily active users.",
+      "expected_verdict": "insufficient_evidence"
+    },
+    {
+      "claim_id": "ver-amb-02",
+      "premise_text": "Participated in Smart India Hackathon developing an Android prototype.",
+      "hypothesis_claim": "Won 1st prize nationally at Smart India Hackathon with AWS deployment.",
+      "expected_verdict": "insufficient_evidence"
+    },
+    {
+      "claim_id": "ver-amb-03",
+      "premise_text": "Internship requires strong Python skills and familiarity with relational databases.",
+      "hypothesis_claim": "Internship specifically requires 5 years of commercial Go microservices experience.",
+      "expected_verdict": "insufficient_evidence"
+    }
+  ]
+}

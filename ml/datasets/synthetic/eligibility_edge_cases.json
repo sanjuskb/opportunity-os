@@ -1,0 +1,170 @@
+{
+  "dataset_name": "nexteras_eligibility_edge_cases",
+  "version": "1.0.0",
+  "is_synthetic": true,
+  "reference_date": "2026-11-25",
+  "cases": [
+    {
+      "case_id": "elig-pass-be-equiv",
+      "description": "B.E. student should match B.Tech posting via deterministic degree equivalence.",
+      "student": {
+        "student_id": "s1",
+        "degree": "B.E.",
+        "branch": "CSE",
+        "graduation_year": 2026,
+        "cgpa": 8.4,
+        "active_backlogs": 0,
+        "skills": ["Python", "FastAPI", "PostgreSQL"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-01",
+        "title": "Backend Intern",
+        "eligible_degrees": ["B.Tech"],
+        "eligible_branches": ["Computer Science & Engineering"],
+        "eligible_graduation_years": [2026, 2027],
+        "min_cgpa": 7.5,
+        "max_active_backlogs": 0,
+        "required_skills": ["Python", "PostgreSQL"],
+        "preferred_skills": ["Docker"],
+        "deadline": "2026-12-30"
+      },
+      "expected_status": "eligible"
+    },
+    {
+      "case_id": "elig-fail-cgpa",
+      "description": "Strict CGPA threshold violation must yield ineligible.",
+      "student": {
+        "student_id": "s2",
+        "degree": "B.Tech",
+        "branch": "CSE",
+        "graduation_year": 2026,
+        "cgpa": 7.2,
+        "skills": ["Python", "SQL"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-02",
+        "title": "Research Systems Intern",
+        "eligible_degrees": ["B.Tech"],
+        "eligible_graduation_years": [2026],
+        "min_cgpa": 8.0,
+        "required_skills": ["Python"]
+      },
+      "expected_status": "ineligible"
+    },
+    {
+      "case_id": "elig-missing-cgpa",
+      "description": "Missing CGPA when required must return needs_more_info (never assumed eligible).",
+      "student": {
+        "student_id": "s3",
+        "degree": "B.Tech",
+        "graduation_year": 2026,
+        "skills": ["React", "TypeScript"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-03",
+        "title": "Frontend Intern",
+        "eligible_degrees": ["B.Tech"],
+        "eligible_graduation_years": [2026],
+        "min_cgpa": 7.0,
+        "required_skills": ["React"]
+      },
+      "expected_status": "needs_more_info"
+    },
+    {
+      "case_id": "elig-fail-backlogs",
+      "description": "Active backlogs > 0 when 0 allowed must reject.",
+      "student": {
+        "student_id": "s4",
+        "degree": "B.Tech",
+        "graduation_year": 2026,
+        "cgpa": 8.2,
+        "active_backlogs": 1,
+        "skills": ["Java", "Spring Boot"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-04",
+        "title": "Campus SDE Intern",
+        "eligible_degrees": ["B.Tech"],
+        "max_active_backlogs": 0,
+        "required_skills": ["Java"]
+      },
+      "expected_status": "ineligible"
+    },
+    {
+      "case_id": "elig-fail-expired",
+      "description": "Expired deadline relative to reference_date must return ineligible.",
+      "student": {
+        "student_id": "s5",
+        "degree": "B.Tech",
+        "graduation_year": 2026,
+        "cgpa": 9.0,
+        "skills": ["Python"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-05",
+        "title": "Closed Scholarship",
+        "eligible_degrees": ["B.Tech"],
+        "deadline": "2026-10-01"
+      },
+      "expected_status": "ineligible"
+    },
+    {
+      "case_id": "elig-pct-pass",
+      "description": "Percentage score normalized cleanly when CGPA omitted.",
+      "student": {
+        "student_id": "s6",
+        "degree": "B.Tech",
+        "graduation_year": 2027,
+        "percentage": 82.0,
+        "skills": ["Python", "SQL"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-06",
+        "title": "Analytics Intern",
+        "eligible_degrees": ["B.Tech"],
+        "eligible_graduation_years": [2027],
+        "min_cgpa": 7.5,
+        "required_skills": ["SQL"]
+      },
+      "expected_status": "eligible"
+    },
+    {
+      "case_id": "elig-unable-to-verify",
+      "description": "Special clearance clause must yield unable_to_verify instead of guessing.",
+      "student": {
+        "student_id": "s7",
+        "degree": "B.Tech",
+        "graduation_year": 2026,
+        "cgpa": 8.5,
+        "skills": ["Python", "Embedded Systems"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-07",
+        "title": "Lab Fellowship",
+        "eligible_degrees": ["B.Tech"],
+        "ambiguous_clauses": ["Subject to department chair approval prior to shortlist."]
+      },
+      "expected_status": "unable_to_verify"
+    },
+    {
+      "case_id": "elig-fail-citizenship",
+      "description": "Explicit government residency constraint respected deterministically.",
+      "student": {
+        "student_id": "s8",
+        "degree": "B.Tech",
+        "graduation_year": 2026,
+        "cgpa": 8.6,
+        "citizenship": "Nepal",
+        "skills": ["Python", "Computer Vision"]
+      },
+      "requirements": {
+        "opportunity_id": "opp-08",
+        "title": "Defense Lab Intern",
+        "eligible_degrees": ["B.Tech"],
+        "required_citizenship": "India",
+        "required_skills": ["Python"]
+      },
+      "expected_status": "ineligible"
+    }
+  ]
+}
