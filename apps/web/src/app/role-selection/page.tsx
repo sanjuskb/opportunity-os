@@ -1,23 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { GraduationCap, Building2, School, ArrowRight } from 'lucide-react';
 import { useMockStore, UserRole } from '../../lib/mock-data/mockStore';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useUpdateUserProfile } from '@/lib/queries/useOpportunityOs';
 
 export default function RoleSelectionPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { setUserRole } = useMockStore();
+  const updateProfile = useUpdateUserProfile();
+  const [savingRole, setSavingRole] = useState<UserRole | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSelect = (role: UserRole) => {
+  const handleSelect = async (role: UserRole) => {
+    setErrorMsg(null);
+    setSavingRole(role);
     setUserRole(role);
-    if (role === 'student') {
-      router.push('/overview');
-    } else if (role === 'company') {
-      router.push('/company/dashboard');
-    } else {
-      router.push('/university/dashboard');
+    try {
+      if (user) {
+        await updateProfile.mutateAsync({ userRole: role });
+      }
+      if (role === 'student') {
+        router.push('/overview');
+      } else if (role === 'company') {
+        router.push('/company/dashboard');
+      } else {
+        router.push('/university/dashboard');
+      }
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to save workspace role.');
+      setSavingRole(null);
     }
   };
 
@@ -34,13 +50,19 @@ export default function RoleSelectionPage() {
           <p className="text-sm text-slate-400 max-w-md mx-auto">
             NexteRaS is customized for the distinct requirements of students, hiring companies, and colleges.
           </p>
+          {errorMsg && (
+            <div className="mx-auto max-w-md rounded-lg border border-rose-500/40 bg-rose-950/30 px-3 py-2 text-xs text-rose-200">
+              {errorMsg}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
-          {/* Student Role Card */}
-          <div
-            onClick={() => handleSelect('student')}
-            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-cyan-500/50 hover:bg-cyan-950/15 transition shadow-xl space-y-3"
+          <button
+            type="button"
+            disabled={savingRole !== null}
+            onClick={() => void handleSelect('student')}
+            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-cyan-500/50 hover:bg-cyan-950/15 transition shadow-xl space-y-3 text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-xl bg-cyan-950 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition">
               <GraduationCap className="h-6 w-6" />
@@ -50,15 +72,16 @@ export default function RoleSelectionPage() {
               Verify eligibility, build Career Passport, customize ATS resumes, and voice-apply to verified Indian internships.
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs text-cyan-400 font-semibold">
-              <span>Enter Student Hub</span>
+              <span>{savingRole === 'student' ? 'Switching...' : 'Enter Student Hub'}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </div>
-          </div>
+          </button>
 
-          {/* Company Role Card */}
-          <div
-            onClick={() => handleSelect('company')}
-            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-blue-500/50 hover:bg-blue-950/15 transition shadow-xl space-y-3"
+          <button
+            type="button"
+            disabled={savingRole !== null}
+            onClick={() => void handleSelect('company')}
+            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-blue-500/50 hover:bg-blue-950/15 transition shadow-xl space-y-3 text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-xl bg-blue-950 border border-blue-500/30 flex items-center justify-center text-blue-400 group-hover:scale-105 transition">
               <Building2 className="h-6 w-6" />
@@ -68,15 +91,16 @@ export default function RoleSelectionPage() {
               Publish internships, review skill-verified Indian candidates, and manage AI-screened candidate pipelines.
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs text-blue-400 font-semibold">
-              <span>Enter Recruiter Hub</span>
+              <span>{savingRole === 'company' ? 'Switching...' : 'Enter Recruiter Hub'}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </div>
-          </div>
+          </button>
 
-          {/* University Role Card */}
-          <div
-            onClick={() => handleSelect('university')}
-            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-emerald-500/50 hover:bg-emerald-950/15 transition shadow-xl space-y-3"
+          <button
+            type="button"
+            disabled={savingRole !== null}
+            onClick={() => void handleSelect('university')}
+            className="group cursor-pointer rounded-2xl border border-slate-800 bg-[#0D1322] p-6 hover:border-emerald-500/50 hover:bg-emerald-950/15 transition shadow-xl space-y-3 text-left disabled:opacity-60"
           >
             <div className="h-12 w-12 rounded-xl bg-emerald-950 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition">
               <School className="h-6 w-6" />
@@ -86,10 +110,10 @@ export default function RoleSelectionPage() {
               Track student placements, verify academic credentials via DigiLocker, and coordinate campus recruitment drives.
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs text-emerald-400 font-semibold">
-              <span>Enter Placement Hub</span>
+              <span>{savingRole === 'university' ? 'Switching...' : 'Enter Placement Hub'}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </div>
-          </div>
+          </button>
         </div>
       </div>
     </div>

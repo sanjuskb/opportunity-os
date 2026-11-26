@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 from app.api.v1.router import v1_router
 from app.core.config import Settings, settings
 from app.core.errors import register_exception_handlers
+from app.core.observability import configure_observability, shutdown_observability
 from app.core.security_middleware import SecurityHeadersMiddleware
 from app.db.session import DatabaseManager
 from app.voice.tickets import VoiceTicketStore
@@ -16,6 +17,7 @@ from app.voice.tickets import VoiceTicketStore
 def create_application(app_settings: Settings | None = None) -> FastAPI:
     """Application factory for Opportunity OS FastAPI service."""
     cfg = app_settings or settings
+    configure_observability(cfg)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -41,6 +43,7 @@ def create_application(app_settings: Settings | None = None) -> FastAPI:
             if redis_client is not None:
                 await redis_client.aclose()
             await db_manager.dispose()
+            shutdown_observability()
 
     app = FastAPI(
         title=cfg.APP_NAME,

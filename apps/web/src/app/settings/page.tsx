@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Globe, Save, Check, Shield, User } from 'lucide-react';
+import { APP_CONFIG } from '@opportunity-os/shared-config';
 import { DashboardLayout } from '../../components/dashboard/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -10,28 +11,73 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useMockStore } from '../../lib/mock-data/mockStore';
 import { useAuth } from '@/components/auth/AuthProvider';
-import { APP_CONFIG } from '@opportunity-os/shared-config';
+import {
+  useStudentProfile,
+  useUpdateUserProfile,
+  useUpsertStudentProfile,
+  useUserProfile,
+} from '@/lib/queries/useOpportunityOs';
 
 export default function SettingsPage() {
   const { user, loading, signOut } = useAuth();
-  const { studentProfile, updateStudentProfile, activeLanguage, setActiveLanguage } = useMockStore();
+  const { activeLanguage, setActiveLanguage } = useMockStore();
+  const { data: userProfile } = useUserProfile();
+  const { data: studentProfile } = useStudentProfile();
+  const updateProfile = useUpdateUserProfile();
+  const upsertStudent = useUpsertStudentProfile();
 
-  const [fullName, setFullName] = useState(studentProfile.fullName);
-  const [headline, setHeadline] = useState(studentProfile.headline);
-  const [collegeName, setCollegeName] = useState(studentProfile.collegeName);
-  const [cgpa, setCgpa] = useState(studentProfile.cgpa?.toString() || '8.82');
+  const [fullName, setFullName] = useState('');
+  const [collegeName, setCollegeName] = useState('');
+  const [degree, setDegree] = useState('B.Tech');
+  const [branch, setBranch] = useState('Computer Science');
+  const [graduationYear, setGraduationYear] = useState(2027);
+  const [cgpa, setCgpa] = useState('8.5');
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (userProfile) {
+      setFullName(userProfile.fullName ?? '');
+      if (userProfile.preferredLanguage) {
+        setActiveLanguage(userProfile.preferredLanguage as typeof activeLanguage);
+      }
+    }
+  }, [userProfile, setActiveLanguage]);
+
+  useEffect(() => {
+    if (studentProfile) {
+      setCollegeName(studentProfile.collegeName ?? '');
+      setDegree(studentProfile.degree ?? 'B.Tech');
+      setBranch(studentProfile.branch ?? 'Computer Science');
+      setGraduationYear(studentProfile.graduationYear ?? 2027);
+      setCgpa(studentProfile.cgpa != null ? String(studentProfile.cgpa) : '8.5');
+    }
+  }, [studentProfile]);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateStudentProfile({
-      fullName,
-      headline,
-      collegeName,
-      cgpa: parseFloat(cgpa) || 8.0,
-    });
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+    if (!user) return;
+    setErrorMsg(null);
+    setSavedSuccess(false);
+    try {
+      await updateProfile.mutateAsync({
+        fullName: fullName.trim() || undefined,
+        preferredLanguage: activeLanguage,
+      });
+      if (collegeName.trim()) {
+        await upsertStudent.mutateAsync({
+          collegeName: collegeName.trim(),
+          degree: degree.trim() || 'B.Tech',
+          branch: branch.trim() || 'Computer Science',
+          graduationYear,
+          cgpa: parseFloat(cgpa) || undefined,
+        });
+      }
+      setSavedSuccess(true);
+      window.setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to save preferences.');
+    }
   };
 
   return (
@@ -41,7 +87,7 @@ export default function SettingsPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white">Account & Preferences</h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Manage your personal student details, preferred operating language, and verified credentials.
+              Manage your personal academic credentials and 9-language Voice Copilot settings.
             </p>
           </div>
         </div>
@@ -49,7 +95,13 @@ export default function SettingsPage() {
         {savedSuccess && (
           <div className="p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-xs flex items-center gap-2">
             <Check className="h-4 w-4" />
-            <span>Profile settings saved successfully!</span>
+            <span>Profile settings saved to PostgreSQL successfully.</span>
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="p-4 rounded-xl border border-rose-500/40 bg-rose-950/30 text-rose-200 text-xs">
+            {errorMsg}
           </div>
         )}
 
@@ -103,12 +155,13 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input label="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                <Input label="Professional Headline" value={headline} onChange={(e) => setHeadline(e.target.value)} required />
+                <Input label="College / University" value={collegeName} onChange={(e) => setCollegeName(e.target.value)} />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="College / University" value={collegeName} onChange={(e) => setCollegeName(e.target.value)} required />
-                <Input label="Verified CGPA" value={cgpa} onChange={(e) => setCgpa(e.target.value)} required />
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Input label="Degree" value={degree} onChange={(e) => setDegree(e.target.value)} />
+                <Input label="Branch / Major" value={branch} onChange={(e) => setBranch(e.target.value)} />
+                <Input label="Verified CGPA" value={cgpa} onChange={(e) => setCgpa(e.target.value)} />
               </div>
             </CardContent>
           </Card>
@@ -124,20 +177,26 @@ export default function SettingsPage() {
               <Select
                 label="Operating & Voice AI Language"
                 value={activeLanguage}
-                onChange={(e) => setActiveLanguage(e.target.value as any)}
+                onChange={(e) => setActiveLanguage(e.target.value as typeof activeLanguage)}
                 options={APP_CONFIG.SUPPORTED_LANGUAGES.map((l) => ({
                   value: l.code,
                   label: `${l.name} (${l.native})`,
                 }))}
               />
               <p className="text-xs text-slate-400">
-                All voice assistant answers and mock interview feedback will naturally switch to your selected language.
+                All voice assistant answers and mock interview feedback adapt across all 9 supported Indian languages.
               </p>
             </CardContent>
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" variant="glow" size="md">
+            <Button
+              type="submit"
+              variant="glow"
+              size="md"
+              isLoading={updateProfile.isPending || upsertStudent.isPending}
+              disabled={!user}
+            >
               <Save className="h-4 w-4 mr-1.5" />
               <span>Save Changes</span>
             </Button>

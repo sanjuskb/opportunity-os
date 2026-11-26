@@ -197,8 +197,22 @@ def _default_worker_functions() -> list[Any]:
         check_opportunity_deadlines,
         embed_opportunity,
     )
+    from app.tasks.jobs import (
+        aggregate_analytics_metrics,
+        process_uploaded_resume,
+        run_olostep_research_job,
+        sync_crustdata_company,
+    )
 
-    return [embed_opportunity, backfill_missing_embeddings, check_opportunity_deadlines]
+    return [
+        embed_opportunity,
+        backfill_missing_embeddings,
+        check_opportunity_deadlines,
+        process_uploaded_resume,
+        run_olostep_research_job,
+        sync_crustdata_company,
+        aggregate_analytics_metrics,
+    ]
 
 
 def _default_cron_jobs() -> list[Any]:
@@ -206,12 +220,14 @@ def _default_cron_jobs() -> list[Any]:
         from arq.cron import cron
 
         from app.tasks.embeddings import backfill_missing_embeddings, check_opportunity_deadlines
+        from app.tasks.jobs import aggregate_analytics_metrics
     except ImportError:
         return []
 
     return [
         cron(backfill_missing_embeddings, minute={0, 15, 30, 45}),
         cron(check_opportunity_deadlines, minute=5),
+        cron(aggregate_analytics_metrics, minute=35),
     ]
 
 

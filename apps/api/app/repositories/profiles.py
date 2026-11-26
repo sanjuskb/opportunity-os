@@ -28,6 +28,7 @@ class ProfileRepository:
         full_name: str | None = None,
         avatar_url: str | None = None,
         preferred_language: str | None = None,
+        user_role: str | None = None,
     ) -> Profile | None:
         profile = await self.get_by_user_id(user_id)
         if profile is None:
@@ -38,6 +39,8 @@ class ProfileRepository:
             profile.avatar_url = avatar_url
         if preferred_language is not None:
             profile.preferred_language = preferred_language
+        if user_role is not None:
+            profile.user_role = user_role
         await self._session.flush()
         await self._session.refresh(profile)
         return profile

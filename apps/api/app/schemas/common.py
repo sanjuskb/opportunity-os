@@ -45,13 +45,15 @@ class ProfileResponse(CamelModel):
     full_name: str | None = None
     avatar_url: str | None = None
     preferred_language: str = "en"
+    user_role: str = "student"
     supabase_role: str
 
 
 class ProfileUpdateRequest(StrictCamelModel):
     full_name: str | None = Field(default=None, max_length=200)
     avatar_url: str | None = Field(default=None, max_length=500)
-    preferred_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn"] | None = None
+    preferred_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu"] | None = None
+    user_role: Literal["student", "company", "university"] | None = None
 
 
 class EducationCreateRequest(StrictCamelModel):
@@ -427,7 +429,7 @@ class MonitorResponse(CamelModel):
 
 
 class VoiceSessionCreateRequest(StrictCamelModel):
-    detected_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn"] = "en"
+    detected_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu"] = "en"
     audio_duration_seconds: Decimal = Field(
         default=Decimal("0"), ge=Decimal("0"), le=Decimal("999999.99")
     )
@@ -443,3 +445,39 @@ class VoiceSessionResponse(CamelModel):
     transcript: str | None = None
     status: str
     created_at: datetime | None = None
+
+
+class AiChatRequest(StrictCamelModel):
+    message: str = Field(min_length=1, max_length=4000)
+    language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu", "hinglish"] = "en"
+    conversation_id: UUID | None = None
+
+
+class AiChatResponse(CamelModel):
+    conversation_id: UUID
+    language: str
+    reply: str
+    provider: str
+    model: str
+    tool_calls: list[dict[str, Any]] = []
+
+
+class ConversationSummaryResponse(CamelModel):
+    id: UUID
+    title: str
+    created_at: datetime | None = None
+
+
+class ConversationMessageResponse(CamelModel):
+    id: UUID
+    role: str
+    content: str
+    language: str
+    created_at: datetime | None = None
+
+
+class ConversationDetailResponse(CamelModel):
+    id: UUID
+    title: str
+    created_at: datetime | None = None
+    messages: list[ConversationMessageResponse] = []

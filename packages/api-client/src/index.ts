@@ -1,21 +1,34 @@
 import type {
+  AgentEventRecord,
+  AgentSessionRecord,
+  AiChatResponse,
+  AnalyticsOverview,
   ApiEligibilityResult,
   ApiOpportunity,
   ApiStudentProfile,
   ApplicationRecord,
   ApprovalDecisionResult,
   ApprovalRequest,
+  AutomationPrepareResult,
+  BackgroundJobStatus,
+  BrowserExecutionLogRecord,
   CareerPassport,
+  CompanyApplicantItem,
+  ConversationDetail,
+  ConversationSummary,
   EducationCreatePayload,
   EducationItem,
+  InterviewSessionRecord,
   MlHealthStatus,
   NotificationItem,
   OrganizationRecord,
   PaginatedOpportunities,
+  RecruiterCandidateSummary,
   ResumeAnalyzeResult,
   ResumeCustomizationResult,
   ResumeRecord,
   StudentProfileUpsertPayload,
+  UniversityOverview,
   UserProfile,
   VoiceSessionRecord,
   VoiceTicket,
@@ -508,6 +521,10 @@ export class OpportunityApiClient {
     return this.request<VoiceTicket>('/voice/tickets', { method: 'POST' });
   }
 
+  async listVoiceSessions(limit: number = 20): Promise<VoiceSessionRecord[]> {
+    return this.request<VoiceSessionRecord[]>(`/voice/sessions?limit=${limit}`);
+  }
+
   async createVoiceSession(payload: {
     detectedLanguage: string;
     audioDurationSeconds?: number;
@@ -515,6 +532,193 @@ export class OpportunityApiClient {
     status?: 'completed' | 'interrupted' | 'failed';
   }): Promise<VoiceSessionRecord> {
     return this.request<VoiceSessionRecord>('/voice/sessions', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async chatWithAssistant(payload: {
+    message: string;
+    language?: string;
+    conversationId?: string | null;
+  }): Promise<AiChatResponse> {
+    return this.request<AiChatResponse>('/ai/chat', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async listConversations(limit: number = 20): Promise<ConversationSummary[]> {
+    return this.request<ConversationSummary[]>(`/conversations?limit=${limit}`);
+  }
+
+  async getConversation(conversationId: string): Promise<ConversationDetail> {
+    return this.request<ConversationDetail>(`/conversations/${encodeURIComponent(conversationId)}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // Automation, Background Jobs & Agent Telemetry
+  // -------------------------------------------------------------------------
+
+  async prepareApplicationAutomation(
+    applicationId: string,
+    portalUrl?: string | null
+  ): Promise<AutomationPrepareResult> {
+    return this.request<AutomationPrepareResult>(
+      `/applications/${encodeURIComponent(applicationId)}/prepare-automation`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ portalUrl: portalUrl ?? null }),
+      }
+    );
+  }
+
+  async executeApprovedApplication(
+    applicationId: string,
+    approvalRequestId: string
+  ): Promise<AutomationPrepareResult> {
+    return this.request<AutomationPrepareResult>(
+      `/applications/${encodeURIComponent(applicationId)}/execute-approved`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ approvalRequestId }),
+      }
+    );
+  }
+
+  async listBrowserLogs(limit: number = 30): Promise<BrowserExecutionLogRecord[]> {
+    return this.request<BrowserExecutionLogRecord[]>(`/browser-logs?limit=${limit}`);
+  }
+
+  async listAgentSessions(limit: number = 20): Promise<AgentSessionRecord[]> {
+    return this.request<AgentSessionRecord[]>(`/agents/sessions?limit=${limit}`);
+  }
+
+  async getAgentSessionEvents(sessionId: string): Promise<AgentEventRecord[]> {
+    return this.request<AgentEventRecord[]>(
+      `/agents/sessions/${encodeURIComponent(sessionId)}/events`
+    );
+  }
+
+  async enqueueBackgroundJob(
+    jobType:
+      | 'process_uploaded_resume'
+      | 'run_olostep_research_job'
+      | 'sync_crustdata_company'
+      | 'aggregate_analytics_metrics',
+    payload: Record<string, unknown> = {}
+  ): Promise<BackgroundJobStatus> {
+    return this.request<BackgroundJobStatus>('/jobs', {
+      method: 'POST',
+      body: JSON.stringify({ jobType, payload }),
+    });
+  }
+
+  async getBackgroundJobStatus(jobId: string): Promise<BackgroundJobStatus> {
+    return this.request<BackgroundJobStatus>(`/jobs/${encodeURIComponent(jobId)}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // Interview Simulator, Analytics & Role Portals
+  // -------------------------------------------------------------------------
+
+  async listInterviewSessions(limit: number = 15): Promise<InterviewSessionRecord[]> {
+    return this.request<InterviewSessionRecord[]>(`/interview/sessions?limit=${limit}`);
+  }
+
+  async createInterviewSession(payload: {
+    targetRole: string;
+    language?: string;
+  }): Promise<InterviewSessionRecord> {
+    return this.request<InterviewSessionRecord>('/interview/sessions', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async submitInterviewResponse(
+    sessionId: string,
+    payload: { questionIndex: number; answerText: string }
+  ): Promise<InterviewSessionRecord> {
+    return this.request<InterviewSessionRecord>(
+      `/interview/sessions/${encodeURIComponent(sessionId)}/respond`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  async getAnalyticsOverview(): Promise<AnalyticsOverview> {
+    return this.request<AnalyticsOverview>('/analytics/overview');
+  }
+
+  async recordAnalyticsEvent(
+    eventName: string,
+    eventMetadata: Record<string, unknown> = {}
+  ): Promise<{ id: string; eventName: string; recorded: boolean }> {
+    return this.request('/analytics/events', {
+      method: 'POST',
+      body: JSON.stringify({ eventName, eventMetadata }),
+    });
+  }
+
+  async createCompanyOpportunity(payload: {
+    title: string;
+    organization: string;
+    location: string;
+    type?: string;
+    stipendOrSalary?: string | null;
+    deadline?: string | null;
+    description: string;
+    sourceUrl: string;
+    requiredSkills?: string[];
+    eligibleBatches?: number[];
+    eligibleDegrees?: string[];
+    minCgpa?: number | null;
+  }): Promise<Record<string, unknown>> {
+    return this.request('/company/opportunities', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async listCompanyCandidates(query?: string): Promise<RecruiterCandidateSummary[]> {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+    return this.request<RecruiterCandidateSummary[]>(`/company/candidates${qs}`);
+  }
+
+  async listCompanyApplicants(): Promise<CompanyApplicantItem[]> {
+    return this.request<CompanyApplicantItem[]>('/company/applicants');
+  }
+
+  async advanceCompanyApplication(
+    applicationId: string,
+    status: 'evaluating' | 'eligible' | 'accepted' | 'rejected'
+  ): Promise<CompanyApplicantItem> {
+    return this.request<CompanyApplicantItem>(
+      `/company/applications/${encodeURIComponent(applicationId)}/advance`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status }),
+      }
+    );
+  }
+
+  async getUniversityOverview(): Promise<UniversityOverview> {
+    return this.request<UniversityOverview>('/university/overview');
+  }
+
+  async listUniversityStudents(query?: string): Promise<RecruiterCandidateSummary[]> {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+    return this.request<RecruiterCandidateSummary[]>(`/university/students${qs}`);
+  }
+
+  async verifyUniversityStudent(
+    studentProfileId: string,
+    payload: { credentialType?: string; notes?: string } = {}
+  ): Promise<Record<string, unknown>> {
+    return this.request(`/university/students/${encodeURIComponent(studentProfileId)}/verify`, {
       method: 'POST',
       body: JSON.stringify(payload),
     });

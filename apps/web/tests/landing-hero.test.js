@@ -24,9 +24,9 @@ test('Product brand identity matches official NexteRaS configuration', () => {
   assert.strictEqual(APP_CONFIG.APP_TAGLINE, 'The Upcoming Era.', 'Official tagline must match');
 });
 
-test('Supported languages configuration supports 7 Indian regional languages', () => {
+test('Supported languages configuration supports 9 Indian regional languages', () => {
   const codes = APP_CONFIG.SUPPORTED_LANGUAGES.map((l) => l.code);
-  assert.strictEqual(codes.length, 7, 'Must support exactly 7 languages');
+  assert.strictEqual(codes.length, 9, 'Must support exactly 9 languages');
   assert.ok(codes.includes('en'), 'Must include English');
   assert.ok(codes.includes('hi'), 'Must include Hindi');
   assert.ok(codes.includes('te'), 'Must include Telugu');
@@ -34,4 +34,6 @@ test('Supported languages configuration supports 7 Indian regional languages', (
   assert.ok(codes.includes('kn'), 'Must include Kannada');
   assert.ok(codes.includes('ml'), 'Must include Malayalam');
   assert.ok(codes.includes('bn'), 'Must include Bengali');
+  assert.ok(codes.includes('mr'), 'Must include Marathi');
+  assert.ok(codes.includes('gu'), 'Must include Gujarati');
 });

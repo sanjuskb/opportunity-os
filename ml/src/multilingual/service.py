@@ -18,7 +18,7 @@ logger = logging.getLogger("nexteras.ml.multilingual")
 DEFAULT_MULTILINGUAL_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 # Empirically measured on nexteras_multilingual_7_languages_eval: native South/East Indic queries
 # to English postings show low/negative retrieval margins and should route via translation/LLM fallback when available.
-EMPIRICALLY_WEAK_DIRECT_LOCALES = {"bn", "kn", "ml", "ta", "te"}
+EMPIRICALLY_WEAK_DIRECT_LOCALES = {"bn", "gu", "kn", "ml", "mr", "ta", "te"}
 
 
 class TranslationFallbackBackend(Protocol):

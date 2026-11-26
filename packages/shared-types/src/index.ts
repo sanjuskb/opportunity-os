@@ -9,7 +9,9 @@ export type IndianLanguage =
   | 'ta'
   | 'kn'
   | 'ml'
-  | 'bn';
+  | 'bn'
+  | 'mr'
+  | 'gu';
 
 export type OpportunityType =
   | 'internship'
@@ -38,6 +40,7 @@ export interface UserProfile {
   fullName?: string | null;
   avatarUrl?: string | null;
   preferredLanguage: string;
+  userRole?: 'student' | 'company' | 'university';
   supabaseRole: string;
 }
 
@@ -312,6 +315,138 @@ export interface VoiceSessionRecord {
   transcript?: string | null;
   status: string;
   createdAt?: string | null;
+}
+
+export interface AiChatResponse {
+  conversationId: string;
+  language: string;
+  reply: string;
+  provider: string;
+  model: string;
+  toolCalls: Array<Record<string, unknown>>;
+}
+
+export interface ConversationSummary {
+  id: string;
+  title: string;
+  createdAt?: string | null;
+}
+
+export interface ConversationMessageRecord {
+  id: string;
+  role: string;
+  content: string;
+  language: string;
+  createdAt?: string | null;
+}
+
+export interface ConversationDetail {
+  id: string;
+  title: string;
+  createdAt?: string | null;
+  messages: ConversationMessageRecord[];
+}
+
+export interface AutomationPrepareResult {
+  applicationId: string;
+  sessionId: string;
+  status: string;
+  approvalRequestId?: string | null;
+  screenshotPath?: string | null;
+  filledFields: Record<string, string>;
+  logs: Array<Record<string, unknown>>;
+  message: string;
+}
+
+export interface BrowserExecutionLogRecord {
+  id: string;
+  approvalRequestId?: string | null;
+  sessionId: string;
+  stepDescription: string;
+  actionType: string;
+  targetSelector?: string | null;
+  screenshotUrl?: string | null;
+  isSuccess: boolean;
+  errorMessage?: string | null;
+  executedAt?: string | null;
+}
+
+export interface AgentSessionRecord {
+  id: string;
+  userId: string;
+  agentType: string;
+  state: Record<string, unknown>;
+  isActive: boolean;
+  createdAt?: string | null;
+}
+
+export interface AgentEventRecord {
+  id: string;
+  sessionId: string;
+  nodeName: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  createdAt?: string | null;
+}
+
+export interface BackgroundJobStatus {
+  jobId: string;
+  jobType?: string | null;
+  status: string;
+  queuedInRedis: boolean;
+  result?: unknown;
+}
+
+export interface InterviewSessionRecord {
+  id: string;
+  userId: string;
+  targetRole: string;
+  language: string;
+  questions: Array<{ question: string; difficulty: string; idealPoints: string[] }>;
+  responses: Array<Record<string, unknown>>;
+  feedback: Array<Record<string, unknown>>;
+  overallScore?: number | null;
+  status: string;
+  createdAt?: string | null;
+}
+
+export interface AnalyticsOverview {
+  totalOpportunities: number;
+  totalApplications: number;
+  applicationsByStatus: Record<string, number>;
+  topSkills: Array<{ skill: string; count: number }>;
+  topLocations: Array<{ location: string; count: number }>;
+  recentEventsCount: number;
+}
+
+export interface RecruiterCandidateSummary {
+  studentProfileId: string;
+  fullName: string;
+  collegeName: string;
+  degree: string;
+  branch: string;
+  graduationYear: number;
+  cgpa?: number | null;
+  skills: string[];
+  isVerified: boolean;
+}
+
+export interface CompanyApplicantItem {
+  applicationId: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  candidateName: string;
+  collegeName: string;
+  cgpa?: number | null;
+  status: string;
+  createdAt?: string | null;
+}
+
+export interface UniversityOverview {
+  totalStudents: number;
+  verifiedStudents: number;
+  activeApplications: number;
+  departmentBreakdown: Array<{ department: string; students: number }>;
 }
 
 export interface OrganizationRecord {

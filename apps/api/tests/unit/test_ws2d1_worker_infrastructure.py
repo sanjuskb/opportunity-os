@@ -135,8 +135,8 @@ async def test_worker_settings_lifecycle_hooks_and_entrypoint(
     assert worker_module.WorkerSettings.max_jobs == 1
     assert worker_module.WorkerSettings.job_timeout == 300
     assert worker_module.WorkerSettings.max_tries == 3
-    assert len(worker_module.WorkerSettings.functions) == 3
-    assert len(worker_module.WorkerSettings.cron_jobs) == 2
+    assert len(worker_module.WorkerSettings.functions) == 7
+    assert len(worker_module.WorkerSettings.cron_jobs) == 3
 
     # Lifecycle hooks initialize and dispose DB + Redis cleanly
     disposed = False

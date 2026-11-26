@@ -216,3 +216,21 @@ async def test_research_dedup_provenance_company_cache_and_watchtower_live() -> 
                 {"a": uid, "b": other_uid},
             )
         await db.dispose()
+
+
+@pytest.mark.asyncio
+async def test_gemini_live_rest_smoke_when_configured() -> None:
+    if not settings.GEMINI_API_KEY:
+        pytest.skip("GEMINI_API_KEY not set")
+    import httpx
+
+    from app.integrations.gemini import GeminiClient
+
+    try:
+        text_reply = await GeminiClient().generate_text(
+            "Reply with the single word: READY",
+            temperature=0.0,
+        )
+    except (httpx.ConnectError, httpx.TimeoutException) as exc:
+        pytest.skip(f"External Gemini endpoint unreachable in offline run: {type(exc).__name__}")
+    assert "READY" in text_reply.upper()

@@ -1,9 +1,11 @@
-"""Voice Gateway endpoints using short-lived, single-use WebSocket tickets."""
+"""Voice Gateway endpoints using single-use WebSocket tickets and Gemini Live relay."""
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import json
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,18 +14,35 @@ from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
 from app.core.security_middleware import rate_limit
 from app.db.session import get_db_session
+from app.integrations.gemini import GeminiClient, GeminiLiveRelay
 from app.schemas.common import (
     VoiceSessionCreateRequest,
     VoiceSessionResponse,
     VoiceTicketResponse,
 )
-from app.services.voice_sessions import VoiceSessionService
+from app.services.voice_sessions import VoiceSessionService, execute_career_tool
 from app.voice.tickets import VoiceTicketStore, get_voice_ticket_store
 
 voice_router = APIRouter(prefix="/voice", tags=["Voice"])
 
 _AuthenticatedUser = Annotated[AuthenticatedUser, Depends(require_supabase_role("authenticated"))]
 _DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+
+
+@voice_router.get(
+    "/sessions",
+    response_model=list[VoiceSessionResponse],
+)
+async def list_voice_sessions(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+) -> list[VoiceSessionResponse]:
+    """List persisted voice interaction telemetry records for the authenticated user."""
+    return await VoiceSessionService(session).list_sessions(
+        current_user.user_id, limit=limit, offset=offset
+    )
 
 
 @voice_router.post(
@@ -64,7 +83,7 @@ async def voice_stream(
     ticket_store: Annotated[VoiceTicketStore, Depends(get_voice_ticket_store)],
     ticket: str = Query(default=""),
 ) -> None:
-    """Authenticate WebSocket via atomic single-use ticket and handle PCM + JSON frames."""
+    """Authenticate WebSocket via atomic single-use ticket and bridge PCM audio + text turns."""
     if not ticket:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Missing voice ticket")
         return
@@ -78,12 +97,29 @@ async def voice_stream(
         return
 
     await websocket.accept()
+    user_id = ticket_payload.user_id
     await websocket.send_json(
         {
             "event": "session_ready",
-            "userId": str(ticket_payload.user_id),
+            "userId": str(user_id),
         }
     )
+
+    live_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+    live_task: asyncio.Task[None] | None = None
+    active_language = "en"
+    ws_send_lock = asyncio.Lock()
+
+    async def _send_json_safe(payload: dict[str, Any]) -> None:
+        async with ws_send_lock:
+            await websocket.send_json(payload)
+
+    async def _tool_exec(name: str, args: dict[str, Any]) -> dict[str, Any]:
+        db_mgr = getattr(websocket.app.state, "db", None)
+        if db_mgr is None or getattr(db_mgr, "session_factory", None) is None:
+            return {"note": "Database unavailable during WebSocket session"}
+        async with db_mgr.session_factory() as db_session:
+            return await execute_career_tool(db_session, user_id, name, args)
 
     try:
         while True:
@@ -100,7 +136,10 @@ async def voice_stream(
                         reason="Audio frame exceeds maximum allowed size",
                     )
                     return
-                await websocket.send_json({"event": "audio_received", "bytes": len(raw_bytes)})
+                if live_task is not None and not live_task.done():
+                    await live_queue.put({"kind": "pcm", "bytes": raw_bytes})
+                else:
+                    await _send_json_safe({"event": "audio_received", "bytes": len(raw_bytes)})
                 continue
 
             raw_text = frame.get("text")
@@ -114,27 +153,63 @@ async def voice_stream(
                 try:
                     message = json.loads(raw_text)
                 except json.JSONDecodeError:
-                    await websocket.send_json({"event": "error", "code": "invalid_json"})
+                    await _send_json_safe({"event": "error", "code": "invalid_json"})
                     continue
 
                 if not isinstance(message, dict):
-                    await websocket.send_json({"event": "error", "code": "invalid_payload"})
+                    await _send_json_safe({"event": "error", "code": "invalid_payload"})
                     continue
 
                 event_type = message.get("event")
                 if event_type == "session_init":
-                    await websocket.send_json(
+                    active_language = str(message.get("language", "en"))
+                    requested_live = message.get("mode") == "live"
+                    if requested_live and settings.GEMINI_API_KEY and live_task is None:
+                        relay = GeminiLiveRelay()
+                        live_task = asyncio.create_task(
+                            relay.stream_session(
+                                client_send_json=_send_json_safe,
+                                client_queue=live_queue,
+                                language=active_language,
+                                tool_executor=_tool_exec,
+                            )
+                        )
+                    await _send_json_safe(
                         {
                             "event": "session_acknowledged",
-                            "userId": str(ticket_payload.user_id),
-                            "language": message.get("language", "en"),
+                            "userId": str(user_id),
+                            "language": active_language,
                         }
                     )
+                elif event_type == "text_turn":
+                    turn_text = str(message.get("text", "")).strip()
+                    turn_lang = str(message.get("language", active_language))
+                    if not turn_text:
+                        await _send_json_safe({"event": "error", "code": "empty_text"})
+                        continue
+                    if live_task is not None and not live_task.done():
+                        await live_queue.put({"kind": "text", "text": turn_text})
+                    else:
+                        result = await GeminiClient().chat_with_tools(
+                            user_message=turn_text,
+                            language=turn_lang,
+                            tool_executor=_tool_exec,
+                        )
+                        await _send_json_safe({"event": "ai_transcript", "text": result.reply})
+                        await _send_json_safe({"event": "turn_complete"})
                 elif event_type == "interrupted":
-                    await websocket.send_json({"event": "playback_cancelled"})
+                    if live_task is not None and not live_task.done():
+                        await live_queue.put({"kind": "interrupt"})
+                    await _send_json_safe({"event": "playback_cancelled"})
                 elif event_type == "ping":
-                    await websocket.send_json({"event": "pong"})
+                    await _send_json_safe({"event": "pong"})
                 else:
-                    await websocket.send_json({"event": "error", "code": "unknown_event"})
+                    await _send_json_safe({"event": "error", "code": "unknown_event"})
     except WebSocketDisconnect:
         return
+    finally:
+        if live_task is not None:
+            await live_queue.put(None)
+            live_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await live_task

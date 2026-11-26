@@ -36,7 +36,7 @@ NexteRaS intentionally separates **local development & destructive integration t
 | `SUPABASE_JWT_SECRET` / `JWT_SECRET` | API | Symmetric HS256 fallback secret (≥ 32 chars) | `placeholder-jwt-secret-at-least-32-chars` |
 | `SUPABASE_STORAGE_BUCKET` | API | Private bucket storing uploaded PDF/DOCX resumes | `resumes` |
 | `GEMINI_API_KEY` | API / ML | Google Gemini REST & Live API key | `placeholder-gemini-api-key` |
-| `GEMINI_MODEL` / `GEMINI_LIVE_MODEL` | API | Default Gemini REST and Live models | `gemini-2.5-flash` |
+| `GEMINI_MODEL` / `GEMINI_LIVE_MODEL` | API | Default Gemini REST and Live models | `gemini-3-flash-preview` / `gemini-2.5-flash-native-audio-preview-12-2025` |
 | `OLOSTEP_API_KEY` | API / Worker | Olostep search/scrape/crawl/monitors key | `placeholder-olostep-api-key` |
 | `CRUSTDATA_API_KEY` | API / Worker | Crustdata company & job intelligence key | `placeholder-crustdata-api-key` |
 | `ML_MATCHING_MODEL_PATH` | API / ML | Local MiniLM fine-tuned checkpoint path | `ml/artifacts/minilm-nexteras-v1` |

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fpdf import FPDF
+if TYPE_CHECKING:
+    from fpdf import FPDF
 
 _UNICODE_REPLACEMENTS = str.maketrans(
     {
@@ -28,6 +29,8 @@ def _pdf_safe_text(value: Any) -> str:
 
 def render_resume_pdf(title: str, content: dict[str, Any]) -> bytes:
     """Render structured resume content into valid ATS-readable PDF bytes."""
+    from fpdf import FPDF
+
     pdf = FPDF(format="A4", unit="mm")
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()

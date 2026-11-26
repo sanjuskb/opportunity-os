@@ -7,13 +7,17 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, Response, Up
 from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.automation import ops_router
 from app.api.v1.ml import eligibility_router, ml_router
+from app.api.v1.portals import portals_router
 from app.api.v1.voice import voice_router
 from app.core.config import settings
 from app.core.security import AuthenticatedUser, require_supabase_role
 from app.core.security_middleware import rate_limit
 from app.db.session import DatabaseManager, check_db_health, get_db_session
 from app.schemas.common import (
+    AiChatRequest,
+    AiChatResponse,
     ApplicationCreateRequest,
     ApplicationResponse,
     ApplicationStatusUpdateRequest,
@@ -23,6 +27,8 @@ from app.schemas.common import (
     CareerPassportItemCreateRequest,
     CareerPassportResponse,
     CompanyEnrichRequest,
+    ConversationDetailResponse,
+    ConversationSummaryResponse,
     EducationCreateRequest,
     EducationItemResponse,
     EligibilityCheckResponse,
@@ -58,6 +64,7 @@ from app.services import (
     ApplicationService,
     ApprovalService,
     CareerPassportService,
+    ConversationService,
     EligibilityService,
     IntelligenceService,
     NotificationService,
@@ -73,6 +80,8 @@ v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(voice_router)
 v1_router.include_router(ml_router)
 v1_router.include_router(eligibility_router)
+v1_router.include_router(ops_router)
+v1_router.include_router(portals_router)
 
 _AuthenticatedUser = Annotated[AuthenticatedUser, Depends(require_supabase_role("authenticated"))]
 _DbSession = Annotated[AsyncSession, Depends(get_db_session)]
@@ -826,3 +835,48 @@ async def delete_watchtower_monitor(
 ) -> None:
     """Delete a watchtower monitor owned by the authenticated user."""
     await IntelligenceService(session).delete_monitor(current_user.user_id, monitor_id)
+
+
+@v1_router.post(
+    "/ai/chat",
+    response_model=AiChatResponse,
+    tags=["AI Copilot"],
+    dependencies=[Depends(rate_limit("ai_chat", limit=40, window_seconds=60))],
+)
+async def ai_copilot_chat(
+    payload: AiChatRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> AiChatResponse:
+    """Multilingual Career Copilot turn with grounded DB tool calling and conversation persistence."""
+    return await ConversationService(session).chat(current_user.user_id, payload)
+
+
+@v1_router.get(
+    "/conversations",
+    response_model=list[ConversationSummaryResponse],
+    tags=["AI Copilot"],
+)
+async def list_conversations(
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    limit: int = Query(default=20, ge=1, le=50),
+) -> list[ConversationSummaryResponse]:
+    """List past Career Copilot conversations owned by the authenticated user."""
+    return await ConversationService(session).list_conversations(current_user.user_id, limit=limit)
+
+
+@v1_router.get(
+    "/conversations/{conversation_id}",
+    response_model=ConversationDetailResponse,
+    tags=["AI Copilot"],
+)
+async def get_conversation(
+    conversation_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> ConversationDetailResponse:
+    """Retrieve ordered message history for a specific Career Copilot conversation."""
+    return await ConversationService(session).get_conversation(
+        current_user.user_id, conversation_id
+    )

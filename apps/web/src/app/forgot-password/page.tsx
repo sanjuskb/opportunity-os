@@ -2,17 +2,42 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+import { getSupabasePublicConfig } from '@/lib/supabase/env';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 
 export default function ForgotPasswordPage() {
+  const isConfigured = Boolean(getSupabasePublicConfig());
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true);
+    setErrorMsg(null);
+    if (!isConfigured) {
+      setErrorMsg('Supabase public configuration is not available in this environment.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback?next=/settings`,
+      });
+      if (error) {
+        setErrorMsg(error.message);
+        return;
+      }
+      setIsSubmitted(true);
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Unable to dispatch reset link.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -29,6 +54,12 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-[#0D1322] p-6 shadow-2xl space-y-4">
+          {errorMsg && (
+            <div className="rounded-lg border border-rose-500/40 bg-rose-950/30 p-3 text-xs text-rose-200">
+              {errorMsg}
+            </div>
+          )}
+
           {isSubmitted ? (
             <div className="text-center space-y-3 py-4">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400">
@@ -36,7 +67,7 @@ export default function ForgotPasswordPage() {
               </div>
               <h2 className="text-sm font-bold text-white">Recovery Link Dispatched</h2>
               <p className="text-xs text-slate-300 leading-relaxed">
-                If an account exists for <span className="text-cyan-300">{email}</span>, you will receive password reset instructions.
+                Check <span className="text-cyan-300">{email}</span> for password reset instructions.
               </p>
               <div className="pt-2">
                 <Link href="/login">
@@ -56,7 +87,7 @@ export default function ForgotPasswordPage() {
                 required
                 placeholder="name@college.edu.in"
               />
-              <Button type="submit" variant="primary" size="md" className="w-full">
+              <Button type="submit" variant="primary" size="md" className="w-full" isLoading={submitting}>
                 <span>Send Recovery Instructions</span>
               </Button>
               <div className="text-center pt-2">

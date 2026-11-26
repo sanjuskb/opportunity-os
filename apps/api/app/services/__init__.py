@@ -16,13 +16,14 @@ from app.services.opportunity_text import (
 )
 from app.services.profiles import ProfileService, StudentProfileService
 from app.services.resumes import ResumeService
-from app.services.voice_sessions import VoiceSessionService
+from app.services.voice_sessions import ConversationService, VoiceSessionService
 
 __all__ = [
     "ApplicationService",
     "ApprovalService",
     "CanonicalOpportunityInput",
     "CareerPassportService",
+    "ConversationService",
     "EligibilityService",
     "IntelligenceService",
     "NotificationService",

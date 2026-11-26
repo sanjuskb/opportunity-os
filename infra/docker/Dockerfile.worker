@@ -1,13 +1,28 @@
-FROM python:3.13-slim
+FROM python:3.13-slim AS runtime
 
 WORKDIR /app
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    UV_LINK_MODE=copy \
+    TORCH_NUM_THREADS=4 \
+    OMP_NUM_THREADS=4 \
+    MKL_NUM_THREADS=4
+
+RUN useradd --create-home --shell /bin/bash nexteras
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 COPY apps/api/pyproject.toml apps/api/uv.lock apps/api/README.md ./
-RUN uv sync --frozen --no-dev --extra worker
+RUN uv sync --frozen --no-dev --extra worker --extra automation --extra observability && \
+    uv run --no-sync python -m playwright install chromium --with-deps
 
 COPY apps/api/app ./app
+COPY ml ./ml
+RUN chown -R nexteras:nexteras /app
+
+USER nexteras
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
+  CMD uv run --no-sync python -m app.tasks.worker --healthcheck
 
 CMD ["uv", "run", "--no-sync", "python", "-m", "app.tasks.worker"]

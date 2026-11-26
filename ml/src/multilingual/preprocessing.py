@@ -11,11 +11,35 @@ from ml.src.extraction.taxonomy import deduplicate_skills, find_skills_with_evid
 SCRIPT_RANGES: list[tuple[str, int, int]] = [
     ("hi_devanagari", 0x0900, 0x097F),
     ("bn_bengali", 0x0980, 0x09FF),
+    ("gu_gujarati", 0x0A80, 0x0AFF),
     ("ta_tamil", 0x0B80, 0x0BFF),
     ("te_telugu", 0x0C00, 0x0C7F),
     ("kn_kannada", 0x0C80, 0x0CFF),
     ("ml_malayalam", 0x0D00, 0x0D7F),
 ]
+
+MARATHI_DEVANAGARI_MARKERS = {
+    "आहे",
+    "आहेत",
+    "मला",
+    "माझे",
+    "माझी",
+    "करा",
+    "करायची",
+    "करायचे",
+    "साठी",
+    "पाहिजे",
+    "नोकरी",
+    "अर्ज",
+    "येथे",
+    "कसे",
+    "मिळेल",
+    "हवी",
+    "तुम्ही",
+    "काय",
+    "किंवा",
+    "आणि",
+}
 
 HINGLISH_MARKERS = {
     "chahiye", "hai", "hain", "mujhe", "mera", "meri", "karna", "sakta", "wala", "kaise", "milega", "bhi", "aur", "ke", "liye"
@@ -57,11 +81,17 @@ def infer_locale_hint(text: str, scripts: list[str]) -> tuple[str, bool]:
         "kn_kannada": "kn",
         "ml_malayalam": "ml",
         "bn_bengali": "bn",
+        "gu_gujarati": "gu",
     }
     indic = [script_map[s] for s in scripts if s in script_map]
     if indic:
+        locale = indic[0]
+        if locale == "hi":
+            devanagari_words = set(re.findall(r"[\u0900-\u097F]+", text))
+            if devanagari_words & MARATHI_DEVANAGARI_MARKERS:
+                locale = "mr"
         # Both native Indic script and English technical terms present -> code-switched
-        return indic[0], ("latin" in scripts)
+        return locale, ("latin" in scripts)
 
     tokens = set(re.findall(r"[a-zA-Z]+", text.lower()))
     if tokens & HINGLISH_MARKERS:

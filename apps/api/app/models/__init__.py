@@ -2,10 +2,17 @@
 
 from app.models.base import Base
 from app.models.entities import (
+    AgentEvent,
+    AgentSession,
+    AnalyticsEvent,
     Application,
     ApprovalRequest,
+    BrowserExecutionLog,
     CareerPassport,
+    Conversation,
+    ConversationMessage,
     Education,
+    InterviewSession,
     Notification,
     Opportunity,
     OpportunityEligibility,
@@ -20,15 +27,23 @@ from app.models.entities import (
     SavedOpportunity,
     StudentEmbedding,
     StudentProfile,
+    UniversityVerification,
     VoiceSession,
 )
 
 __all__ = [
+    "AgentEvent",
+    "AgentSession",
+    "AnalyticsEvent",
     "Application",
     "ApprovalRequest",
     "Base",
+    "BrowserExecutionLog",
     "CareerPassport",
+    "Conversation",
+    "ConversationMessage",
     "Education",
+    "InterviewSession",
     "Notification",
     "Opportunity",
     "OpportunityEligibility",
@@ -43,5 +58,6 @@ __all__ = [
     "SavedOpportunity",
     "StudentEmbedding",
     "StudentProfile",
+    "UniversityVerification",
     "VoiceSession",
 ]

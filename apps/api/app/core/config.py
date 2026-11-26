@@ -72,12 +72,12 @@ class Settings(BaseSettings):
 
     # AI & Providers
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3-flash-preview"
     GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
-    GEMINI_LIVE_MODEL: str = "gemini-2.5-flash"
+    GEMINI_LIVE_MODEL: str = "gemini-2.5-flash-native-audio-preview-12-2025"
     GEMINI_LIVE_WEBSOCKET_URL: str = (
         "wss://generativelanguage.googleapis.com/ws/"
-        "google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent"
+        "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
     )
     OLOSTEP_API_KEY: str = ""
     OLOSTEP_API_BASE_URL: str = "https://api.olostep.com/v1"

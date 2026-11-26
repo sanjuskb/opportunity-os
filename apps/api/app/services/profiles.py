@@ -47,6 +47,7 @@ class ProfileService:
             full_name=payload.full_name,
             avatar_url=payload.avatar_url,
             preferred_language=payload.preferred_language,
+            user_role=payload.user_role,
         )
         if profile is None:
             raise ProblemDetailError(
@@ -66,6 +67,7 @@ class ProfileService:
             full_name=profile.full_name,
             avatar_url=profile.avatar_url,
             preferred_language=profile.preferred_language or "en",
+            user_role=profile.user_role or "student",
             supabase_role=supabase_role,
         )
 

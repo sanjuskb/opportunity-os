@@ -1,0 +1,25 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: nexteras-arq-worker
+spec:
+  template:
+    spec:
+      template:
+        spec:
+          maxRetries: 2
+          timeoutSeconds: 300
+          containers:
+            - image: gcr.io/PROJECT_ID/nexteras-worker:latest
+              command: ["uv", "run", "--no-sync", "python", "-m", "app.tasks.worker"]
+              env:
+                - name: ENVIRONMENT
+                  value: production
+                - name: DEBUG
+                  value: "false"
+                - name: TORCH_NUM_THREADS
+                  value: "4"
+              resources:
+                limits:
+                  cpu: "2"
+                  memory: 4Gi
