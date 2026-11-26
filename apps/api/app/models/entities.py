@@ -15,6 +15,7 @@ from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
     Boolean,
+    CheckConstraint,
     DateTime,
     ForeignKey,
     Integer,
@@ -210,7 +211,21 @@ class OpportunityEligibility(Base):
 
 class OpportunityEmbedding(Base):
     __tablename__ = "opportunity_embeddings"
-    __table_args__ = {"schema": "public"}
+    __table_args__ = (
+        CheckConstraint(
+            "embedding_status IN ('pending', 'ready', 'failed')",
+            name="chk_opportunity_embeddings_status",
+        ),
+        CheckConstraint(
+            "retry_count >= 0",
+            name="chk_opportunity_embeddings_retry_count_non_negative",
+        ),
+        CheckConstraint(
+            "embedding_status <> 'ready' OR embedding_minilm_384 IS NOT NULL",
+            name="chk_opportunity_embeddings_ready_requires_vector",
+        ),
+        {"schema": "public"},
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
@@ -227,7 +242,16 @@ class OpportunityEmbedding(Base):
         Text, nullable=True, server_default="sentence-transformers/all-MiniLM-L6-v2"
     )
     embedding_model_version: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
+    embedding_status: Mapped[str] = mapped_column(
+        String(20), nullable=False, server_default="pending"
+    )
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
 
@@ -364,3 +388,26 @@ class SavedOpportunity(Base):
         DateTime(timezone=True), server_default=func.now()
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class VoiceSession(Base):
+    __tablename__ = "voice_sessions"
+    __table_args__ = {"schema": "public"}
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True), primary_key=True, server_default=func.uuid_generate_v4()
+    )
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PGUUID(as_uuid=True),
+        ForeignKey("public.profiles.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    detected_language: Mapped[str | None] = mapped_column(String(10), server_default="en")
+    audio_duration_seconds: Mapped[Decimal | None] = mapped_column(
+        Numeric(8, 2), server_default="0"
+    )
+    transcript: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str | None] = mapped_column(String(30), server_default="completed")
+    created_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )

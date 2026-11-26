@@ -46,6 +46,14 @@ class Settings(BaseSettings):
     VOICE_TICKET_TTL_SECONDS: int = 30
     VOICE_MAX_MESSAGE_BYTES: int = 65536
 
+    # Background Worker (ARQ & ML Runtime)
+    ARQ_MAX_CONCURRENT_TASKS: int = 1
+    ARQ_TASK_TIMEOUT_SECONDS: int = 300
+    ARQ_MAX_TRIES: int = 3
+    EMBEDDING_BACKFILL_BATCH_SIZE: int = 50
+    EMBEDDING_STALE_PENDING_SECONDS: int = 600
+    TORCH_NUM_THREADS: int = 4
+
     # AI & Providers
     GEMINI_API_KEY: str = ""
     OLOSTEP_API_KEY: str = ""
