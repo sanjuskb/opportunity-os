@@ -4,6 +4,8 @@
 -- Description: Core schema for students, opportunities, resumes, agents, voice & audit
 -- =============================================================================
 
+SET LOCAL search_path = public, extensions;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "vector";
 
@@ -20,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 -- 2. Student Profiles
 CREATE TABLE IF NOT EXISTS public.student_profiles (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     college_name TEXT NOT NULL,
     degree TEXT NOT NULL,
@@ -35,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.student_profiles (
 
 -- 3. Education
 CREATE TABLE IF NOT EXISTS public.education (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     student_id UUID NOT NULL REFERENCES public.student_profiles(id) ON DELETE CASCADE,
     institution TEXT NOT NULL,
     degree TEXT NOT NULL,
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS public.education (
 
 -- 4. Skills
 CREATE TABLE IF NOT EXISTS public.skills (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     name VARCHAR(100) NOT NULL UNIQUE,
     category VARCHAR(50) DEFAULT 'technical',
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -56,7 +58,7 @@ CREATE TABLE IF NOT EXISTS public.skills (
 
 -- 5. User Preferences
 CREATE TABLE IF NOT EXISTS public.user_preferences (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
     preferred_roles TEXT[] DEFAULT '{}',
     preferred_locations TEXT[] DEFAULT '{}',
@@ -68,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.user_preferences (
 
 -- 6. Career Passports
 CREATE TABLE IF NOT EXISTS public.career_passports (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     student_id UUID NOT NULL UNIQUE REFERENCES public.student_profiles(id) ON DELETE CASCADE,
     verified_achievements JSONB DEFAULT '[]',
     coursework JSONB DEFAULT '[]',
@@ -79,7 +81,7 @@ CREATE TABLE IF NOT EXISTS public.career_passports (
 
 -- 7. Opportunities
 CREATE TABLE IF NOT EXISTS public.opportunities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     title TEXT NOT NULL,
     organization TEXT NOT NULL,
     location TEXT NOT NULL,
@@ -97,7 +99,7 @@ CREATE TABLE IF NOT EXISTS public.opportunities (
 
 -- 8. Opportunity Sources
 CREATE TABLE IF NOT EXISTS public.opportunity_sources (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     provider VARCHAR(50) NOT NULL,
     domain TEXT NOT NULL,
     last_scraped_at TIMESTAMPTZ,
@@ -107,7 +109,7 @@ CREATE TABLE IF NOT EXISTS public.opportunity_sources (
 
 -- 9. Opportunity Eligibility
 CREATE TABLE IF NOT EXISTS public.opportunity_eligibility (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     opportunity_id UUID NOT NULL REFERENCES public.opportunities(id) ON DELETE CASCADE,
     eligible_batches INT[] DEFAULT '{}',
     eligible_degrees TEXT[] DEFAULT '{}',
@@ -119,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.opportunity_eligibility (
 
 -- 10. Opportunity Embeddings (pgvector: 768 dimensions for Gemini text-embedding-004)
 CREATE TABLE IF NOT EXISTS public.opportunity_embeddings (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     opportunity_id UUID NOT NULL UNIQUE REFERENCES public.opportunities(id) ON DELETE CASCADE,
     embedding vector(768),
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -127,7 +129,7 @@ CREATE TABLE IF NOT EXISTS public.opportunity_embeddings (
 
 -- 11. Saved Opportunities
 CREATE TABLE IF NOT EXISTS public.saved_opportunities (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     opportunity_id UUID NOT NULL REFERENCES public.opportunities(id) ON DELETE CASCADE,
     saved_at TIMESTAMPTZ DEFAULT NOW(),
@@ -137,7 +139,7 @@ CREATE TABLE IF NOT EXISTS public.saved_opportunities (
 
 -- 12. Applications
 CREATE TABLE IF NOT EXISTS public.applications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     opportunity_id UUID NOT NULL REFERENCES public.opportunities(id) ON DELETE CASCADE,
     status VARCHAR(50) DEFAULT 'drafting',
@@ -148,7 +150,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
 
 -- 13. Resumes
 CREATE TABLE IF NOT EXISTS public.resumes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     master_content JSONB NOT NULL,
@@ -157,7 +159,7 @@ CREATE TABLE IF NOT EXISTS public.resumes (
 
 -- 14. Resume Versions
 CREATE TABLE IF NOT EXISTS public.resume_versions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     resume_id UUID NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
     version_number INT NOT NULL,
     content JSONB NOT NULL,
@@ -167,7 +169,7 @@ CREATE TABLE IF NOT EXISTS public.resume_versions (
 
 -- 15. Resume Customizations
 CREATE TABLE IF NOT EXISTS public.resume_customizations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     resume_id UUID NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE,
     opportunity_id UUID NOT NULL REFERENCES public.opportunities(id) ON DELETE CASCADE,
     tailored_content JSONB NOT NULL,
@@ -177,7 +179,7 @@ CREATE TABLE IF NOT EXISTS public.resume_customizations (
 
 -- 16. Agent Sessions
 CREATE TABLE IF NOT EXISTS public.agent_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     agent_type VARCHAR(50) NOT NULL,
     state JSONB DEFAULT '{}',
@@ -187,7 +189,7 @@ CREATE TABLE IF NOT EXISTS public.agent_sessions (
 
 -- 17. Agent Events
 CREATE TABLE IF NOT EXISTS public.agent_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     session_id UUID NOT NULL REFERENCES public.agent_sessions(id) ON DELETE CASCADE,
     node_name VARCHAR(100) NOT NULL,
     event_type VARCHAR(50) NOT NULL,
@@ -197,7 +199,7 @@ CREATE TABLE IF NOT EXISTS public.agent_events (
 
 -- 18. Approval Requests (CRITICAL HUMAN-IN-THE-LOOP GATE)
 CREATE TABLE IF NOT EXISTS public.approval_requests (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     session_id UUID NOT NULL REFERENCES public.agent_sessions(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     opportunity_id UUID NOT NULL REFERENCES public.opportunities(id) ON DELETE CASCADE,
@@ -211,7 +213,7 @@ CREATE TABLE IF NOT EXISTS public.approval_requests (
 
 -- 19. Browser Execution Logs (Audit Trail)
 CREATE TABLE IF NOT EXISTS public.browser_execution_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     approval_request_id UUID REFERENCES public.approval_requests(id) ON DELETE SET NULL,
     session_id UUID NOT NULL REFERENCES public.agent_sessions(id) ON DELETE CASCADE,
     step_description TEXT NOT NULL,
@@ -225,7 +227,7 @@ CREATE TABLE IF NOT EXISTS public.browser_execution_logs (
 
 -- 20. Conversations
 CREATE TABLE IF NOT EXISTS public.conversations (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     title TEXT DEFAULT 'Career Consultation',
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -233,7 +235,7 @@ CREATE TABLE IF NOT EXISTS public.conversations (
 
 -- 21. Conversation Messages
 CREATE TABLE IF NOT EXISTS public.conversation_messages (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     conversation_id UUID NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
     role VARCHAR(20) NOT NULL,
     content TEXT NOT NULL,
@@ -243,7 +245,7 @@ CREATE TABLE IF NOT EXISTS public.conversation_messages (
 
 -- 22. Voice Sessions
 CREATE TABLE IF NOT EXISTS public.voice_sessions (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     detected_language VARCHAR(10) DEFAULT 'en',
     audio_duration_seconds NUMERIC(8,2) DEFAULT 0,
@@ -254,7 +256,7 @@ CREATE TABLE IF NOT EXISTS public.voice_sessions (
 
 -- 23. Notifications
 CREATE TABLE IF NOT EXISTS public.notifications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
@@ -265,7 +267,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 
 -- 24. Opportunity Monitors (Scheduled Tracking)
 CREATE TABLE IF NOT EXISTS public.opportunity_monitors (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     target_organization VARCHAR(255) NOT NULL,
     criteria JSONB DEFAULT '{}',
@@ -275,7 +277,7 @@ CREATE TABLE IF NOT EXISTS public.opportunity_monitors (
 
 -- 25. Analytics Events
 CREATE TABLE IF NOT EXISTS public.analytics_events (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     event_name VARCHAR(100) NOT NULL,
     event_metadata JSONB DEFAULT '{}',

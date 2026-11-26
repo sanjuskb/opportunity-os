@@ -5,9 +5,9 @@ ENV PYTHONUNBUFFERED=1
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-COPY apps/api/pyproject.toml apps/api/README.md ./
-RUN uv sync --no-dev
+COPY apps/api/pyproject.toml apps/api/uv.lock apps/api/README.md ./
+RUN uv sync --frozen --no-dev --extra worker
 
 COPY apps/api/app ./app
 
-CMD ["uv", "run", "python", "-m", "app.tasks.worker"]
+CMD ["uv", "run", "--no-sync", "python", "-m", "app.tasks.worker"]

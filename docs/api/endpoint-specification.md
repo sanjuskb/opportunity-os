@@ -28,12 +28,12 @@
 | `DELETE` | `/career-passport/items/{id}` | Remove item from Career Passport | Yes |
 
 ### 2.3 Opportunity Discovery & Ingestion
-| Method | Route | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/opportunities` | Filterable list of vetted opportunities | Yes |
-| `GET` | `/opportunities/{id}` | Fetch detailed opportunity information | Yes |
-| `POST` | `/opportunities/discover` | Trigger agentic search via Olostep/Crustdata | Yes |
-| `POST` | `/opportunities/{id}/save` | Bookmark an opportunity | Yes |
+| Method | Route | Description | Auth Required | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/opportunities` | Cursor-paginated, filterable list of vetted opportunities (`cursor`, `limit`, `type`, `q`, `active_only`, `sort_order`) | Public (`anon` + `authenticated`) | Implemented |
+| `GET` | `/opportunities/{id}` | Fetch detailed opportunity information with eligibility criteria | Public (`anon` + `authenticated`) | Implemented |
+| `POST` | `/opportunities/discover` | Authenticated search across vetted opportunities | Yes | Implemented (DB search) |
+| `POST` | `/opportunities/{id}/save` | Bookmark or unbookmark an opportunity | Yes | Implemented |
 
 ### 2.4 Deterministic & Semantic Eligibility Engine
 | Method | Route | Description | Auth Required |
@@ -60,7 +60,8 @@
 ### 2.7 Multilingual Voice Interaction Gateway
 | Method | Route | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `WebSocket` | `/voice/stream` | Full-duplex PCM audio stream to Gemini Live | Yes (Token query/header) |
+| `POST` | `/voice/tickets` | Issue short-lived single-use WebSocket ticket | Yes (Bearer JWT) |
+| `WebSocket` | `/voice/stream?ticket={uuid}` | Full-duplex PCM audio + JSON control stream | Yes (Single-use ticket) |
 | `POST` | `/voice/sessions` | Record telemetry & duration of voice interaction | Yes |
 
 ---

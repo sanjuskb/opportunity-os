@@ -1,25 +1,12 @@
 name: opportunity-os
 
+# Local development uses Supabase CLI (`supabase start`) as the single source of truth
+# for PostgreSQL 16 + pgvector (port 54322), Auth (GoTrue), and Storage (port 54321).
+# Start Supabase before starting the containerized API:
+#   supabase start && supabase db reset
+#   docker compose up -d
+# Note: host-side/external fallback URL is postgresql+asyncpg://postgres:postgres@host.docker.internal:54322/postgres
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: opportunity-os-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-postgres}
-    ports:
-      - "54322:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./supabase/migrations:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     container_name: opportunity-os-redis
@@ -42,18 +29,53 @@ services:
     restart: unless-stopped
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@supabase_db_opportunity-os:5432/postgres}
       - REDIS_URL=redis://redis:6379/0
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - OLOSTEP_API_KEY=${OLOSTEP_API_KEY:-}
       - CRUSTDATA_API_KEY=${CRUSTDATA_API_KEY:-}
+    networks:
+      - default
+      - supabase_network_opportunity-os
     depends_on:
-      postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+    container_name: opportunity-os-worker
+    restart: unless-stopped
+    command: ["uv", "run", "--no-sync", "python", "-m", "app.tasks.worker"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@supabase_db_opportunity-os:5432/postgres}
+      - REDIS_URL=redis://redis:6379/0
+      - ARQ_MAX_CONCURRENT_TASKS=1
+      - ARQ_TASK_TIMEOUT_SECONDS=300
+      - ARQ_MAX_TRIES=3
+      - TORCH_NUM_THREADS=4
+      - OMP_NUM_THREADS=4
+      - MKL_NUM_THREADS=4
+    networks:
+      - default
+      - supabase_network_opportunity-os
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "uv", "run", "--no-sync", "python", "-m", "app.tasks.worker", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   web:
     build:
@@ -69,5 +91,8 @@ services:
       - api
 
 volumes:
-  postgres_data:
   redis_data:
+
+networks:
+  supabase_network_opportunity-os:
+    external: true
