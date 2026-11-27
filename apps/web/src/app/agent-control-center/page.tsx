@@ -9,6 +9,7 @@ import { AgentEventStream } from '../../components/agent-control/AgentEventStrea
 import { AgentInspector } from '../../components/agent-control/AgentInspector';
 import { AgentCommandBar } from '../../components/agent-control/AgentCommandBar';
 import { AgentInventoryView } from '../../components/agent-control/AgentInventoryView';
+import { AgentLiveBridge } from '../../components/agent-control/AgentLiveBridge';
 import { Network, Table, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 export default function AgentControlCenterPage() {
@@ -19,6 +20,7 @@ export default function AgentControlCenterPage() {
 
   return (
     <DashboardLayout>
+      <AgentLiveBridge />
       <div className="flex flex-col h-[calc(100vh-5.5rem)] max-h-[960px] bg-[#05070B] text-slate-100 overflow-hidden border border-white/[0.08] rounded-2xl m-2 sm:m-3 shadow-2xl">
         {/* 1. Master Control Header with VORTEX Telemetry Bar */}
         <AgentControlHeader />

@@ -16,7 +16,7 @@ from app.automation.playwright_runner import (
     prepare_application_automation,
 )
 from app.core.errors import ProblemDetailError
-from app.db.session import DatabaseManager
+from app.db.session import DatabaseManager, check_db_health
 from app.models.entities import (
     Application,
     ApprovalRequest,
@@ -84,6 +84,11 @@ def test_agent_checkpoint_contract_and_envelope() -> None:
 
 @pytest.mark.asyncio
 async def test_playwright_sandbox_prepare_halt_captcha_and_approved_submit_live() -> None:
+    db = DatabaseManager()
+    if not await check_db_health(db):
+        await db.dispose()
+        pytest.skip("Live PostgreSQL instance unavailable for WS7/WS9 automation integration test")
+
     from playwright.async_api import async_playwright
 
     # Skip gracefully only if browser binary isn't installed in this host image
@@ -92,10 +97,10 @@ async def test_playwright_sandbox_prepare_halt_captcha_and_approved_submit_live(
             b = await pw.chromium.launch(headless=True)
             await b.close()
     except Exception as exc:
+        await db.dispose()
         pytest.skip(f"Playwright Chromium unavailable: {exc}")
 
     server, base_url = _start_sandbox_portal_server()
-    db = DatabaseManager()
     user_id = uuid4()
     opp_id = uuid4()
     app_id = uuid4()

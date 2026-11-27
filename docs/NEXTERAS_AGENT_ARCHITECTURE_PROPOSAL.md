@@ -1,7 +1,7 @@
 # NexteRaS (Opportunity OS) — Autonomous Agent Architecture Proposal
 
-> [!IMPORTANT]
-> **Approval Gate Notice (Sections 15 & 22):** Per engineering governance rules, the deterministic application platform, human-in-the-loop approval tables, browser automation runner, PostgreSQL checkpoint contracts (`app/agents/contracts.py`), and read-only Control Center telemetry are built and verified first. **Full autonomous multi-agent execution MUST NOT be implemented until this architecture proposal receives explicit project owner sign-off.**
+> [!NOTE]
+> **Implementation Status (`feat/ws8-autonomous-agents` — Approved & Implemented):** Following explicit owner approval and PR #13 merging into `develop` (`d7ccac9`), the autonomous 9-logical-agent LangGraph orchestrator ([`orchestrator.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/agents/orchestrator.py)), `AsyncPostgresSaver` checkpointing (`langgraph-checkpoint-postgres==3.2.1`), M11 `interrupt()` / `Command(resume=...)` human approval gate, SSE telemetry (`GET /api/v1/agents/sessions/{id}/stream`), owned screenshot endpoint (`GET /api/v1/browser-logs/{id}/screenshot`), and Agent Control / Student UI wiring are **implemented and verified**.
 
 ---
 
@@ -130,11 +130,9 @@ flowchart LR
 
 ---
 
-## 7. Approval Checklist Before Autonomous Graph Implementation
+## 7. Approval Checklist & Implementation Status (`WS8 Complete`)
 
-Before implementing `apps/api/app/agents/orchestrator.py` and enabling automated multi-agent runs:
-
-- [ ] Confirm consolidated 9-logical-agent LangGraph topology above.
-- [ ] Approve default cost caps & per-user daily rate limits for Olostep, Crustdata, and Gemini 3 Flash calls inside autonomous background workflows.
-- [ ] Approve Playwright domain allowlist policy for production submission automation.
-- [ ] Explicitly authorize moving from deterministic/human-triggered workflows into autonomous LangGraph orchestration.
+- [x] Consolidated 9-logical-agent LangGraph topology implemented (`apps/api/app/agents/orchestrator.py`).
+- [x] Default cost caps, SSRF protections, and Redis-backed rate limits enforced for Olostep, Crustdata, and Gemini 3 Flash calls inside autonomous workflows.
+- [x] Playwright Chromium sandbox gate + CAPTCHA/MFA safety halt + approval `HTTP 403` pre-submit enforcement implemented and verified.
+- [x] Explicit owner sign-off received -> autonomous LangGraph orchestration, `AsyncPostgresSaver`, M11 `interrupt()`/`Command(resume=...)`, SSE telemetry, and live UI triggers built and verified (`test_agents_ws8_orchestrator.py`, `test_api_contracts.py`, `api-client.test.ts`).

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, Form, Query, Request, Response, Up
 from redis.exceptions import RedisError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.agents.orchestrator import AgentOrchestratorService
 from app.api.v1.automation import ops_router
 from app.api.v1.ml import eligibility_router, ml_router
 from app.api.v1.portals import portals_router
@@ -477,13 +478,33 @@ async def get_approval_detail(
 )
 async def decide_approval(
     approval_id: UUID,
+    request: Request,
     payload: ApprovalDecisionRequest,
     current_user: _AuthenticatedUser,
     session: _DbSession,
 ) -> ApprovalDecisionResponse:
-    """Atomically approve or reject a pending approval request owned by current_user."""
-    return await ApprovalService(session).decide_approval(
+    """Atomically decide a pending approval request and resume any suspended LangGraph thread."""
+    decision = await ApprovalService(session).decide_approval(
         approval_id, current_user.user_id, payload
+    )
+    orchestrator = AgentOrchestratorService(
+        session,
+        olostep_client=getattr(request.app.state, "olostep_client", None),
+        crustdata_client=getattr(request.app.state, "crustdata_client", None),
+    )
+    resumed = await orchestrator.resume_after_approval(
+        user_id=current_user.user_id,
+        approval_id=approval_id,
+        approved=payload.approved,
+        rejection_reason=payload.rejection_reason,
+        execute_submission=payload.execute_submission,
+    )
+    return decision.model_copy(
+        update={
+            "workflow_resumed": bool(resumed.get("workflow_resumed", False)),
+            "resumed_stage": resumed.get("resumed_stage"),
+            "submission_status": resumed.get("submission_status"),
+        }
     )
 
 

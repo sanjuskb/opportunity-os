@@ -1,38 +1,51 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useDecideApproval } from '@/lib/queries/useOpportunityOs';
 import { useAgentControlStore } from './useAgentControlStore';
 import { EventSeverity } from './types';
 import {
   Activity,
   CheckCircle2,
-  AlertTriangle,
   ArrowRight,
-  ShieldCheck,
   Zap,
   Check,
-  Clock,
-  Radio,
-  BarChart2,
-  GitBranch,
-  Layers,
-  ChevronRight,
-  RefreshCw,
-  XCircle,
-  TrendingUp,
 } from 'lucide-react';
 
 export function AgentEventStream() {
+  const { user } = useAuth();
+  const decideMutation = useDecideApproval();
   const {
     events,
     workflows,
     metrics,
+    pendingApprovals,
     activeWorkflowId,
     setActiveWorkflowId,
     selectAgent,
-    approvePendingAction,
-    rejectPendingAction,
+    setCommandLog,
   } = useAgentControlStore();
+
+  const handleRealDecision = async (approved: boolean) => {
+    const first = pendingApprovals[0];
+    if (!user || !first) {
+      setCommandLog('No live pending approval request found in PostgreSQL.');
+      return;
+    }
+    try {
+      const res = await decideMutation.mutateAsync({
+        approvalId: first.id,
+        approved,
+        executeSubmission: approved,
+      });
+      setCommandLog(
+        `Approval ${res.status}${res.workflowResumed ? ` • Resumed M11 -> ${res.resumedStage}` : ''}`
+      );
+    } catch (err) {
+      setCommandLog(err instanceof Error ? err.message : 'Approval action failed.');
+    }
+  };
 
   const [activeTab, setActiveTab] = useState<'events' | 'telemetry' | 'workflows'>('events');
   const [severityFilter, setSeverityFilter] = useState<EventSeverity | 'all'>('all');
@@ -227,25 +240,27 @@ export function AgentEventStream() {
                     <p className="text-[11px] text-slate-300 leading-relaxed">{ev.description}</p>
 
                     {/* Interactive Human Approval Buttons */}
-                    {isApproval && (
+                    {isApproval && pendingApprovals.length > 0 && (
                       <div className="pt-2 flex items-center gap-2 border-t border-amber-500/20">
                         <button
                           type="button"
+                          disabled={decideMutation.isPending}
                           onClick={(e) => {
                             e.stopPropagation();
-                            approvePendingAction();
+                            void handleRealDecision(true);
                           }}
-                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 font-semibold text-[10px] flex items-center justify-center gap-1.5 transition"
+                          className="flex-1 py-1.5 px-2.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/50 text-emerald-300 font-semibold text-[10px] flex items-center justify-center gap-1.5 transition disabled:opacity-50"
                         >
-                          <Check className="h-3 w-3" /> Approve Dispatch
+                          <Check className="h-3 w-3" /> Approve &amp; Resume
                         </button>
                         <button
                           type="button"
+                          disabled={decideMutation.isPending}
                           onClick={(e) => {
                             e.stopPropagation();
-                            rejectPendingAction();
+                            void handleRealDecision(false);
                           }}
-                          className="py-1.5 px-2.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-semibold text-[10px] transition"
+                          className="py-1.5 px-2.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 font-semibold text-[10px] transition disabled:opacity-50"
                         >
                           Abort
                         </button>
@@ -406,9 +421,8 @@ export function AgentEventStream() {
             </div>
           </div>
 
-          {/* Demonstration Notice */}
-          <div className="p-2.5 rounded-lg border border-white/[0.06] bg-white/[0.015] text-[10px] font-mono text-slate-500 leading-relaxed">
-            Note: Demonstrational telemetry synchronized with local state machine.
+          <div className="p-2.5 rounded-lg border border-white/[0.06] bg-white/[0.015] text-[10px] font-mono text-slate-400 leading-relaxed">
+            Telemetry synchronized with PostgreSQL AgentSessions &amp; LangGraph checkpoint state.
           </div>
         </div>
       )}

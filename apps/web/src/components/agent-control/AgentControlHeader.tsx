@@ -1,34 +1,55 @@
 'use client';
 
 import React from 'react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useRunAgentWorkflow } from '@/lib/queries/useOpportunityOs';
 import { useAgentControlStore } from './useAgentControlStore';
 import {
   Activity,
   Radio,
-  Pause,
-  Play,
   RotateCcw,
-  Sparkles,
   ShieldCheck,
   AlertTriangle,
   Clock,
   Layers,
   Search,
+  Play,
 } from 'lucide-react';
 
 export function AgentControlHeader() {
+  const { user } = useAuth();
+  const runWorkflow = useRunAgentWorkflow();
   const {
     metrics,
     streamingSpeed,
     isStreaming,
     statusFilter,
     searchQuery,
+    checkpointerBackend,
+    sseConnected,
     setStreamingSpeed,
     toggleStreaming,
     setStatusFilter,
     setSearchQuery,
     resetCamera,
+    setActiveSessionId,
+    setCommandLog,
   } = useAgentControlStore();
+
+  const handleLaunchRun = async () => {
+    try {
+      const res = await runWorkflow.mutateAsync({
+        query: 'Find eligible software & ML internships and prepare tailored application',
+        workflowType: 'full_pipeline',
+      });
+      setActiveSessionId(res.sessionId);
+      setCommandLog(
+        `LangGraph (${res.checkpointerBackend}) ran to '${res.status}': ${res.message}`
+      );
+    } catch (err) {
+      setCommandLog(err instanceof Error ? err.message : 'Failed to launch autonomous workflow.');
+    }
+  };
 
   return (
     <div className="border-b border-white/[0.08] bg-[#070A11] px-4 sm:px-6 py-3.5 space-y-3">
@@ -92,6 +113,23 @@ export function AgentControlHeader() {
             />
             <span>{isStreaming ? 'STREAMING ACTIVE' : 'STREAM PAUSED'}</span>
           </button>
+
+          {/* Launch Autonomous LangGraph Pipeline */}
+          {user && (
+            <button
+              type="button"
+              disabled={runWorkflow.isPending}
+              onClick={() => void handleLaunchRun()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-cyan-500/50 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-200 text-xs font-mono font-semibold transition disabled:opacity-50"
+            >
+              <Play className="h-3.5 w-3.5" />
+              <span>{runWorkflow.isPending ? 'RUNNING GRAPH...' : 'LAUNCH PIPELINE'}</span>
+            </button>
+          )}
+
+          <span className="hidden xl:inline-flex items-center px-2.5 py-1 rounded-lg border border-white/[0.08] bg-[#0B0F1A] text-[10px] font-mono text-slate-300">
+            DB: {checkpointerBackend} {sseConnected ? '• SSE' : ''}
+          </span>
 
           {/* Reset Camera View */}
           <button

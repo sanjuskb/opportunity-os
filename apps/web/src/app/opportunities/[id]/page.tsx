@@ -1,9 +1,10 @@
 'use client';
 
-import React, { use, useEffect } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
+  Bot,
   Building2,
   MapPin,
   Calendar,
@@ -23,6 +24,7 @@ import {
   useCreateApplication,
   useEvaluateEligibility,
   useOpportunityDetail,
+  useRunAgentWorkflow,
   useSavedOpportunities,
   useToggleSaveOpportunity,
 } from '@/lib/queries/useOpportunityOs';
@@ -35,7 +37,9 @@ export default function OpportunityDetailPage({ params }: { params: Promise<{ id
   const { data: applications } = useApplications();
   const toggleSave = useToggleSaveOpportunity();
   const createApp = useCreateApplication();
+  const runAgent = useRunAgentWorkflow();
   const evalElig = useEvaluateEligibility();
+  const [agentBanner, setAgentBanner] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && opportunity?.id && !evalElig.data && !evalElig.isPending) {
@@ -139,8 +143,42 @@ export default function OpportunityDetailPage({ params }: { params: Promise<{ id
                   <span>Create Application Draft</span>
                 </Button>
               )}
+
+              <Button
+                variant="primary"
+                size="md"
+                disabled={!user}
+                isLoading={runAgent.isPending}
+                onClick={() => {
+                  void runAgent
+                    .mutateAsync({
+                      targetOpportunityId: opportunity.id,
+                      query: opportunity.title,
+                      workflowType: 'full_pipeline',
+                    })
+                    .then((res) =>
+                      setAgentBanner(
+                        `Autonomous pipeline paused cleanly at '${res.status}'. Review pending approval in Applications or Agent Control Center.`
+                      )
+                    )
+                    .catch((e) =>
+                      setAgentBanner(e instanceof Error ? e.message : 'Agent run failed')
+                    );
+                }}
+              >
+                <Bot className="h-4 w-4 mr-2" />
+                <span>Run Autonomous Agent</span>
+              </Button>
             </div>
           </div>
+          {agentBanner && (
+            <div className="mt-4 p-3 rounded-xl border border-cyan-500/40 bg-cyan-950/30 text-xs text-cyan-200 flex items-center justify-between gap-2">
+              <span>{agentBanner}</span>
+              <Link href="/applications" className="text-cyan-300 font-bold underline shrink-0">
+                Open Approvals
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

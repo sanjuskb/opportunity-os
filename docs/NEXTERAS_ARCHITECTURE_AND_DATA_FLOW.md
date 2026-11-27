@@ -1,18 +1,18 @@
 # NexteRaS (Opportunity OS) — Architecture & Data Flow Audit
 
-**Updated:** 2026-11-26 (`feat/phase0-1-core-infra` post-consolidation build)  
+**Updated:** 2026-11-27 (`feat/ws8-autonomous-agents` build on top of `develop` @ `d7ccac9` / PR #13)  
 **Pre-Consolidation Audit Baseline:** `origin/main`, `origin/develop`, `origin/sanju`, `origin/ml`, and `origin/ramaraju`
 
 ---
 
-## Post-Consolidation Architecture Reconciliation (`feat/phase0-1-core-infra`)
+## Post-Consolidation Architecture Reconciliation (`feat/ws8-autonomous-agents`)
 
-After merging PRs `#10`–`#12` into `develop` and building Phases 0–9 on `feat/phase0-1-core-infra`, the fragmented three-branch reality documented below has been unified into the single integrated target system:
-* **Frontend + Auth + i18n:** Next.js 15 (`29` pages / `33` build routes) uses `@tanstack/react-query` hooks ([`useOpportunityOs.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/lib/queries/useOpportunityOs.ts)) over `@opportunity-os/api-client`, fail-closed SSR [`middleware.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/middleware.ts), typed 9-language catalog [`messages.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/lib/i18n/messages.ts), and `AudioStreamingService` (`audioStreamer.ts`).
-* **Unified FastAPI + Intelligence Layer:** Single gateway ([`main.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/main.py)) exposing 78 OpenAPI HTTP operations + `WS /api/v1/voice/stream`, JWT-guarded `/ml/*`, Redis rate limiting, OWASP security headers, Sentry/PostHog (`observability.py`), `OlostepClient`, `CrustdataClient`, `GeminiClient` + `GeminiLiveRelay`, and Student/Company/University RBAC.
+After merging PRs `#10`–`#13` into `develop` and completing WS8 autonomous multi-agent execution on `feat/ws8-autonomous-agents`, the fragmented three-branch reality documented below has been unified into the single integrated target system:
+* **Frontend + Auth + i18n:** Next.js 15 (`29` pages / `33` build routes) uses `@tanstack/react-query` hooks ([`useOpportunityOs.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/lib/queries/useOpportunityOs.ts)) over `@opportunity-os/api-client`, fail-closed SSR [`middleware.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/middleware.ts), typed 9-language catalog [`messages.ts`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/web/src/lib/i18n/messages.ts), `AudioStreamingService` (`audioStreamer.ts`), and live Agent Control telemetry (`AgentLiveBridge` SSE + `BrowserScreenshotPreview`).
+* **Unified FastAPI + Intelligence Layer:** Single gateway ([`main.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/main.py)) exposing `83` OpenAPI HTTP operations + `WS /api/v1/voice/stream`, JWT-guarded `/ml/*`, Redis rate limiting, OWASP security headers, Sentry/PostHog (`observability.py`), `OlostepClient`, `CrustdataClient`, `GeminiClient` + `GeminiLiveRelay`, and Student/Company/University RBAC.
 * **Postgres 17 + pgvector + Storage:** `29` `public` tables across `10` ordered SQL migrations, `student_embeddings` + `opportunity_embeddings` (`embedding_minilm_384` HNSW), private `resumes` Storage bucket + RLS, and live `search_similar_by_vector()`.
-* **Background Workers & Safe Browser Sandbox:** ARQ `WorkerSettings` (`7` tasks, `3` crons) + Playwright Chromium `playwright_runner.py` with mandatory pre-submit screenshot pause (`approval_requests` `403` guard) and CAPTCHA/MFA halt.
-* **Autonomous Agent Gate:** Typed `PostgresSaver` contracts ([`contracts.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/agents/contracts.py)) & read-only session telemetry are live; full autonomous orchestration (`orchestrator.py`) is designed in [`NEXTERAS_AGENT_ARCHITECTURE_PROPOSAL.md`](file:///d:/ai%20career%20intelligence%20autonomous%20system/docs/NEXTERAS_AGENT_ARCHITECTURE_PROPOSAL.md) and **paused awaiting explicit approval**.
+* **Background Workers & Safe Browser Sandbox:** ARQ `WorkerSettings` (`7` tasks, `3` crons) + Playwright Chromium `playwright_runner.py` with mandatory pre-submit screenshot pause (`approval_requests` `403` guard), owned screenshot retrieval (`GET /browser-logs/{id}/screenshot`), and CAPTCHA/MFA halt.
+* **Autonomous LangGraph Multi-Agent Orchestrator (`WS8`):** [`orchestrator.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/agents/orchestrator.py) + [`contracts.py`](file:///d:/ai%20career%20intelligence%20autonomous%20system/apps/api/app/agents/contracts.py) implement the 9 logical workflow stages (`M01`–`M09`) backed by `AsyncPostgresSaver` (`langgraph-checkpoint-postgres==3.2.1` + offline unit `MemorySaver` fallback), M11 `interrupt()` -> `approval_requests` -> `POST /agents/approvals/{id}/decision` resume (`Command(resume=...)`), SSE event streaming (`GET /agents/sessions/{id}/stream`), and post-submission starter interview/analytics creation.
 
 ---
 

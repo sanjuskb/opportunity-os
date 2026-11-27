@@ -1,5 +1,9 @@
 import type {
+  AgentCommandResult,
   AgentEventRecord,
+  AgentRunRequestPayload,
+  AgentRunResult,
+  AgentSessionDetail,
   AgentSessionRecord,
   AiChatResponse,
   AnalyticsOverview,
@@ -90,15 +94,16 @@ export class OpportunityApiClient {
     return this.refreshInFlight;
   }
 
-  private async request<T>(
+  private async requestResponse(
     endpoint: string,
     options: RequestInit = {},
-    isRetry: boolean = false
-  ): Promise<T> {
+    isRetry: boolean = false,
+    includeJsonContentType: boolean = true
+  ): Promise<Response> {
     const isFormData =
       typeof FormData !== 'undefined' && options.body instanceof FormData;
     const headers: Record<string, string> = {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(!includeJsonContentType || isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(options.headers as Record<string, string>),
     };
 
@@ -115,7 +120,7 @@ export class OpportunityApiClient {
       const refreshedToken = await this.refreshAccessToken();
       if (refreshedToken) {
         this.token = refreshedToken;
-        return this.request<T>(endpoint, options, true);
+        return this.requestResponse(endpoint, options, true, includeJsonContentType);
       }
       this.token = undefined;
     }
@@ -132,6 +137,16 @@ export class OpportunityApiClient {
         `API error: ${response.status}`;
       throw new Error(message);
     }
+
+    return response;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    isRetry: boolean = false
+  ): Promise<T> {
+    const response = await this.requestResponse(endpoint, options, isRetry, true);
 
     if (response.status === 204 || response.status === 205) {
       return undefined as T;
@@ -341,7 +356,8 @@ export class OpportunityApiClient {
   async approveAction(
     approvalId: string,
     approved: boolean,
-    rejectionReason?: string
+    rejectionReason?: string,
+    executeSubmission: boolean = false
   ): Promise<ApprovalDecisionResult> {
     return this.request<ApprovalDecisionResult>(
       `/agents/approvals/${encodeURIComponent(approvalId)}/decision`,
@@ -350,6 +366,7 @@ export class OpportunityApiClient {
         body: JSON.stringify({
           approved,
           ...(rejectionReason !== undefined ? { rejectionReason } : {}),
+          ...(executeSubmission ? { executeSubmission: true } : {}),
         }),
       }
     );
@@ -590,14 +607,53 @@ export class OpportunityApiClient {
     return this.request<BrowserExecutionLogRecord[]>(`/browser-logs?limit=${limit}`);
   }
 
+  async fetchBrowserLogScreenshot(logId: string): Promise<Blob> {
+    const res = await this.requestResponse(
+      `/browser-logs/${encodeURIComponent(logId)}/screenshot`,
+      {},
+      false,
+      false
+    );
+    return res.blob();
+  }
+
+  async runAgentWorkflow(payload: AgentRunRequestPayload): Promise<AgentRunResult> {
+    return this.request<AgentRunResult>('/agents/runs', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async listAgentSessions(limit: number = 20): Promise<AgentSessionRecord[]> {
     return this.request<AgentSessionRecord[]>(`/agents/sessions?limit=${limit}`);
+  }
+
+  async getAgentSession(sessionId: string): Promise<AgentSessionDetail> {
+    return this.request<AgentSessionDetail>(`/agents/sessions/${encodeURIComponent(sessionId)}`);
   }
 
   async getAgentSessionEvents(sessionId: string): Promise<AgentEventRecord[]> {
     return this.request<AgentEventRecord[]>(
       `/agents/sessions/${encodeURIComponent(sessionId)}/events`
     );
+  }
+
+  async commandAgentSession(
+    sessionId: string,
+    payload: { action: 'query' | 'pause' | 'resume'; command?: string; language?: string }
+  ): Promise<AgentCommandResult> {
+    return this.request<AgentCommandResult>(
+      `/agents/sessions/${encodeURIComponent(sessionId)}/command`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      }
+    );
+  }
+
+  getAgentSessionStreamUrl(sessionId: string, once: boolean = false): string {
+    const suffix = once ? '?once=true' : '';
+    return `${this.baseUrl}/agents/sessions/${encodeURIComponent(sessionId)}/stream${suffix}`;
   }
 
   async enqueueBackgroundJob(

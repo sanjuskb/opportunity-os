@@ -11,11 +11,15 @@ import {
   useDecideApproval,
   usePendingApprovals,
 } from '@/lib/queries/useOpportunityOs';
+import { BrowserScreenshotPreview } from './BrowserScreenshotPreview';
+import { useAgentControlStore } from './useAgentControlStore';
 
 export function Phase5IntegrationSurface() {
   const { user, apiClient } = useAuth();
   const qc = useQueryClient();
   const [lastRefreshed, setLastRefreshed] = useState('Live');
+  const [actionMsg, setActionMsg] = useState<string | null>(null);
+  const { checkpointerBackend, sseConnected } = useAgentControlStore();
 
   const { data: mlHealth } = useQuery({
     queryKey: ['mlHealth'],
@@ -36,25 +40,43 @@ export function Phase5IntegrationSurface() {
     void qc.invalidateQueries({ queryKey: ['mlHealth'] });
   };
 
+  const handleDecision = async (approvalId: string, approved: boolean, executeSubmission = false) => {
+    try {
+      const res = await decideMutation.mutateAsync({ approvalId, approved, executeSubmission });
+      setActionMsg(
+        `Decision '${res.status}' saved${res.workflowResumed ? ` • LangGraph resumed (${res.resumedStage})` : ''}`
+      );
+    } catch (err) {
+      setActionMsg(err instanceof Error ? err.message : 'Approval update failed');
+    }
+  };
+
+  const latestShotLog = (browserLogs ?? []).find((l) => Boolean(l.screenshotUrl));
+
   const connectors = [
-    { name: 'Agent Graph Proposal Gate', code: 'M90', status: 'AWAITING APPROVAL', color: 'text-amber-300' },
+    {
+      name: 'LangGraph + PostgresSaver',
+      code: 'M02',
+      status: `${checkpointerBackend.toUpperCase()}${sseConnected ? ' • SSE' : ''}`,
+      color: 'text-emerald-300',
+    },
     {
       name: 'ML Intelligence Subsystem',
-      code: 'M91',
+      code: 'M06',
       status: mlHealth?.ml_available ? 'READY' : 'API ONLINE',
       color: 'text-emerald-400',
     },
-    { name: 'Gemini Live Voice WS', code: 'M92', status: user ? 'AUTHENTICATED' : 'STANDBY', color: 'text-cyan-400' },
-    { name: 'Playwright Logs Recorded', code: 'M97', status: `${(browserLogs ?? []).length} EVENTS`, color: 'text-blue-400' },
-    { name: 'Agent Sessions Recorded', code: 'M98', status: `${(sessions ?? []).length} SESSIONS`, color: 'text-slate-300' },
+    { name: 'Gemini Live Voice WS', code: 'M13', status: user ? 'AUTHENTICATED' : 'STANDBY', color: 'text-cyan-400' },
+    { name: 'Playwright Logs Recorded', code: 'M12', status: `${(browserLogs ?? []).length} EVENTS`, color: 'text-blue-400' },
+    { name: 'Agent Sessions Recorded', code: 'M01', status: `${(sessions ?? []).length} SESSIONS`, color: 'text-slate-300' },
   ];
 
   return (
     <div className="p-4 space-y-5 flex-1 overflow-y-auto custom-scrollbar text-xs font-mono">
       <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
         <div>
-          <div className="text-xs font-bold text-white uppercase tracking-wider">LIVE TELEMETRY &amp; GATES</div>
-          <div className="text-[10px] text-slate-500">PostgreSQL Read-Only Telemetry • {lastRefreshed}</div>
+          <div className="text-xs font-bold text-white uppercase tracking-wider">LIVE LANGGRAPH &amp; GATES</div>
+          <div className="text-[10px] text-slate-500">PostgreSQL Checkpoint Telemetry • {lastRefreshed}</div>
         </div>
 
         <button
@@ -66,6 +88,12 @@ export function Phase5IntegrationSurface() {
           <RefreshCw className="h-3 w-3" />
         </button>
       </div>
+
+      {actionMsg && (
+        <div className="p-2 rounded-lg border border-cyan-500/40 bg-cyan-950/30 text-[10px] text-cyan-200">
+          {actionMsg}
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <div className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">SYSTEM BRIDGES</div>
@@ -101,15 +129,17 @@ export function Phase5IntegrationSurface() {
               <div className="flex gap-1.5">
                 <button
                   type="button"
-                  onClick={() => void decideMutation.mutate({ approvalId: apr.id, approved: true })}
-                  className="flex-1 py-1 rounded bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-500"
+                  disabled={decideMutation.isPending}
+                  onClick={() => void handleDecision(apr.id, true, true)}
+                  className="flex-1 py-1 rounded bg-emerald-600 text-white text-[10px] font-bold hover:bg-emerald-500 disabled:opacity-50"
                 >
-                  APPROVE
+                  APPROVE &amp; RESUME
                 </button>
                 <button
                   type="button"
-                  onClick={() => void decideMutation.mutate({ approvalId: apr.id, approved: false })}
-                  className="flex-1 py-1 rounded bg-rose-900 text-rose-200 text-[10px] font-bold hover:bg-rose-800"
+                  disabled={decideMutation.isPending}
+                  onClick={() => void handleDecision(apr.id, false, false)}
+                  className="flex-1 py-1 rounded bg-rose-900 text-rose-200 text-[10px] font-bold hover:bg-rose-800 disabled:opacity-50"
                 >
                   REJECT
                 </button>
@@ -118,6 +148,8 @@ export function Phase5IntegrationSurface() {
           ))
         )}
       </div>
+
+      {latestShotLog && <BrowserScreenshotPreview logId={latestShotLog.id} label="Latest Playwright Capture" />}
     </div>
   );
 }

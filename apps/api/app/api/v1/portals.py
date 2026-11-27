@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from collections import Counter
 from datetime import UTC, datetime
@@ -36,6 +35,7 @@ from app.models.entities import (
 )
 from app.repositories.profiles import ProfileRepository
 from app.schemas.common import CamelModel, StrictCamelModel
+from app.services.interview import evaluate_interview_answer, generate_interview_questions
 
 portals_router = APIRouter(tags=["Portals, Interview & Analytics"])
 
@@ -131,7 +131,9 @@ async def create_interview_session(
             detail="User profile must exist before starting an interview session.",
         )
 
-    questions = await _generate_interview_questions(payload.target_role, payload.language)
+    questions = await generate_interview_questions(
+        payload.target_role, payload.language, gemini_client=GeminiClient()
+    )
     row = InterviewSession(
         user_id=current_user.user_id,
         target_role=payload.target_role,
@@ -209,12 +211,13 @@ async def submit_interview_response(
         )
 
     q_obj = questions[payload.question_index]
-    eval_res = await _evaluate_interview_answer(
+    eval_res = await evaluate_interview_answer(
         target_role=row.target_role,
         question=str(q_obj.get("question", "")),
         ideal_points=[str(x) for x in q_obj.get("idealPoints", [])],
         answer=payload.answer_text,
         language=row.language or "en",
+        gemini_client=GeminiClient(),
     )
 
     responses = [
@@ -727,125 +730,4 @@ async def verify_university_student(
         "studentProfileId": str(student_profile_id),
         "status": record.status,
         "credentialType": record.credential_type,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Gemini-Assisted Interview Question & Feedback Helpers
-# ---------------------------------------------------------------------------
-
-
-async def _generate_interview_questions(target_role: str, language: str) -> list[dict[str, Any]]:
-    client = GeminiClient()
-    if client.configured:
-        try:
-            raw = await client.generate_text(
-                prompt=(
-                    f"Generate 3 technical mock interview questions for the role '{target_role}' "
-                    f"in language code '{language}' (preserving technical terms in English). "
-                    "Respond strictly as JSON array of objects with keys: "
-                    "question (string), difficulty ('medium'|'hard'), idealPoints (array of 3 concise strings)."
-                ),
-                system_instruction="You are an Indian engineering technical interviewer. Return ONLY valid JSON.",
-                temperature=0.3,
-            )
-            cleaned = (
-                raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-            )
-            parsed = json.loads(cleaned)
-            if isinstance(parsed, list) and len(parsed) >= 1:
-                return [
-                    {
-                        "question": str(item.get("question", "")),
-                        "difficulty": str(item.get("difficulty", "medium")),
-                        "idealPoints": [str(p) for p in item.get("idealPoints", [])[:4]],
-                    }
-                    for item in parsed[:3]
-                    if isinstance(item, dict) and item.get("question")
-                ]
-        except Exception as exc:
-            logger.info("Using structured interview question bank (%s).", type(exc).__name__)
-
-    return [
-        {
-            "question": f"Design a scalable backend or ML pipeline relevant to a {target_role} internship in India.",
-            "difficulty": "medium",
-            "idealPoints": [
-                "Clear problem decomposition and latency/cost tradeoffs",
-                "PostgreSQL indexing, caching, and schema choices",
-                "Failure handling and verification metrics",
-            ],
-        },
-        {
-            "question": f"Describe a concrete debugging or performance optimization from one of your projects relevant to {target_role}.",
-            "difficulty": "medium",
-            "idealPoints": [
-                "Baseline metric before the fix",
-                "Root-cause diagnostic methodology",
-                "Measurable post-fix outcome",
-            ],
-        },
-        {
-            "question": "How do you validate data quality and prevent edge-case failures in production APIs?",
-            "difficulty": "hard",
-            "idealPoints": [
-                "Strict input validation (Pydantic/TypeScript schemas)",
-                "Automated unit and integration tests",
-                "Graceful degradation and observability",
-            ],
-        },
-    ]
-
-
-async def _evaluate_interview_answer(
-    *,
-    target_role: str,
-    question: str,
-    ideal_points: list[str],
-    answer: str,
-    language: str,
-) -> dict[str, Any]:
-    client = GeminiClient()
-    if client.configured:
-        try:
-            raw = await client.generate_text(
-                prompt=(
-                    f"Role: {target_role}\nQuestion: {question}\n"
-                    f"Ideal points: {ideal_points}\nCandidate answer ({language}): {answer}\n"
-                    "Return JSON with keys: score (0-100 int), summary (concise feedback string), "
-                    "strengths (array of strings), improvements (array of strings)."
-                ),
-                system_instruction="Be fair, constructive, and specific. Return ONLY valid JSON.",
-                temperature=0.2,
-            )
-            cleaned = (
-                raw.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-            )
-            parsed = json.loads(cleaned)
-            if isinstance(parsed, dict) and "score" in parsed:
-                return {
-                    "score": max(0, min(100, int(parsed.get("score", 75)))),
-                    "summary": str(parsed.get("summary", "Evaluated candidate answer cleanly.")),
-                    "strengths": [str(x) for x in parsed.get("strengths", [])[:3]],
-                    "improvements": [str(x) for x in parsed.get("improvements", [])[:3]],
-                }
-        except Exception as exc:
-            logger.info("Using rubric interview evaluator (%s).", type(exc).__name__)
-
-    words = answer.split()
-    matched = [
-        pt
-        for pt in ideal_points
-        if any(tok.lower() in answer.lower() for tok in pt.split() if len(tok) > 4)
-    ]
-    score = min(96, max(45, 55 + len(matched) * 12 + min(20, len(words) // 5)))
-    return {
-        "score": score,
-        "summary": (
-            f"Strong structure with {len(words)} words; addressed {len(matched)} of "
-            f"{max(1, len(ideal_points))} key rubric points."
-        ),
-        "strengths": matched or ["Clear attempt at explaining technical reasoning."],
-        "improvements": [pt for pt in ideal_points if pt not in matched][:2]
-        or ["Add specific quantitative metrics from your project benchmarks."],
     }

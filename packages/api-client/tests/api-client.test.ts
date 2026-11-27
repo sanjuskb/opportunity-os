@@ -175,3 +175,54 @@ test('OpportunityApiClient does not refresh on HTTP 403 and deduplicates concurr
     globalThis.fetch = originalFetch;
   }
 });
+
+test('OpportunityApiClient supports WS8 autonomous agent runs, commands, M11 resume, and screenshots', async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({
+      url,
+      method: init?.method ?? 'GET',
+      headers: init?.headers,
+      body: init?.body ? JSON.parse(init.body) : undefined,
+    });
+    if (String(url).endsWith('/screenshot')) {
+      return new Response(new Blob(['png-bytes'], { type: 'image/png' }), { status: 200 });
+    }
+    return jsonResponse(200, { ok: true });
+  };
+  try {
+    const client = new OpportunityApiClient('http://api.local/api/v1', 'ws8-tok');
+    await client.runAgentWorkflow({
+      opportunityId: 'opp-99',
+      query: 'Backend Intern',
+      autoPrepareForm: true,
+    });
+    await client.getAgentSession('sess-1');
+    await client.commandAgentSession('sess-1', { action: 'resume', command: 'Continue flow' });
+    await client.approveAction('appr-1', true, undefined, true);
+    const shotBlob = await client.fetchBrowserLogScreenshot('log-1');
+
+    assert.equal(calls[0].url, 'http://api.local/api/v1/agents/runs');
+    assert.equal(calls[0].method, 'POST');
+    assert.deepEqual(calls[0].body, {
+      opportunityId: 'opp-99',
+      query: 'Backend Intern',
+      autoPrepareForm: true,
+    });
+    assert.equal(calls[1].url, 'http://api.local/api/v1/agents/sessions/sess-1');
+    assert.equal(calls[2].url, 'http://api.local/api/v1/agents/sessions/sess-1/command');
+    assert.deepEqual(calls[2].body, { action: 'resume', command: 'Continue flow' });
+    assert.equal(calls[3].url, 'http://api.local/api/v1/agents/approvals/appr-1/decision');
+    assert.deepEqual(calls[3].body, { approved: true, executeSubmission: true });
+    assert.equal(calls[4].url, 'http://api.local/api/v1/browser-logs/log-1/screenshot');
+    assert.equal(calls[4].headers.Authorization, 'Bearer ws8-tok');
+    assert.equal(await shotBlob.text(), 'png-bytes');
+    assert.equal(
+      client.getAgentSessionStreamUrl('sess-1', true),
+      'http://api.local/api/v1/agents/sessions/sess-1/stream?once=true'
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
