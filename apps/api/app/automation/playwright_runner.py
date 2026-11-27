@@ -77,6 +77,8 @@ async def prepare_application_automation(
     user_id: UUID,
     application_id: UUID,
     portal_url: str | None = None,
+    existing_session_id: UUID | None = None,
+    langgraph_thread_id: str | None = None,
 ) -> AutomationPrepareResult:
     """Fill form fields on an application portal in headless Chromium and STOP before submit."""
     app_row = (
@@ -143,19 +145,38 @@ async def prepare_application_automation(
         )
     ).scalar_one_or_none()
 
-    agent_session = AgentSession(
-        user_id=user_id,
-        agent_type="playwright_application_preparer",
-        state={
+    agent_session: AgentSession | None = None
+    if existing_session_id is not None:
+        agent_session = (
+            await session.execute(
+                select(AgentSession).where(
+                    AgentSession.id == existing_session_id,
+                    AgentSession.user_id == user_id,
+                )
+            )
+        ).scalar_one_or_none()
+    if agent_session is None:
+        agent_session = AgentSession(
+            user_id=user_id,
+            agent_type="playwright_application_preparer",
+            state={
+                "applicationId": str(application_id),
+                "opportunityId": str(opp.id),
+                "portalUrl": safe_url,
+            },
+            is_active=True,
+        )
+        session.add(agent_session)
+        await session.flush()
+        await session.refresh(agent_session)
+    else:
+        agent_session.state = {
+            **dict(agent_session.state or {}),
             "applicationId": str(application_id),
             "opportunityId": str(opp.id),
             "portalUrl": safe_url,
-        },
-        is_active=True,
-    )
-    session.add(agent_session)
-    await session.flush()
-    await session.refresh(agent_session)
+        }
+        await session.flush()
 
     await record_agent_event(
         session,
@@ -276,17 +297,21 @@ async def prepare_application_automation(
             await context.close()
             await browser.close()
 
+    approval_payload: dict[str, Any] = {
+        "application_id": str(application_id),
+        "portal_url": safe_url,
+        "filled_fields": filled_fields,
+        "screenshot_path": str(pre_shot_path),
+    }
+    if langgraph_thread_id:
+        approval_payload["langgraph_thread_id"] = langgraph_thread_id
+
     approval = ApprovalRequest(
         session_id=agent_session.id,
         user_id=user_id,
         opportunity_id=opp.id,
         action_type="submit_application",
-        payload_summary={
-            "application_id": str(application_id),
-            "portal_url": safe_url,
-            "filled_fields": filled_fields,
-            "screenshot_path": str(pre_shot_path),
-        },
+        payload_summary=approval_payload,
         status="pending",
     )
     session.add(approval)
@@ -507,3 +532,51 @@ async def _add_log(
             "errorMessage": error_message,
         }
     )
+
+
+async def load_owned_screenshot_bytes(
+    session: AsyncSession,
+    *,
+    user_id: UUID,
+    log_id: UUID,
+) -> tuple[bytes, str]:
+    """Load PNG screenshot bytes strictly scoped to a user-owned BrowserExecutionLog."""
+    row = (
+        await session.execute(
+            select(BrowserExecutionLog)
+            .join(AgentSession, BrowserExecutionLog.session_id == AgentSession.id)
+            .where(
+                BrowserExecutionLog.id == log_id,
+                AgentSession.user_id == user_id,
+            )
+        )
+    ).scalar_one_or_none()
+    if row is None or not row.screenshot_url:
+        raise ProblemDetailError(
+            status_code=404,
+            problem_type="urn:problem:not_found",
+            title="Screenshot Not Found",
+            detail="Requested screenshot log does not exist for this user.",
+        )
+
+    allowed_root = Path(settings.PLAYWRIGHT_SCREENSHOT_DIR).resolve()
+    candidate = Path(row.screenshot_url).resolve()
+    try:
+        candidate.relative_to(allowed_root)
+    except ValueError as exc:
+        raise ProblemDetailError(
+            status_code=403,
+            problem_type="urn:problem:forbidden",
+            title="Invalid Screenshot Path",
+            detail="Screenshot artifact lies outside allowed sandbox storage.",
+        ) from exc
+
+    if not candidate.is_file():
+        raise ProblemDetailError(
+            status_code=404,
+            problem_type="urn:problem:not_found",
+            title="Screenshot Artifact Missing",
+            detail="Screenshot PNG file is no longer present on disk.",
+        )
+
+    return candidate.read_bytes(), candidate.name

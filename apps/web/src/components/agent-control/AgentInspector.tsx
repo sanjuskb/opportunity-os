@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useCommandAgentSession, useRunAgentWorkflow } from '@/lib/queries/useOpportunityOs';
 import { useAgentControlStore } from './useAgentControlStore';
 import {
   Cpu,
@@ -20,18 +22,61 @@ import {
 import { Phase5IntegrationSurface } from './Phase5IntegrationSurface';
 
 export function AgentInspector() {
+  const { user } = useAuth();
+  const runWorkflow = useRunAgentWorkflow();
+  const commandMutation = useCommandAgentSession();
   const {
     agents,
+    activeSessionId,
     selectedAgentId,
     selectAgent,
     pauseAgent,
     resumeAgent,
     triggerAgentTask,
+    setActiveSessionId,
+    setCommandLog,
   } = useAgentControlStore();
 
   const [activeTab, setActiveTab] = useState<'inspector' | 'surface'>('inspector');
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) || agents[0];
+
+  const handleDispatchSelected = async () => {
+    triggerAgentTask(selectedAgent.id, 'Dispatching workflow...');
+    if (!user) return;
+    try {
+      const wfType =
+        selectedAgent.category === 'discovery'
+          ? 'discovery'
+          : selectedAgent.category === 'resume'
+          ? 'resume_tailoring'
+          : 'full_pipeline';
+      const res = await runWorkflow.mutateAsync({
+        query: `${selectedAgent.name}: ${selectedAgent.role}`,
+        workflowType: wfType,
+      });
+      setActiveSessionId(res.sessionId);
+      setCommandLog(`[${selectedAgent.code}] Dispatched (${res.status}): ${res.message}`);
+    } catch (err) {
+      setCommandLog(err instanceof Error ? err.message : 'Agent dispatch failed');
+    }
+  };
+
+  const handlePauseResume = async (action: 'pause' | 'resume') => {
+    if (action === 'pause') pauseAgent(selectedAgent.id);
+    else resumeAgent(selectedAgent.id);
+    if (user && activeSessionId) {
+      try {
+        const res = await commandMutation.mutateAsync({
+          sessionId: activeSessionId,
+          action,
+        });
+        setCommandLog(res.reply);
+      } catch (err) {
+        setCommandLog(err instanceof Error ? err.message : 'Command failed');
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col h-full border-l border-white/[0.08] bg-[#07090F] overflow-hidden text-xs">
@@ -111,18 +156,18 @@ export function AgentInspector() {
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => triggerAgentTask(selectedAgent.id, 'Operator dispatched synthetic check')}
-                disabled={selectedAgent.status === 'busy'}
+                onClick={() => void handleDispatchSelected()}
+                disabled={selectedAgent.status === 'busy' || runWorkflow.isPending}
                 className="py-2 px-3 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 font-semibold text-[11px] font-mono flex items-center justify-center gap-1.5 transition disabled:opacity-50"
               >
                 <Zap className="h-3.5 w-3.5" />
-                <span>Test Dispatch</span>
+                <span>{runWorkflow.isPending ? 'Running...' : 'Run Agent'}</span>
               </button>
 
               {selectedAgent.status === 'idle' ? (
                 <button
                   type="button"
-                  onClick={() => resumeAgent(selectedAgent.id)}
+                  onClick={() => void handlePauseResume('resume')}
                   className="py-2 px-3 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-300 font-semibold text-[11px] font-mono flex items-center justify-center gap-1.5 transition"
                 >
                   <Play className="h-3.5 w-3.5" />
@@ -131,7 +176,7 @@ export function AgentInspector() {
               ) : (
                 <button
                   type="button"
-                  onClick={() => pauseAgent(selectedAgent.id)}
+                  onClick={() => void handlePauseResume('pause')}
                   className="py-2 px-3 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-slate-300 font-semibold text-[11px] font-mono flex items-center justify-center gap-1.5 transition"
                 >
                   <Pause className="h-3.5 w-3.5 text-amber-400" />

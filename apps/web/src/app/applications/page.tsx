@@ -11,18 +11,21 @@ import { Tabs } from '../../components/ui/Tabs';
 import { useAuth } from '@/components/auth/AuthProvider';
 import {
   useApplications,
+  useBrowserLogs,
   useDecideApproval,
   useExecuteApprovedApplication,
   useOpportunities,
   usePendingApprovals,
   usePrepareAutomation,
 } from '@/lib/queries/useOpportunityOs';
+import { BrowserScreenshotPreview } from '../../components/agent-control/BrowserScreenshotPreview';
 
 export default function ApplicationsPage() {
   const { user } = useAuth();
   const { data: applications, isLoading } = useApplications();
   const { data: oppPage } = useOpportunities({ limit: 50 });
   const { data: pendingApprovals } = usePendingApprovals();
+  const { data: browserLogs } = useBrowserLogs();
   const prepareMutation = usePrepareAutomation();
   const decideMutation = useDecideApproval();
   const executeMutation = useExecuteApprovedApplication();
@@ -34,6 +37,7 @@ export default function ApplicationsPage() {
   const apps = applications ?? [];
   const opps = oppPage?.items ?? [];
   const approvals = pendingApprovals ?? [];
+  const logs = browserLogs ?? [];
 
   const tabs = [
     { id: 'all', label: 'All Applications', count: apps.length },
@@ -65,12 +69,14 @@ export default function ApplicationsPage() {
     }
   };
 
-  const handleDecision = async (approvalId: string, approved: boolean) => {
+  const handleDecision = async (approvalId: string, approved: boolean, executeSubmission = false) => {
     setErrorMsg(null);
     setStatusMessage(null);
     try {
-      const res = await decideMutation.mutateAsync({ approvalId, approved });
-      setStatusMessage(`Approval decision recorded: ${res.status}`);
+      const res = await decideMutation.mutateAsync({ approvalId, approved, executeSubmission });
+      setStatusMessage(
+        `Approval decision recorded: ${res.status}${res.workflowResumed ? ` • LangGraph resumed (${res.resumedStage})` : ''}`
+      );
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Approval decision failed.');
     }
@@ -132,20 +138,29 @@ export default function ApplicationsPage() {
               </div>
               {approvals.map((apr) => {
                 const opp = opps.find((o) => o.id === apr.opportunityId);
+                const shotLog = logs.find(
+                  (l) => l.sessionId === apr.sessionId && Boolean(l.screenshotUrl)
+                );
                 return (
-                  <div key={apr.id} className="p-3 rounded-lg border border-amber-500/30 bg-[#0B0F19] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div className="font-bold text-white">{opp?.title || apr.opportunityId}</div>
-                      <div className="text-slate-400">Action: {apr.actionType} • Status: {apr.status}</div>
+                  <div key={apr.id} className="p-3 rounded-lg border border-amber-500/30 bg-[#0B0F19] space-y-3 text-xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="font-bold text-white">{opp?.title || apr.opportunityId}</div>
+                        <div className="text-slate-400">Action: {apr.actionType} • Status: {apr.status}</div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={() => void handleDecision(apr.id, false, false)}>
+                          Reject
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => void handleDecision(apr.id, true, false)}>
+                          Approve
+                        </Button>
+                        <Button variant="glow" size="sm" onClick={() => void handleDecision(apr.id, true, true)}>
+                          Approve &amp; Resume Agent
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => void handleDecision(apr.id, false)}>
-                        Reject
-                      </Button>
-                      <Button variant="glow" size="sm" onClick={() => void handleDecision(apr.id, true)}>
-                        Approve Submission
-                      </Button>
-                    </div>
+                    {shotLog && <BrowserScreenshotPreview logId={shotLog.id} />}
                   </div>
                 );
               })}

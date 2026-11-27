@@ -271,6 +271,7 @@ class ApprovalRequestResponse(CamelModel):
 class ApprovalDecisionRequest(StrictCamelModel):
     approved: bool
     rejection_reason: str | None = Field(default=None, max_length=1000)
+    execute_submission: bool = False
 
 
 class ApprovalDecisionResponse(CamelModel):
@@ -279,6 +280,9 @@ class ApprovalDecisionResponse(CamelModel):
     opportunity_id: UUID
     status: str
     user_decision_at: datetime | None = None
+    workflow_resumed: bool = False
+    resumed_stage: str | None = None
+    submission_status: str | None = None
 
 
 class NotificationResponse(CamelModel):

@@ -249,6 +249,53 @@ export interface ApprovalDecisionResult {
   opportunityId: string;
   status: string;
   userDecisionAt?: string | null;
+  workflowResumed?: boolean;
+  resumedStage?: string | null;
+  submissionStatus?: string | null;
+}
+
+export interface AgentRunRequestPayload {
+  query?: string;
+  workflowType?: 'full_pipeline' | 'discovery' | 'resume_tailoring' | 'application_prepare';
+  language?: IndianLanguage;
+  targetOpportunityId?: string | null;
+  portalUrl?: string | null;
+  enableWebResearch?: boolean;
+  runPlaywright?: boolean;
+  maxCandidates?: number;
+}
+
+export interface AgentRunResult {
+  sessionId: string;
+  threadId: string;
+  agentType: string;
+  status: string;
+  currentStage: string;
+  checkpointerBackend: string;
+  language: string;
+  selectedOpportunityId?: string | null;
+  applicationId?: string | null;
+  approvalRequestId?: string | null;
+  tailoredResumeId?: string | null;
+  screenshotPath?: string | null;
+  interviewSessionId?: string | null;
+  rankedShortlist: Array<Record<string, unknown>>;
+  skillGaps: string[];
+  events: AgentEventRecord[];
+  message: string;
+}
+
+export interface AgentSessionDetail {
+  session: AgentSessionRecord;
+  events: AgentEventRecord[];
+}
+
+export interface AgentCommandResult {
+  sessionId: string;
+  action: string;
+  reply: string;
+  isActive: boolean;
+  event?: AgentEventRecord | null;
 }
 
 export interface NotificationItem {

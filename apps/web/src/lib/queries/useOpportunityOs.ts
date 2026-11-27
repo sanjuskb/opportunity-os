@@ -229,15 +229,20 @@ export function useDecideApproval() {
       approvalId,
       approved,
       rejectionReason,
+      executeSubmission = false,
     }: {
       approvalId: string;
       approved: boolean;
       rejectionReason?: string;
-    }) => apiClient.approveAction(approvalId, approved, rejectionReason),
+      executeSubmission?: boolean;
+    }) => apiClient.approveAction(approvalId, approved, rejectionReason, executeSubmission),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: QUERY_KEYS.approvals });
       void qc.invalidateQueries({ queryKey: QUERY_KEYS.applications });
       void qc.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.agentSessions });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.browserLogs });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.interviewSessions });
     },
   });
 }
@@ -353,5 +358,55 @@ export function useBrowserLogs() {
     queryKey: QUERY_KEYS.browserLogs,
     queryFn: () => apiClient.listBrowserLogs(),
     enabled: Boolean(user) && !loading,
+  });
+}
+
+export function useAgentSessionDetail(sessionId: string | null) {
+  const { user, apiClient, loading } = useAuth();
+  return useQuery({
+    queryKey: ['agentSessionDetail', sessionId],
+    queryFn: () => apiClient.getAgentSession(sessionId!),
+    enabled: Boolean(user) && !loading && Boolean(sessionId),
+    refetchInterval: 3000,
+  });
+}
+
+export function useRunAgentWorkflow() {
+  const { apiClient } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Parameters<typeof apiClient.runAgentWorkflow>[0]) =>
+      apiClient.runAgentWorkflow(payload),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.agentSessions });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.approvals });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.applications });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.browserLogs });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.notifications });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.resumes });
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.interviewSessions });
+    },
+  });
+}
+
+export function useCommandAgentSession() {
+  const { apiClient } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      action,
+      command,
+      language = 'en',
+    }: {
+      sessionId: string;
+      action: 'query' | 'pause' | 'resume';
+      command?: string;
+      language?: string;
+    }) => apiClient.commandAgentSession(sessionId, { action, command, language }),
+    onSuccess: (_data, variables) => {
+      void qc.invalidateQueries({ queryKey: QUERY_KEYS.agentSessions });
+      void qc.invalidateQueries({ queryKey: ['agentSessionDetail', variables.sessionId] });
+    },
   });
 }

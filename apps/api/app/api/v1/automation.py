@@ -2,23 +2,34 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 from datetime import datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi.responses import StreamingResponse
 from pydantic import Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.contracts import (
+    AgentCommandRequest,
+    AgentCommandResponse,
     AgentEventTelemetry,
+    AgentRunRequest,
+    AgentRunResponse,
+    AgentSessionDetailResponse,
     AgentSessionTelemetry,
+    get_user_agent_session,
     list_session_events,
     list_user_agent_sessions,
 )
+from app.agents.orchestrator import AgentOrchestratorService
 from app.automation.playwright_runner import (
     execute_approved_submission,
+    load_owned_screenshot_bytes,
     prepare_application_automation,
 )
 from app.core.errors import ProblemDetailError
@@ -213,6 +224,146 @@ async def get_agent_session_events(
             detail="Requested agent session does not exist for this user.",
         )
     return events
+
+
+@ops_router.get(
+    "/browser-logs/{log_id}/screenshot",
+    responses={200: {"content": {"image/png": {}}}},
+)
+async def get_browser_log_screenshot(
+    log_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> Response:
+    """Serve Playwright screenshot PNG bytes strictly scoped to authenticated owner."""
+    content, filename = await load_owned_screenshot_bytes(
+        session, user_id=current_user.user_id, log_id=log_id
+    )
+    return Response(
+        content=content,
+        media_type="image/png",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
+@ops_router.post(
+    "/agents/runs",
+    response_model=AgentRunResponse,
+    tags=["Agent Orchestration"],
+    dependencies=[Depends(rate_limit("agents_runs", limit=15, window_seconds=60))],
+)
+async def run_autonomous_agent_workflow(
+    request: Request,
+    payload: AgentRunRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> AgentRunResponse:
+    """Launch an autonomous 9-logical-agent LangGraph workflow persisted with PostgresSaver."""
+    orchestrator = AgentOrchestratorService(
+        session,
+        olostep_client=getattr(request.app.state, "olostep_client", None),
+        crustdata_client=getattr(request.app.state, "crustdata_client", None),
+    )
+    return await orchestrator.launch_workflow(current_user.user_id, payload)
+
+
+@ops_router.get(
+    "/agents/sessions/{session_id}",
+    response_model=AgentSessionDetailResponse,
+    tags=["Agent Telemetry"],
+)
+async def get_agent_session_detail(
+    session_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> AgentSessionDetailResponse:
+    """Inspect a user-owned AgentSession along with its chronological events."""
+    sess = await get_user_agent_session(session, current_user.user_id, session_id)
+    if sess is None:
+        raise ProblemDetailError(
+            status_code=404,
+            problem_type="urn:problem:not_found",
+            title="Agent Session Not Found",
+            detail="Requested agent session does not exist for this user.",
+        )
+    events = await list_session_events(session, current_user.user_id, session_id) or []
+    return AgentSessionDetailResponse(session=sess, events=events)
+
+
+@ops_router.get(
+    "/agents/sessions/{session_id}/stream",
+    tags=["Agent Telemetry"],
+)
+async def stream_agent_session_events(
+    session_id: UUID,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+    once: bool = Query(default=False),
+    max_ticks: int = Query(default=6, ge=1, le=30),
+) -> StreamingResponse:
+    """Stream Server-Sent Events (SSE) for ordered AgentEvent telemetry of an owned session."""
+    sess = await get_user_agent_session(session, current_user.user_id, session_id)
+    if sess is None:
+        raise ProblemDetailError(
+            status_code=404,
+            problem_type="urn:problem:not_found",
+            title="Agent Session Not Found",
+            detail="Requested agent session does not exist for this user.",
+        )
+
+    async def _event_generator() -> Any:
+        seen_ids: set[UUID] = set()
+        ticks = 1 if once else max_ticks
+        for tick in range(ticks):
+            events = await list_session_events(session, current_user.user_id, session_id) or []
+            for ev in events:
+                if ev.id in seen_ids:
+                    continue
+                seen_ids.add(ev.id)
+                yield (
+                    f"event: agent_event\n"
+                    f"data: {json.dumps(ev.model_dump(by_alias=True, mode='json'))}\n\n"
+                )
+            cur = await get_user_agent_session(session, current_user.user_id, session_id)
+            if cur is None or not cur.is_active or tick + 1 >= ticks:
+                yield (
+                    "event: stream_end\n"
+                    f"data: {json.dumps({'sessionId': str(session_id), 'isActive': bool(cur.is_active) if cur else False})}\n\n"
+                )
+                break
+            await asyncio.sleep(0.5)
+
+    return StreamingResponse(
+        _event_generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@ops_router.post(
+    "/agents/sessions/{session_id}/command",
+    response_model=AgentCommandResponse,
+    tags=["Agent Orchestration"],
+    dependencies=[Depends(rate_limit("agents_command", limit=30, window_seconds=60))],
+)
+async def command_agent_session(
+    session_id: UUID,
+    request: Request,
+    payload: AgentCommandRequest,
+    current_user: _AuthenticatedUser,
+    session: _DbSession,
+) -> AgentCommandResponse:
+    """Execute pause, resume, or grounded query commands on an owned agent session."""
+    orchestrator = AgentOrchestratorService(
+        session,
+        olostep_client=getattr(request.app.state, "olostep_client", None),
+        crustdata_client=getattr(request.app.state, "crustdata_client", None),
+    )
+    return await orchestrator.execute_operator_command(
+        user_id=current_user.user_id,
+        session_id=session_id,
+        req=payload,
+    )
 
 
 @ops_router.post(
