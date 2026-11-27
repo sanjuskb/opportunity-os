@@ -115,11 +115,21 @@ async def voice_stream(
             await websocket.send_json(payload)
 
     async def _tool_exec(name: str, args: dict[str, Any]) -> dict[str, Any]:
+        db_override = getattr(websocket.app, "dependency_overrides", {}).get(get_db_session)
+        if db_override is not None:
+            try:
+                async for db_session in db_override():
+                    return await execute_career_tool(db_session, user_id, name, args)
+            except Exception:
+                return {"note": "Database unavailable during WebSocket session"}
         db_mgr = getattr(websocket.app.state, "db", None)
         if db_mgr is None or getattr(db_mgr, "session_factory", None) is None:
             return {"note": "Database unavailable during WebSocket session"}
-        async with db_mgr.session_factory() as db_session:
-            return await execute_career_tool(db_session, user_id, name, args)
+        try:
+            async with db_mgr.session_factory() as db_session:
+                return await execute_career_tool(db_session, user_id, name, args)
+        except Exception:
+            return {"note": "Database unavailable during WebSocket session"}
 
     try:
         while True:
