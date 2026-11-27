@@ -2,23 +2,24 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { School, Users, Award, ShieldCheck, TrendingUp, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { School, Users, Award, ShieldCheck, Briefcase } from 'lucide-react';
 import { DashboardLayout } from '../../../components/dashboard/DashboardLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { MetricCard } from '../../../components/ui/MetricCard';
-import { useMockStore } from '../../../lib/mock-data/mockStore';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { QUERY_KEYS } from '@/lib/queries/useOpportunityOs';
 
 export default function UniversityDashboardPage() {
-  const { candidates } = useMockStore();
-
-  const departmentStats = [
-    { dept: 'Computer Science & Engineering', total: 240, placed: 218, rate: '90.8%' },
-    { dept: 'Data Science & Artificial Intelligence', total: 120, placed: 106, rate: '88.3%' },
-    { dept: 'Electronics & Communication', total: 180, placed: 142, rate: '78.9%' },
-    { dept: 'Electrical & Electronics', total: 140, placed: 98, rate: '70.0%' },
-  ];
+  const { user, apiClient } = useAuth();
+  const { data: overview, error } = useQuery({
+    queryKey: QUERY_KEYS.universityOverview,
+    queryFn: () => apiClient.getUniversityOverview(),
+    enabled: Boolean(user),
+    retry: false,
+  });
 
   return (
     <DashboardLayout>
@@ -27,10 +28,10 @@ export default function UniversityDashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white">University Placement Cell</h1>
-              <Badge variant="emerald">NIT Tiruchirappalli</Badge>
+              <Badge variant="emerald">Institutional Portal</Badge>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Institutional placement monitoring, DigiLocker academic verification, and recruiter coordination.
+              Cohort placement analytics and institutional academic verification.
             </p>
           </div>
 
@@ -42,103 +43,41 @@ export default function UniversityDashboardPage() {
           </Link>
         </div>
 
-        {/* 4 Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            title="Eligible Students"
-            value="680"
-            subtitle="Batch of 2025 & 2026"
-            icon={Users}
-            color="emerald"
-          />
-          <MetricCard
-            title="Placement Rate"
-            value="82.4%"
-            subtitle="564 students placed"
-            trend="+8.2% YoY"
-            icon={TrendingUp}
-            color="cyan"
-          />
-          <MetricCard
-            title="Avg Verified Stipend"
-            value="₹48,500"
-            subtitle="Top tier across NITs"
-            icon={Award}
-            color="amber"
-          />
-          <MetricCard
-            title="Accredited Records"
-            value="100%"
-            subtitle="AICTE / UGC DigiLocker"
-            icon={ShieldCheck}
-            color="sapphire"
-          />
+        {error && (
+          <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-950/30 text-xs text-amber-200 flex items-center justify-between gap-3">
+            <span>Switch workspace role to University to access institutional cohort metrics.</span>
+            <Link href="/role-selection">
+              <Button variant="outline" size="sm">Switch Workspace Role</Button>
+            </Link>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MetricCard title="Registered Students" value={overview?.totalStudents ?? 0} subtitle="Live cohort" icon={Users} color="emerald" />
+          <MetricCard title="Verified Credentials" value={overview?.verifiedStudents ?? 0} subtitle="Institution attested" icon={Award} color="cyan" />
+          <MetricCard title="Active Applications" value={overview?.activeApplications ?? 0} subtitle="Across cohort" icon={Briefcase} color="sapphire" />
         </div>
 
-        {/* Two-Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Department Placement Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <School className="h-4 w-4 text-emerald-400" />
-                <span>Department Placement Matrix</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="divide-y divide-slate-800 text-xs">
-                {departmentStats.map((d) => (
-                  <div key={d.dept} className="py-3 flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-white">{d.dept}</div>
-                      <div className="text-slate-400">
-                        {d.placed} of {d.total} students placed
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono text-sm font-bold text-emerald-400">{d.rate}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Top Recruiters Hiring on Campus */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-cyan-400" />
-                <span>Active Corporate Recruiters</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <div className="p-3 rounded-lg border border-slate-800 bg-[#0B0F19] flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-white">Google India</div>
-                  <div className="text-slate-400">Software Engineering & AI Systems Internships</div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <School className="h-4 w-4 text-emerald-400" />
+              <span>Department Cohort Distribution</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="divide-y divide-slate-800 text-xs">
+            {(overview?.departmentBreakdown ?? []).length === 0 ? (
+              <p className="text-slate-400 py-4">No department records loaded.</p>
+            ) : (
+              overview?.departmentBreakdown.map((d) => (
+                <div key={d.department} className="py-3 flex items-center justify-between">
+                  <span className="font-bold text-white">{d.department}</span>
+                  <span className="font-mono text-emerald-400 font-bold">{d.students} students</span>
                 </div>
-                <Badge variant="cyan">12 Offers</Badge>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-800 bg-[#0B0F19] flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-white">AI4Bharat (IIT Madras)</div>
-                  <div className="text-slate-400">Indic Speech & NLP Research Fellowships</div>
-                </div>
-                <Badge variant="violet">8 Offers</Badge>
-              </div>
-
-              <div className="p-3 rounded-lg border border-slate-800 bg-[#0B0F19] flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-white">Zerodha Tech</div>
-                  <div className="text-slate-400">Full Stack & Go High-Performance Engineering</div>
-                </div>
-                <Badge variant="sapphire">15 Offers</Badge>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

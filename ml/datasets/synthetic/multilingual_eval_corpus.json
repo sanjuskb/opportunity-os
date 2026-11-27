@@ -64,6 +64,14 @@
     {"id": "q-bn-2", "language": "bn", "query_text": "কৃত্রিম বুদ্ধিমত্তা ও ভাষা গবেষণা সংক্রান্ত ইন্টার্নশিপ প্রয়োজন।", "target_doc_id": "ml-doc-ai-nlp"},
     {"id": "q-bn-3", "language": "bn", "query_text": "ফ্রন্টএন্ড ওয়েব ইন্টারফেস ডিজাইন করার ইন্টার্নশিপ খুঁজছি।", "target_doc_id": "ml-doc-frontend"},
 
+    {"id": "q-mr-1", "language": "mr", "query_text": "मला डेटाबेस आणि बॅकएंड वेब सर्व्हर API बनवणारी इंटर्नशिप पाहिजे आहे.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-mr-2", "language": "mr", "query_text": "कृत्रिम बुद्धिमत्ता आणि भारतीय भाषा स्पीच संशोधनासाठी इंटर्नशिप शोधत आहे.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-mr-3", "language": "mr", "query_text": "वेबसाइट फ्रंटएंड आणि युजर इंटरफेस डिझाइनसाठी इंटर्नशिप हवी आहे.", "target_doc_id": "ml-doc-frontend"},
+
+    {"id": "q-gu-1", "language": "gu", "query_text": "મને ડેટાબેઝ અને બેકએન્ડ વેબ API બનાવવાની ઇન્ટર્નશિપ જોઈએ છે.", "target_doc_id": "ml-doc-backend"},
+    {"id": "q-gu-2", "language": "gu", "query_text": "કૃત્રિમ બુદ્ધિમત્તા અને ભાષા સંશોધન માટેની ઇન્ટર્નશિપ શોધી રહ્યો છું.", "target_doc_id": "ml-doc-ai-nlp"},
+    {"id": "q-gu-3", "language": "gu", "query_text": "ડેટા વિશ્લેષણ અને SQL રિપોર્ટ બનાવવાની ઇન્ટર્નશિપ જોઈએ છે.", "target_doc_id": "ml-doc-data"},
+
     {"id": "q-hinglish-1", "language": "hinglish", "query_text": "Mujhe Python FastAPI aur PostgreSQL backend API banane wali internship chahiye.", "target_doc_id": "ml-doc-backend"},
     {"id": "q-hinglish-2", "language": "hinglish", "query_text": "Mere paas C++ aur robotics microcontroller hardware ka project hai firmware role milega kya.", "target_doc_id": "ml-doc-robotics"},
     {"id": "q-hinglish-3", "language": "hinglish", "query_text": "Kya mujhe data cleaning aur SQL analytics wali internship mil sakti hai.", "target_doc_id": "ml-doc-data"}

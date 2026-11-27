@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { QueryProvider } from '@/components/providers/QueryProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'NexteRaS — The Upcoming Era. | AI Career Intelligence System',
-  description: 'An AI-powered career intelligence and autonomous employability system across 7 regional languages.',
+  description: 'An AI-powered career intelligence and autonomous employability system across 9 Indian regional languages.',
   openGraph: {
     title: 'NexteRaS — The Upcoming Era.',
     description: 'An AI-powered career intelligence and autonomous employability system.',
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="antialiased selection:bg-indigo-500 selection:text-white">
-        <AuthProvider>{children}</AuthProvider>
+        <QueryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

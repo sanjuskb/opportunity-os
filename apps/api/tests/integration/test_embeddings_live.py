@@ -188,4 +188,11 @@ async def test_embedding_constraints_upserts_concurrency_and_search_live() -> No
                         {"oid": opp_missing_id},
                     )
     finally:
-        await db.dispose()
+        try:
+            async with db.session_factory() as cleanup_session, cleanup_session.begin():
+                await cleanup_session.execute(
+                    text("DELETE FROM public.opportunities WHERE id = ANY(:ids)"),
+                    {"ids": [opp_ready_id, opp_pending_id, opp_missing_id]},
+                )
+        finally:
+            await db.dispose()

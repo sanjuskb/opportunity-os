@@ -39,7 +39,7 @@ export function VoiceAISection() {
             </h2>
 
             <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
-              Designed specifically for engineering students across India. Explore job qualifications, ask career questions, and practice mock interviews using natural speech in 7 native languages.
+              Designed specifically for engineering students across India. Explore job qualifications, ask career questions, and practice mock interviews using natural speech in 9 Indian languages.
             </p>
 
             {/* Language grid with staggered delays */}
@@ -90,7 +90,7 @@ export function VoiceAISection() {
 
                 <div className="inline-flex items-center gap-1.5 text-xs text-violet-300 font-medium">
                   <CheckCircle2 className="h-3.5 w-3.5 text-violet-400" />
-                  <span>Native Mic Input • 7 Languages • Sub-second Latency</span>
+                  <span>Native Mic Input • 9 Languages • Sub-second Latency</span>
                 </div>
               </div>
             </div>

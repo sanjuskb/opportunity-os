@@ -10,8 +10,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
+from app.core.security import require_supabase_role
+from app.core.security_middleware import rate_limit
 from app.ml.adapter import MLSubsystemUnavailableError, get_ml_service, is_ml_subsystem_available
 from app.schemas.ml import (
     EvaluateEligibilityRequest,
@@ -24,8 +26,22 @@ from app.schemas.ml import (
     VerifyEvidenceRequestDTO,
 )
 
-ml_router = APIRouter(prefix="/ml", tags=["Machine Learning"])
-eligibility_router = APIRouter(prefix="/ml/eligibility", tags=["ML Eligibility"])
+ml_router = APIRouter(
+    prefix="/ml",
+    tags=["Machine Learning"],
+    dependencies=[
+        Depends(require_supabase_role("authenticated")),
+        Depends(rate_limit("ml", window_seconds=60)),
+    ],
+)
+eligibility_router = APIRouter(
+    prefix="/ml/eligibility",
+    tags=["ML Eligibility"],
+    dependencies=[
+        Depends(require_supabase_role("authenticated")),
+        Depends(rate_limit("ml_eligibility", window_seconds=60)),
+    ],
+)
 
 
 def _require_ml_service(request: Request) -> Any:

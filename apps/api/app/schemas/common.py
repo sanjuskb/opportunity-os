@@ -45,13 +45,24 @@ class ProfileResponse(CamelModel):
     full_name: str | None = None
     avatar_url: str | None = None
     preferred_language: str = "en"
+    user_role: str = "student"
     supabase_role: str
 
 
 class ProfileUpdateRequest(StrictCamelModel):
     full_name: str | None = Field(default=None, max_length=200)
     avatar_url: str | None = Field(default=None, max_length=500)
-    preferred_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn"] | None = None
+    preferred_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu"] | None = None
+    user_role: Literal["student", "company", "university"] | None = None
+
+
+class EducationCreateRequest(StrictCamelModel):
+    institution: str = Field(min_length=2, max_length=200)
+    degree: str = Field(min_length=1, max_length=100)
+    field_of_study: str = Field(min_length=1, max_length=150)
+    start_year: int = Field(ge=1990, le=2035)
+    end_year: int | None = Field(default=None, ge=1990, le=2038)
+    score: str | None = Field(default=None, max_length=40)
 
 
 class EducationItemResponse(CamelModel):
@@ -74,6 +85,13 @@ class StudentProfileResponse(CamelModel):
     cgpa: Decimal | None = None
     state: str | None = None
     bio: str | None = None
+    current_academic_year: int | None = None
+    active_backlogs: int = 0
+    experience_months: int = 0
+    citizenship: str | None = None
+    skills: list[str] = []
+    preferred_locations: list[str] = []
+    open_to_relocate: bool = True
     education: list[EducationItemResponse] = []
 
 
@@ -85,6 +103,13 @@ class StudentProfileUpsertRequest(StrictCamelModel):
     cgpa: Decimal | None = Field(default=None, ge=Decimal("0.00"), le=Decimal("10.00"))
     state: str | None = Field(default=None, max_length=100)
     bio: str | None = Field(default=None, max_length=1000)
+    current_academic_year: int | None = Field(default=None, ge=1, le=6)
+    active_backlogs: int | None = Field(default=None, ge=0, le=50)
+    experience_months: int | None = Field(default=None, ge=0, le=240)
+    citizenship: str | None = Field(default=None, max_length=80)
+    skills: list[str] | None = Field(default=None, max_length=100)
+    preferred_locations: list[str] | None = Field(default=None, max_length=50)
+    open_to_relocate: bool | None = None
 
 
 class CareerPassportResponse(CamelModel):
@@ -119,7 +144,20 @@ class OpportunityResponse(CamelModel):
     eligible_batches: list[int] = []
     eligible_degrees: list[str] = []
     eligible_branches: list[str] = []
+    eligible_academic_years: list[int] = []
     min_cgpa: Decimal | None = None
+    max_active_backlogs: int | None = None
+    min_experience_months: int | None = None
+    allowed_locations: list[str] = []
+    remote_allowed: bool = True
+    required_citizenship: str | None = None
+    preferred_skills: list[str] = []
+    match_score: float | None = None
+    semantic_score: float | None = None
+    is_eligible: bool | None = None
+    match_reasons: list[str] = []
+    matched_skills: list[str] = []
+    missing_skills: list[str] = []
 
 
 class PaginatedOpportunitiesResponse(CamelModel):
@@ -145,13 +183,35 @@ class EligibilityEvaluateRequest(CamelModel):
     opportunity_id: UUID
 
 
+class DeterministicChecksSummary(CamelModel):
+    batch_matched: bool = True
+    degree_matched: bool = True
+    cgpa_matched: bool = True
+    backlogs_matched: bool = True
+    location_matched: bool = True
+    deadline_active: bool = True
+
+
+class SkillOverlapSummary(CamelModel):
+    matched_skills: list[str] = []
+    missing_skills: list[str] = []
+    preferred_matched: list[str] = []
+
+
 class EligibilityCheckResponse(CamelModel):
     opportunity_id: str
     student_id: str
     is_eligible: bool
+    status: Literal["eligible", "ineligible", "needs_more_info"] = "needs_more_info"
     score: float = Field(ge=0.0, le=100.0)
     reasons: list[str] = []
     missing_skills: list[str] = []
+    explanation: str = ""
+    semantic_similarity: float | None = None
+    deterministic_checks: DeterministicChecksSummary = Field(
+        default_factory=DeterministicChecksSummary
+    )
+    skill_overlap: SkillOverlapSummary = Field(default_factory=SkillOverlapSummary)
 
 
 class OpportunityDiscoverRequest(StrictCamelModel):
@@ -255,11 +315,121 @@ class ResumeResponse(CamelModel):
     user_id: UUID
     title: str
     master_content: dict[str, Any]
+    storage_bucket: str | None = None
+    storage_path: str | None = None
+    original_filename: str | None = None
+    mime_type: str | None = None
+    file_size_bytes: int | None = None
+    file_sha256: str | None = None
+    extraction_status: str | None = None
+    extraction_confidence: Decimal | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ResumeVersionResponse(CamelModel):
+    id: UUID
+    resume_id: UUID
+    version_number: int
+    content: dict[str, Any]
+    pdf_url: str | None = None
+    created_at: datetime | None = None
+
+
+class ResumeDownloadUrlResponse(CamelModel):
+    resume_id: UUID
+    storage_bucket: str | None = None
+    storage_path: str | None = None
+    signed_url: str | None = None
+    fallback_pdf_endpoint: str
+
+
+class ResumeAnalyzeRequest(StrictCamelModel):
+    opportunity_id: UUID | None = None
+
+
+class ResumeAnalyzeResponse(CamelModel):
+    resume_id: UUID
+    opportunity_id: UUID | None = None
+    completeness_score: float = Field(ge=0.0, le=100.0)
+    extracted_skills: list[str] = []
+    matched_skills: list[str] = []
+    missing_skills: list[str] = []
+    warnings: list[str] = []
+    recommendations: list[str] = []
+
+
+class ResumeTailorRequest(StrictCamelModel):
+    opportunity_id: UUID
+    custom_focus: str | None = Field(default=None, max_length=500)
+    candidate_claims: list[str] = Field(default_factory=list, max_length=20)
+
+
+class ResumeCustomizationResponse(CamelModel):
+    id: UUID
+    resume_id: UUID
+    opportunity_id: UUID
+    version_number: int
+    alignment_score: float = Field(ge=0.0, le=100.0)
+    tailored_content: dict[str, Any]
+    verified_claims: list[dict[str, Any]] = []
+    rejected_claims: list[dict[str, Any]] = []
+    created_at: datetime | None = None
+
+
+class ResearchDiscoverRequest(StrictCamelModel):
+    query: str = Field(min_length=2, max_length=200)
+    target_url: str | None = Field(default=None, max_length=1000)
+    limit: int = Field(default=10, ge=1, le=25)
+    enrich_companies: bool = False
+
+
+class ResearchDiscoverResponse(CamelModel):
+    query: str
+    discovered_count: int
+    deduplicated_count: int
+    opportunities: list[OpportunityResponse] = []
+    sources_recorded: list[str] = []
+    usage_stats: dict[str, int] = {}
+
+
+class CompanyEnrichRequest(StrictCamelModel):
+    domain: str | None = Field(default=None, max_length=255)
+    company_name: str | None = Field(default=None, max_length=255)
+    force_refresh: bool = False
+
+
+class OrganizationResponse(CamelModel):
+    id: UUID
+    name: str
+    domain: str | None = None
+    industry: str | None = None
+    headcount_range: str | None = None
+    funding_stage: str | None = None
+    description: str | None = None
+    hiring_velocity_score: float | None = None
+    is_verified: bool = False
+    last_enriched_at: datetime | None = None
+
+
+class MonitorCreateRequest(StrictCamelModel):
+    target_organization: str = Field(min_length=2, max_length=255)
+    target_url: str | None = Field(default=None, max_length=1000)
+    frequency: Literal["hourly", "daily", "weekly"] = "daily"
+    criteria: dict[str, Any] = Field(default_factory=dict)
+
+
+class MonitorResponse(CamelModel):
+    id: UUID
+    user_id: UUID
+    target_organization: str
+    criteria: dict[str, Any] = {}
+    is_active: bool = True
     created_at: datetime | None = None
 
 
 class VoiceSessionCreateRequest(StrictCamelModel):
-    detected_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn"] = "en"
+    detected_language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu"] = "en"
     audio_duration_seconds: Decimal = Field(
         default=Decimal("0"), ge=Decimal("0"), le=Decimal("999999.99")
     )
@@ -275,3 +445,39 @@ class VoiceSessionResponse(CamelModel):
     transcript: str | None = None
     status: str
     created_at: datetime | None = None
+
+
+class AiChatRequest(StrictCamelModel):
+    message: str = Field(min_length=1, max_length=4000)
+    language: Literal["en", "hi", "te", "ta", "kn", "ml", "bn", "mr", "gu", "hinglish"] = "en"
+    conversation_id: UUID | None = None
+
+
+class AiChatResponse(CamelModel):
+    conversation_id: UUID
+    language: str
+    reply: str
+    provider: str
+    model: str
+    tool_calls: list[dict[str, Any]] = []
+
+
+class ConversationSummaryResponse(CamelModel):
+    id: UUID
+    title: str
+    created_at: datetime | None = None
+
+
+class ConversationMessageResponse(CamelModel):
+    id: UUID
+    role: str
+    content: str
+    language: str
+    created_at: datetime | None = None
+
+
+class ConversationDetailResponse(CamelModel):
+    id: UUID
+    title: str
+    created_at: datetime | None = None
+    messages: list[ConversationMessageResponse] = []

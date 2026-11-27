@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     # Database & Storage
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:54322/postgres"
     REDIS_URL: str = "redis://localhost:6379/0"
+    SUPABASE_STORAGE_BUCKET: str = "resumes"
+    LOCAL_RESUME_STORAGE_DIR: str = "./test-results/resumes"
 
     # Supabase Auth (exclusive identity provider)
     SUPABASE_URL: str = Field(
@@ -34,10 +36,21 @@ class Settings(BaseSettings):
     )
     SUPABASE_ANON_KEY: str = Field(
         default="",
-        validation_alias=AliasChoices("SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+        validation_alias=AliasChoices(
+            "SUPABASE_ANON_KEY",
+            "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+            "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+            "SUPABASE_PUBLISHABLE_KEY",
+        ),
     )
-    SUPABASE_SERVICE_ROLE_KEY: str = ""
-    SUPABASE_JWT_SECRET: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_SECRET_KEY"),
+    )
+    SUPABASE_JWT_SECRET: str = Field(
+        default="",
+        validation_alias=AliasChoices("SUPABASE_JWT_SECRET", "JWT_SECRET"),
+    )
     SUPABASE_JWT_AUDIENCE: str = "authenticated"
     SUPABASE_JWT_ISSUER: str = ""
     SUPABASE_JWKS_URL: str = ""
@@ -59,8 +72,30 @@ class Settings(BaseSettings):
 
     # AI & Providers
     GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3-flash-preview"
+    GEMINI_EMBEDDING_MODEL: str = "gemini-embedding-001"
+    GEMINI_LIVE_MODEL: str = "gemini-2.5-flash-native-audio-preview-12-2025"
+    GEMINI_LIVE_WEBSOCKET_URL: str = (
+        "wss://generativelanguage.googleapis.com/ws/"
+        "google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent"
+    )
     OLOSTEP_API_KEY: str = ""
+    OLOSTEP_API_BASE_URL: str = "https://api.olostep.com/v1"
     CRUSTDATA_API_KEY: str = ""
+    CRUSTDATA_API_BASE_URL: str = "https://api.crustdata.com"
+    CRUSTDATA_API_VERSION: str = "2025-11-01"
+
+    # Security, Rate Limiting & Playwright
+    RATE_LIMIT_REQUESTS_PER_MINUTE: int = 60
+    PLAYWRIGHT_HEADLESS: bool = True
+    PLAYWRIGHT_TIMEOUT_MS: int = 30000
+    PLAYWRIGHT_SCREENSHOT_DIR: str = "./test-results/screenshots"
+    PLAYWRIGHT_STORAGE_STATE_DIR: str = "./test-results/storage"
+
+    # Observability & Analytics
+    SENTRY_DSN: str = ""
+    POSTHOG_API_KEY: str = ""
+    POSTHOG_HOST: str = "https://us.i.posthog.com"
 
     @property
     def is_production(self) -> bool:
@@ -103,7 +138,11 @@ class Settings(BaseSettings):
 
         return self
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(".env", "../../.env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()

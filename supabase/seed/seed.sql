@@ -37,3 +37,41 @@ INSERT INTO public.opportunities (
     'crustdata'
 )
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.opportunity_eligibility (
+    opportunity_id,
+    eligible_batches,
+    eligible_degrees,
+    eligible_branches,
+    min_cgpa,
+    required_skills,
+    preferred_skills,
+    allowed_locations,
+    remote_allowed,
+    max_active_backlogs
+) VALUES
+(
+    '00000000-0000-0000-0000-000000000001',
+    ARRAY[2026, 2027, 2028],
+    ARRAY['B.Tech', 'B.E.', 'M.Tech'],
+    ARRAY['Computer Science', 'AI & Data Science', 'Electrical Engineering'],
+    7.00,
+    ARRAY['Python', 'Machine Learning'],
+    ARRAY['PyTorch', 'NLP'],
+    ARRAY['Chennai', 'Remote'],
+    TRUE,
+    0
+),
+(
+    '00000000-0000-0000-0000-000000000002',
+    ARRAY[2026, 2027],
+    ARRAY['B.Tech', 'B.E.', 'BCA', 'MCA'],
+    ARRAY['Computer Science', 'Information Technology'],
+    7.50,
+    ARRAY['TypeScript', 'React'],
+    ARRAY['Next.js', 'REST APIs'],
+    ARRAY['Bengaluru'],
+    FALSE,
+    0
+)
+ON CONFLICT (opportunity_id) DO NOTHING;

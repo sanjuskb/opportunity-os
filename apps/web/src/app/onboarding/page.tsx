@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Check, ArrowRight, ArrowLeft, Globe, GraduationCap, Wrench, Compass, Sparkles, Award } from 'lucide-react';
 import { APP_CONFIG } from '@opportunity-os/shared-config';
 import { useMockStore } from '../../lib/mock-data/mockStore';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useUpdateUserProfile, useUpsertStudentProfile } from '@/lib/queries/useOpportunityOs';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
@@ -12,7 +14,12 @@ import { Badge } from '../../components/ui/Badge';
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { studentProfile, updateStudentProfile, setActiveLanguage, activeLanguage } = useMockStore();
+  const { user } = useAuth();
+  const { studentProfile, updateStudentProfile, setActiveLanguage, activeLanguage, userRole } = useMockStore();
+  const updateProfile = useUpdateUserProfile();
+  const upsertStudent = useUpsertStudentProfile();
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -42,7 +49,8 @@ export default function OnboardingPage() {
     setFormData({ ...formData, skills: formData.skills.filter((s) => s !== sk) });
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
+    setErrorMsg(null);
     updateStudentProfile({
       fullName: formData.fullName,
       collegeName: formData.collegeName,
@@ -51,8 +59,33 @@ export default function OnboardingPage() {
       graduationYear: formData.graduationYear,
       cgpa: formData.cgpa,
       skills: formData.skills,
-      preferredLanguage: formData.preferredLanguage as any,
+      preferredLanguage: formData.preferredLanguage as typeof activeLanguage,
     });
+    if (user) {
+      setSaving(true);
+      try {
+        await updateProfile.mutateAsync({
+          fullName: formData.fullName,
+          preferredLanguage: formData.preferredLanguage,
+          userRole,
+        });
+        await upsertStudent.mutateAsync({
+          collegeName: formData.collegeName,
+          degree: formData.degree,
+          branch: formData.branch,
+          graduationYear: formData.graduationYear,
+          cgpa: formData.cgpa,
+          skills: formData.skills,
+          preferredLocations: formData.desiredLocation.split(',').map((s) => s.trim()).filter(Boolean),
+          bio: `${formData.desiredRole} candidate (${formData.minStipend})`,
+        });
+      } catch (err) {
+        setErrorMsg(err instanceof Error ? err.message : 'Could not save onboarding profile.');
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
     router.push('/overview');
   };
 
@@ -304,8 +337,13 @@ export default function OnboardingPage() {
               </div>
 
               <p className="text-xs text-slate-400 leading-relaxed">
-                By completing onboarding, your verified Career Passport ID will be generated with DigiLocker accreditation, and autonomous agent shuttles will begin matching relevant Indian opportunities.
+                By completing onboarding, your verified Career Passport ID will be persisted to PostgreSQL across all 9 regional languages.
               </p>
+              {errorMsg && (
+                <div className="rounded-lg border border-rose-500/40 bg-rose-950/30 p-3 text-xs text-rose-200">
+                  {errorMsg}
+                </div>
+              )}
             </div>
           )}
 
@@ -326,7 +364,7 @@ export default function OnboardingPage() {
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button type="button" variant="glow" size="md" onClick={handleFinish}>
+              <Button type="button" variant="glow" size="md" isLoading={saving} onClick={() => void handleFinish()}>
                 <Sparkles className="h-4 w-4 mr-1.5 text-cyan-300" />
                 <span>Launch My Workspace</span>
               </Button>

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sanitizeNextPath } from '../src/lib/auth/redirect.ts';
+import { isProtectedPath, shouldFailClosedWithoutConfig } from '../src/lib/auth/route-guard.ts';
 import { getSupabasePublicConfig } from '../src/lib/supabase/env.ts';
 
 test('getSupabasePublicConfig prefers NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', () => {
@@ -34,14 +35,35 @@ test('sanitizeNextPath blocks open redirects and allows safe relative paths', ()
   assert.equal(sanitizeNextPath(null), '/opportunities');
 });
 
-test('middleware redirect contract enforces protected routes and sanitized /login?next', () => {
-  const PROTECTED = ['/career-passport', '/applications', '/resume', '/interview', '/analytics', '/settings'];
-  const isProtected = (p) => PROTECTED.some((x) => p === x || p.startsWith(`${x}/`));
+test('middleware redirect contract enforces protected routes, fail-closed config, and sanitized /login?next', () => {
+  for (const route of [
+    '/overview',
+    '/onboarding',
+    '/role-selection',
+    '/career-passport',
+    '/opportunities',
+    '/opportunities/opp-1',
+    '/resume',
+    '/applications',
+    '/interview',
+    '/analytics',
+    '/notifications',
+    '/settings',
+    '/agent-control-center',
+    '/voice-ai',
+    '/company/roles',
+    '/university/analytics',
+  ]) {
+    assert.equal(isProtectedPath(route), true, `expected ${route} to be protected`);
+  }
 
-  assert.equal(isProtected('/career-passport'), true);
-  assert.equal(isProtected('/settings'), true);
-  assert.equal(isProtected('/opportunities'), false);
-  assert.equal(isProtected('/login'), false);
+  for (const publicRoute of ['/', '/about', '/features', '/how-it-works', '/ai-agents', '/login', '/register', '/forgot-password', '/auth/callback']) {
+    assert.equal(isProtectedPath(publicRoute), false, `expected ${publicRoute} to stay public`);
+  }
+
+  assert.equal(shouldFailClosedWithoutConfig('production', 'true'), true);
+  assert.equal(shouldFailClosedWithoutConfig('development', undefined), true);
+  assert.equal(shouldFailClosedWithoutConfig('development', 'true'), false);
 
   // Authenticated user visiting /login?next=... respects safe relative next or falls back to /opportunities
   assert.equal(sanitizeNextPath('/resume', '/opportunities'), '/resume');

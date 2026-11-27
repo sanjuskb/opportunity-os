@@ -3,6 +3,8 @@
 from app.services.applications import ApplicationService
 from app.services.approvals import ApprovalService
 from app.services.career_passports import CareerPassportService
+from app.services.eligibility import EligibilityService
+from app.services.intelligence import IntelligenceService
 from app.services.notifications import NotificationService
 from app.services.opportunities import OpportunityService
 from app.services.opportunity_text import (
@@ -14,13 +16,16 @@ from app.services.opportunity_text import (
 )
 from app.services.profiles import ProfileService, StudentProfileService
 from app.services.resumes import ResumeService
-from app.services.voice_sessions import VoiceSessionService
+from app.services.voice_sessions import ConversationService, VoiceSessionService
 
 __all__ = [
     "ApplicationService",
     "ApprovalService",
     "CanonicalOpportunityInput",
     "CareerPassportService",
+    "ConversationService",
+    "EligibilityService",
+    "IntelligenceService",
     "NotificationService",
     "OpportunityService",
     "ProfileService",

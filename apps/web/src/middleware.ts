@@ -1,26 +1,23 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { sanitizeNextPath } from '@/lib/auth/redirect';
+import { isProtectedPath, shouldFailClosedWithoutConfig } from '@/lib/auth/route-guard';
 import { getSupabasePublicConfig } from '@/lib/supabase/env';
 
-const PROTECTED_PREFIXES = [
-  '/career-passport',
-  '/applications',
-  '/resume',
-  '/interview',
-  '/analytics',
-  '/settings',
-];
-
-function isProtectedPath(pathname: string): boolean {
-  return PROTECTED_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
-}
-
 export async function middleware(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+  const protectedRoute = isProtectedPath(pathname);
   const config = getSupabasePublicConfig();
+
   if (!config) {
+    if (protectedRoute && shouldFailClosedWithoutConfig()) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/login';
+      loginUrl.search = '';
+      loginUrl.searchParams.set('error', 'auth_unconfigured');
+      loginUrl.searchParams.set('next', `${pathname}${search}`);
+      return NextResponse.redirect(loginUrl);
+    }
     return NextResponse.next({ request });
   }
 
@@ -45,9 +42,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname, search } = request.nextUrl;
-
-  if (!user && isProtectedPath(pathname)) {
+  if (!user && protectedRoute) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
     loginUrl.search = '';

@@ -1,0 +1,45 @@
+# Non-conflicting local Postgres 17 (pgvector) + Redis override for single-developer
+# testing & dev when host port 54322 is unavailable or local Supabase CLI is not used.
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d
+#   python scripts/dev/bootstrap_local_db.py
+
+name: opportunity-os-local
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    container_name: opportunity-os-postgres
+    restart: unless-stopped
+    ports:
+      - "${LOCAL_DB_PORT:-54332}:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    volumes:
+      - local_pg_data:/var/lib/postgresql/data
+      - ./infra/docker/init-local-db.sql:/docker-entrypoint-initdb.d/00-init-local-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: opportunity-os-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - local_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  local_pg_data:
+  local_redis_data:

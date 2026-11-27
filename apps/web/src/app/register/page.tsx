@@ -3,31 +3,80 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, ShieldCheck, GraduationCap, Building2, School } from 'lucide-react';
-import { useMockStore, UserRole } from '../../lib/mock-data/mockStore';
+import { GraduationCap, Building2, School } from 'lucide-react';
+import { APP_CONFIG } from '@opportunity-os/shared-config';
+import { createClient } from '@/lib/supabase/client';
+import { getSupabasePublicConfig } from '@/lib/supabase/env';
+import { useMockStore } from '../../lib/mock-data/mockStore';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
-import { APP_CONFIG } from '@opportunity-os/shared-config';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { userRole, setUserRole } = useMockStore();
+  const isConfigured = Boolean(getSupabasePublicConfig());
+  const { userRole, setUserRole, setActiveLanguage } = useMockStore();
 
+  const [step, setStep] = useState<'form' | 'otp'>('form');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [collegeOrCompany, setCollegeOrCompany] = useState('');
-  const [degree, setDegree] = useState('B.Tech');
+  const [otp, setOtp] = useState('');
   const [language, setLanguage] = useState<string>(APP_CONFIG.DEFAULT_LANGUAGE);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
+    if (!isConfigured) {
+      setErrorMsg('Supabase public credentials are not configured.');
+      return;
+    }
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          shouldCreateUser: true,
+          data: { full_name: fullName.trim(), preferred_language: language, user_role: userRole },
+        },
+      });
+      if (error) {
+        setErrorMsg(error.message);
+        return;
+      }
+      setActiveLanguage(language as typeof APP_CONFIG.DEFAULT_LANGUAGE);
+      setStep('otp');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Registration failed.');
+    } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setIsLoading(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: otp.trim(),
+        type: 'email',
+      });
+      if (error) {
+        setErrorMsg(error.message);
+        return;
+      }
       router.push('/onboarding');
-    }, 600);
+      router.refresh();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'OTP verification failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,11 +95,10 @@ export default function RegisterPage() {
           </Link>
           <h1 className="text-xl font-bold tracking-tight text-white">Create Your Account</h1>
           <p className="text-xs text-slate-400">
-            Join 50,000+ Indian students discovering internships across 7 regional languages.
+            Discover internships and fellowships across 9 Indian regional languages.
           </p>
         </div>
 
-        {/* Role Selector Tabs */}
         <div className="grid grid-cols-3 gap-2 p-1 rounded-xl border border-slate-800 bg-[#0B0F19]">
           <button
             type="button"
@@ -90,80 +138,67 @@ export default function RegisterPage() {
           </button>
         </div>
 
-        {/* Register Form Card */}
         <div className="rounded-2xl border border-slate-800 bg-[#0D1322] p-6 shadow-2xl space-y-4">
-          <form onSubmit={handleRegister} className="space-y-4">
-            <Input
-              label="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              placeholder="e.g. Sanju Kumar"
-            />
+          {errorMsg && (
+            <div className="rounded-lg border border-rose-500/40 bg-rose-950/30 p-3 text-xs text-rose-200">
+              {errorMsg}
+            </div>
+          )}
 
-            <Input
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="sanju@college.edu.in"
-            />
-
-            {userRole === 'student' ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  label="College / University Name"
-                  value={collegeOrCompany}
-                  onChange={(e) => setCollegeOrCompany(e.target.value)}
-                  required
-                  placeholder="e.g. NIT Trichy"
-                />
-                <Select
-                  label="Degree Program"
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
-                  options={[
-                    { value: 'B.Tech', label: 'B.Tech / B.E.' },
-                    { value: 'M.Tech', label: 'M.Tech / M.E.' },
-                    { value: 'MCA', label: 'MCA' },
-                    { value: 'B.Sc', label: 'B.Sc Computer Science' },
-                    { value: 'Ph.D', label: 'Ph.D Scholar' },
-                  ]}
-                />
-              </div>
-            ) : (
+          {step === 'form' ? (
+            <form onSubmit={handleSendOtp} className="space-y-4">
               <Input
-                label="Organization / Company Name"
-                value={collegeOrCompany}
-                onChange={(e) => setCollegeOrCompany(e.target.value)}
+                label="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 required
-                placeholder="e.g. Google India or IIT Madras"
+                placeholder="Sanju S. Kumar"
               />
-            )}
+              <Input
+                label="College or Organization Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="name@college.edu.in"
+              />
+              <Select
+                label="Preferred Operating & Voice Language"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                options={APP_CONFIG.SUPPORTED_LANGUAGES.map((l) => ({
+                  value: l.code,
+                  label: `${l.name} (${l.native})`,
+                }))}
+              />
+              <Button type="submit" variant="glow" size="md" className="w-full" isLoading={isLoading}>
+                <span>Send 6-Digit Verification Code</span>
+              </Button>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyOtp} className="space-y-4">
+              <p className="text-xs text-slate-300">
+                Enter the 6-digit verification code sent to <span className="text-cyan-300">{email}</span>.
+              </p>
+              <Input
+                label="Verification Code"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                required
+                placeholder="123456"
+              />
+              <Button type="submit" variant="glow" size="md" className="w-full" isLoading={isLoading}>
+                <span>Verify & Continue to Onboarding</span>
+              </Button>
+            </form>
+          )}
 
-            <Select
-              label="Preferred Language (UI & Voice)"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              options={APP_CONFIG.SUPPORTED_LANGUAGES.map((l) => ({
-                value: l.code,
-                label: `${l.name} (${l.native})`,
-              }))}
-            />
-
-            <Button type="submit" variant="glow" size="md" className="w-full mt-2" isLoading={isLoading}>
-              <span>Complete Profile in Onboarding</span>
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </form>
-
-          <div className="pt-2 text-center text-xs text-slate-400 border-t border-slate-800">
-            <span>Already have an account? </span>
-            <Link href="/login" className="text-cyan-400 font-semibold hover:underline">
-              Sign In
+          <p className="text-center text-xs text-slate-400">
+            Already registered?{' '}
+            <Link href="/login" className="text-cyan-400 hover:underline font-semibold">
+              Sign in with Email or Google
             </Link>
-          </div>
+          </p>
         </div>
       </div>
     </div>

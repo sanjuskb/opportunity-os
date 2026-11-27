@@ -10,6 +10,8 @@ export const APP_CONFIG = {
     { code: 'kn', name: 'Kannada', native: 'ಕನ್ನಡ' },
     { code: 'ml', name: 'Malayalam', native: 'മലയാളം' },
     { code: 'bn', name: 'Bengali', native: 'বাংলা' },
+    { code: 'mr', name: 'Marathi', native: 'मराठी' },
+    { code: 'gu', name: 'Gujarati', native: 'ગુજરાતી' },
   ],
   DEFAULT_LANGUAGE: 'en',
   MAX_RESUME_FILE_SIZE_MB: 5,

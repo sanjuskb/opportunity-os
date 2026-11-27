@@ -17,12 +17,18 @@ dependencies = [
     "pyjwt[crypto]>=2.9.0",
     "pgvector>=0.3.0",
     "arq>=0.26.0",
+    "python-multipart>=0.0.12",
+    "python-docx>=1.1.2",
+    "pymupdf>=1.24.0",
+    "fpdf2>=2.8.0",
+    "google-genai>=0.1.1",
 ]
 
 [project.optional-dependencies]
 ai = [
     "google-genai>=0.1.1",
     "langgraph>=0.2.35",
+    "langgraph-checkpoint-postgres>=2.0.0",
     "sentence-transformers>=3.1.0",
 ]
 worker = [
@@ -32,6 +38,10 @@ worker = [
 ]
 automation = [
     "playwright>=1.47.0",
+]
+observability = [
+    "sentry-sdk>=2.18.0",
+    "posthog>=3.7.0",
 ]
 dev = [
     "pytest>=8.3.0",

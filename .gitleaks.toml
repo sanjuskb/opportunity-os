@@ -1,0 +1,20 @@
+title = "NexteRaS (Opportunity OS) Gitleaks Configuration"
+
+[extend]
+# Keep all built-in gitleaks secret detectors enabled across the entire repo.
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+  [[rules.allowlists]]
+  description = "Allowlist strictly known synthetic dummy test literals in automated test files"
+  condition = "AND"
+  regexTarget = "line"
+  paths = [
+    '''^apps/api/tests/(?:unit|integration)/test_(?:ml_routes|intelligence_live|ws2_discover_eligibility_live|olostep_crustdata_ws4_ws5)\.py$''',
+  ]
+  regexes = [
+    '''"test-[a-z0-9-]+-jwt-secret(?:-[a-z0-9-]+)?"''',
+    '''"olo_(?:live_)?test_[a-z0-9_]+"''',
+    '''"crust_test_[a-z0-9_]+"''',
+  ]

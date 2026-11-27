@@ -1,31 +1,25 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { Users, Search, Award, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '../../../components/dashboard/DashboardLayout';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/Card';
+import { Card, CardContent } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
-import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
-import { useMockStore } from '../../../lib/mock-data/mockStore';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { QUERY_KEYS } from '@/lib/queries/useOpportunityOs';
 
 export default function CandidateDiscoveryPage() {
-  const { candidates } = useMockStore();
+  const { user, apiClient } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [shortlisted, setShortlisted] = useState<string[]>([]);
-
-  const toggleShortlist = (id: string) => {
-    setShortlisted((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
-  };
-
-  const filteredCandidates = candidates.filter((c) => {
-    return (
-      c.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.collegeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.skills.some((sk) => sk.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+  const { data: candidates, isLoading, error } = useQuery({
+    queryKey: QUERY_KEYS.companyCandidates(searchQuery),
+    queryFn: () => apiClient.listCompanyCandidates(searchQuery || undefined),
+    enabled: Boolean(user),
+    retry: false,
   });
+
+  const rows = candidates ?? [];
 
   return (
     <DashboardLayout>
@@ -37,12 +31,11 @@ export default function CandidateDiscoveryPage() {
               <Badge variant="sapphire">Pre-Screened Talent</Badge>
             </div>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Discover skill-verified engineering students from accredited Indian colleges.
+              Discover verified student profiles directly from PostgreSQL.
             </p>
           </div>
-
           <div className="text-xs text-slate-400 font-mono">
-            Showing <span className="text-blue-400 font-bold">{filteredCandidates.length}</span> verified profiles
+            Showing <span className="text-blue-400 font-bold">{rows.length}</span> profiles
           </div>
         </div>
 
@@ -50,57 +43,51 @@ export default function CandidateDiscoveryPage() {
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search candidates by name, college (e.g. NIT Trichy, IIIT), or skill (e.g. Go, PyTorch)..."
+            placeholder="Filter candidates by name, college, branch, or skill..."
           />
         </div>
 
-        {/* Candidate Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredCandidates.map((cand) => {
-            const isShortlisted = shortlisted.includes(cand.id);
+        {error && (
+          <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-950/30 text-xs text-amber-200">
+            Switch workspace role to Company or University to access candidate talent directory.
+          </div>
+        )}
 
-            return (
-              <Card key={cand.id} className="hover:border-slate-700 transition">
-                <CardContent className="p-5 space-y-4">
+        {isLoading ? (
+          <div className="h-40 rounded-xl border border-slate-800 bg-[#0B0F19] animate-pulse" />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {rows.map((cand) => (
+              <Card key={cand.studentProfileId}>
+                <CardContent className="p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="font-bold text-base text-white">{cand.fullName}</div>
-                      <div className="text-xs text-cyan-400 font-medium">{cand.headline}</div>
-                      <div className="text-xs text-slate-400 mt-0.5">
-                        {cand.degree} • {cand.collegeName} (Batch of {cand.graduationYear})
+                      <div className="text-xs text-slate-400">
+                        {cand.degree} {cand.branch} • {cand.collegeName} (Batch {cand.graduationYear})
                       </div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="font-bold text-emerald-400 text-sm">{cand.cgpa} CGPA</div>
-                      <span className="text-[10px] text-slate-400 font-mono">Passport Verified</span>
+                      <div className="font-bold text-emerald-400 text-sm">
+                        {cand.cgpa != null ? `${cand.cgpa} CGPA` : '—'}
+                      </div>
+                      <Badge variant={cand.isVerified ? 'emerald' : 'slate'}>
+                        {cand.isVerified ? 'Verified' : 'Unverified'}
+                      </Badge>
                     </div>
                   </div>
-
-                  <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">{cand.about}</p>
-
-                  <div className="flex flex-wrap gap-1.5 pt-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {cand.skills.map((sk) => (
                       <span key={sk} className="px-2 py-0.5 rounded text-[10px] bg-slate-900 text-slate-300 border border-slate-800">
                         {sk}
                       </span>
                     ))}
                   </div>
-
-                  <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-                    <span className="font-mono text-[10px] text-slate-500">{cand.careerPassportId}</span>
-                    <Button
-                      variant={isShortlisted ? 'secondary' : 'primary'}
-                      size="sm"
-                      onClick={() => toggleShortlist(cand.id)}
-                    >
-                      {isShortlisted ? 'Shortlisted' : 'Shortlist Candidate'}
-                    </Button>
-                  </div>
                 </CardContent>
               </Card>
-            );
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

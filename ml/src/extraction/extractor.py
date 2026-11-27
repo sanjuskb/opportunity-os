@@ -25,7 +25,11 @@ from ml.src.extraction.taxonomy import (
     normalize_branch,
     normalize_degree,
 )
-from ml.src.infrastructure.security import safe_log_preview, validate_text_input, validate_upload_metadata
+from ml.src.infrastructure.security import (
+    safe_log_preview,
+    validate_file_magic_bytes,
+    validate_text_input,
+)
 
 logger = logging.getLogger("nexteras.ml.extraction")
 
@@ -89,9 +93,12 @@ class ResumeExtractionService:
         if not path.exists():
             raise FileNotFoundError(f"Resume file not found: {path}")
         raw_bytes = path.read_bytes()
-        validate_upload_metadata(path.name, len(raw_bytes))
+        return self.extract_from_bytes(path.name, raw_bytes)
 
-        ext = path.suffix.lower()
+    def extract_from_bytes(self, filename: str, raw_bytes: bytes) -> ExtractionResponse:
+        """Validate extension + magic bytes and extract grounded structured profile."""
+        validate_file_magic_bytes(filename, raw_bytes)
+        ext = Path(filename).suffix.lower()
         if ext in {".txt", ".md"}:
             text = raw_bytes.decode("utf-8", errors="replace")
         elif ext == ".json":
@@ -99,6 +106,8 @@ class ResumeExtractionService:
             text = self._normalize_json_resume_to_text(raw_str)
         elif ext == ".pdf":
             text = self._extract_pdf_bytes(raw_bytes)
+        elif ext == ".docx":
+            text = self._extract_docx_bytes(raw_bytes)
         else:
             raise ValueError(f"Unsupported extension: {ext}")
         return self.extract_from_text(text)
@@ -162,8 +171,28 @@ class ResumeExtractionService:
             return "\n".join(page.get_text("text") for page in doc)
         except ImportError as exc:
             raise RuntimeError(
-                "PDF extraction requires pymupdf installed in ml/.venv, or supply decoded resume text."
+                "PDF extraction requires pymupdf installed, or supply decoded resume text."
             ) from exc
+
+    @staticmethod
+    def _extract_docx_bytes(raw_bytes: bytes) -> str:
+        import io
+
+        try:
+            from docx import Document  # type: ignore[import-untyped]
+        except ImportError as exc:
+            raise RuntimeError(
+                "DOCX extraction requires python-docx installed."
+            ) from exc
+
+        doc = Document(io.BytesIO(raw_bytes))
+        lines: list[str] = [p.text.strip() for p in doc.paragraphs if p.text.strip()]
+        for table in doc.tables:
+            for row in table.rows:
+                cells = [c.text.strip() for c in row.cells if c.text.strip()]
+                if cells:
+                    lines.append(" | ".join(cells))
+        return "\n".join(lines)
 
     def extract_from_text(self, resume_text: str) -> ExtractionResponse:
         text = validate_text_input(resume_text, "resume_text")

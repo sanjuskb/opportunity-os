@@ -28,7 +28,7 @@ class _MockTranslator:
         return "Need a FastAPI backend API internship " + " ".join(preserved_terms)
 
 
-def test_multilingual_preprocessing_all_7_languages_plus_hinglish() -> None:
+def test_multilingual_preprocessing_all_9_languages_plus_hinglish() -> None:
     samples = {
         "en": "Looking for Python FastAPI backend internship",
         "hi": "मुझे Python और बैकएंड इंटर्नशिप चाहिए",
@@ -37,6 +37,8 @@ def test_multilingual_preprocessing_all_7_languages_plus_hinglish() -> None:
         "kn": "ನನಗೆ ಡೇಟಾಬೇಸ್ ಇಂಟರ್ನ್‌షిಪ್ ಬೇಕು",
         "ml": "എനിക്ക് ബാക്കെൻഡ് ഇന്റേൺഷിപ്പ് വേണം",
         "bn": "আমার ব্যাকএন্ড ইন্টার্নশিপ দরকার",
+        "mr": "मला Python आणि बैकएंड इंटर्नशिप पाहिजे आहे",
+        "gu": "મને Python અને બેકએન્ડ ઇન્ટર્નશિપ જોઈએ છે",
         "hinglish": "Mujhe Python aur FastAPI wali backend internship chahiye",
     }
     for exp_locale, text in samples.items():
