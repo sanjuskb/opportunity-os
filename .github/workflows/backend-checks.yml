@@ -62,4 +62,7 @@ jobs:
           pip install -r ml/requirements.txt pytest pytest-asyncio python-docx httpx
 
       - name: Run ML Offline Test Suite
-        run: pytest ml/tests/test_extraction.py ml/tests/test_multilingual.py ml/tests/test_eligibility.py ml/tests/test_verification.py -q
+        env:
+          PYTHONPATH: .
+          HF_HUB_OFFLINE: "1"
+        run: python -m pytest ml/tests/test_extraction.py ml/tests/test_multilingual.py ml/tests/test_eligibility.py ml/tests/test_verification.py -q
